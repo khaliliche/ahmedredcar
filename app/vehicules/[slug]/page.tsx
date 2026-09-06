@@ -1,13 +1,32 @@
-
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Fuel, Users, Cog, ArrowLeft } from "lucide-react";
-import Image from "next/image";
 import { vehicles } from "@/data/vehicles";
 import { buildWhatsAppLink } from "@/lib/site-config";
 
 export function generateStaticParams() {
   return vehicles.map((v) => ({ slug: v.slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const vehicle = vehicles.find((v) => v.slug === slug);
+
+  if (!vehicle) {
+    return {
+      title: "Vehicule introuvable | Ahmed Red Car",
+    };
+  }
+
+  return {
+    title: `Location ${vehicle.brand} ${vehicle.model} | Ahmed Red Car`,
+    description: `Louez une ${vehicle.brand} ${vehicle.model} a partir de ${vehicle.pricePerDay} DH/jour avec Ahmed Red Car.`,
+  };
 }
 
 export default async function VehiclePage({
@@ -16,9 +35,12 @@ export default async function VehiclePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
   const vehicle = vehicles.find((v) => v.slug === slug);
 
-  if (!vehicle) notFound();
+  if (!vehicle) {
+    notFound();
+  }
 
   const whatsappMessage = `Bonjour, je souhaite reserver le ${vehicle.brand} ${vehicle.model} (${vehicle.pricePerDay} DH/jour).`;
 
@@ -26,21 +48,6 @@ export default async function VehiclePage({
     <main className="pt-32 pb-20">
       <div className="mx-auto max-w-5xl px-6 lg:px-10">
 
-        {/* Header / Logo */}
-        <div className="mb-10 flex items-center justify-center">
-          <Link href="/" aria-label="Ahmed Redcar - Accueil">
-            <Image
-              src="/images/ahmed-redcar-logo.png"
-              alt="Ahmed Redcar - Car Rental"
-              width={220}
-              height={220}
-              className="h-auto w-[180px] object-contain"
-              priority
-            />
-          </Link>
-        </div>
-
-        {/* Back button */}
         <Link
           href="/vehicules"
           className="inline-flex items-center gap-2 text-sm text-black/60 transition-colors hover:text-black"
@@ -51,15 +58,16 @@ export default async function VehiclePage({
 
         <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-2">
 
-          {/* Vehicle image */}
+          {/* Image du véhicule */}
           <div className="flex aspect-[4/3] items-center justify-center bg-[var(--color-charcoal)]">
             <span className="font-display text-2xl font-bold text-white/20">
               {vehicle.brand} {vehicle.model}
             </span>
           </div>
 
-          {/* Vehicle information */}
+          {/* Informations du véhicule */}
           <div className="flex flex-col gap-6">
+
             <div>
               <span className="inline-block bg-[var(--color-red-primary)] px-3 py-1 text-xs font-semibold text-white">
                 {vehicle.category}
@@ -70,7 +78,7 @@ export default async function VehiclePage({
               </h1>
 
               <p className="mt-2 font-body text-lg text-black/60">
-                A partir de{" "}
+                A partir{" "}
                 <span className="font-semibold text-[var(--color-red-primary)]">
                   {vehicle.pricePerDay} DH
                 </span>{" "}
@@ -78,7 +86,7 @@ export default async function VehiclePage({
               </p>
             </div>
 
-            {/* Vehicle specifications */}
+            {/* Caracteristiques */}
             <div className="grid grid-cols-3 gap-4 border-y border-black/10 py-5">
 
               <div className="flex flex-col items-center gap-2 text-center">
@@ -113,7 +121,7 @@ export default async function VehiclePage({
 
             </div>
 
-            {/* WhatsApp reservation */}
+            {/* Bouton WhatsApp */}
             <a
               href={buildWhatsAppLink(whatsappMessage)}
               target="_blank"
@@ -122,6 +130,7 @@ export default async function VehiclePage({
             >
               Reserver ce vehicule via WhatsApp
             </a>
+
           </div>
         </div>
       </div>
