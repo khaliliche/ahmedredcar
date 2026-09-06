@@ -4,31 +4,32 @@ import { siteConfig } from "@/lib/site-config";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-[var(--color-ink)] py-10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 sm:flex-row sm:items-center sm:justify-between lg:px-10">
-        <Image
-          src="/ahmed-redcar-logo.png"
-          alt="Ahmed Red Car"
-          width={150}
-          height={50}
-          className="h-9 w-auto object-contain"
-        />
-
-        <nav className="flex flex-wrap gap-6">
-          {siteConfig.nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="font-body text-sm text-white/60 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <span className="font-body text-xs text-white/40">
-          &copy; {new Date().getFullYear()} Ahmed Red Car. Tous droits reserves.
-        </span>
+    <footer className="relative bg-[var(--color-ink)] pt-16 pb-8 overflow-hidden">
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--color-red-primary)] to-transparent" />
+      
+      <div className="relative mx-auto max-w-6xl px-6 lg:px-10">
+        <div className="flex flex-col items-center gap-8 sm:flex-row sm:justify-between mb-12">
+          <Image
+            src="/ahmed-redcar-logo.png"
+            alt="Ahmed Red Car"
+            width={150}
+            height={50}
+            className="h-10 w-auto object-contain opacity-90"
+          />
+          <nav className="flex flex-wrap justify-center gap-8">
+            {siteConfig.nav.map((item) => (
+              <Link key={item.href} href={item.href} className="font-body text-sm text-white/50 hover:text-white transition-colors">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <div className="border-t border-white/10 pt-8 text-center">
+          <span className="font-body text-xs text-white/30">
+            © {new Date().getFullYear()} Ahmed Red Car. Tous droits réservés. Conçu avec passion au Maroc.
+          </span>
+        </div>
       </div>
     </footer>
   );
