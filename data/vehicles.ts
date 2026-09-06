@@ -8,6 +8,7 @@
   transmission: "Automatique" | "Manuelle";
   fuel: "Essence" | "Diesel";
   seats: number;
+  image: string;
 };
 
 export const vehicles: Vehicle[] = [
@@ -21,6 +22,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Manuelle",
     fuel: "Diesel",
     seats: 5,
+    image: "https://placehold.co/800x600/141414/FFFFFF?text=Dacia+Logan",
   },
   {
     id: "2",
@@ -32,6 +34,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Manuelle",
     fuel: "Essence",
     seats: 5,
+    image: "https://placehold.co/800x600/141414/FFFFFF?text=Renault+Clio+5",
   },
   {
     id: "3",
@@ -43,6 +46,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Diesel",
     seats: 5,
+    image: "https://placehold.co/800x600/141414/FFFFFF?text=Peugeot+208",
   },
   {
     id: "4",
@@ -54,6 +58,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Diesel",
     seats: 5,
+    image: "https://placehold.co/800x600/141414/FFFFFF?text=Dacia+Duster",
   },
   {
     id: "5",
@@ -65,6 +70,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Diesel",
     seats: 5,
+    image: "https://placehold.co/800x600/141414/FFFFFF?text=Hyundai+Tucson",
   },
   {
     id: "6",
@@ -76,5 +82,6 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Essence",
     seats: 5,
+    image: "https://placehold.co/800x600/141414/FFFFFF?text=Range+Rover+Evoque",
   },
 ];
