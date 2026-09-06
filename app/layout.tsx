@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -9,18 +9,37 @@ const archivo = Archivo({
   subsets: ["latin"],
   variable: "--font-archivo",
   weight: ["600", "700", "800"],
+  display: "swap",
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Ahmed Red Car | Location de voitures au Maroc",
   description:
-    "Louez le vehicule ideal pour vos deplacements, vos voyages et vos aventures au Maroc.",
+    "Louez le véhicule idéal pour vos déplacements, vos voyages et vos aventures au Maroc. Flotte premium, prix transparents.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Ahmed Red Car",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0B0A08",
 };
 
 export default function RootLayout({
@@ -32,7 +51,7 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${archivo.variable} ${inter.variable} antialiased`}>
         <Navbar />
-        {children}
+        <div className="pt-[72px] lg:pt-0">{children}</div>
         <Footer />
         <WhatsAppFloat />
       </body>

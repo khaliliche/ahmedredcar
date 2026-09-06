@@ -32,7 +32,7 @@ export default function VehiclesGrid({ vehicles }: { vehicles: Vehicle[] }) {
           <button
             key={cat}
             onClick={() => setActive(cat)}
-            className={`border px-4 py-2 text-sm font-semibold transition-colors ${
+            className={`h-11 border px-4 text-sm font-semibold transition-colors ${
               active === cat
                 ? activeClasses(cat)
                 : "border-black/10 text-black/60 hover:border-black/30"

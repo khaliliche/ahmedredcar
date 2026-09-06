@@ -10,19 +10,19 @@ export default async function VehiclesPage({
   const hasSearch = params.ville && params.depart && params.retour;
 
   return (
-    <main className="pt-32 pb-20">
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
+    <main className="pb-20 pt-24 sm:pt-32">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-10">
         <div className="max-w-2xl">
-          <h1 className="font-display text-4xl font-extrabold text-[var(--color-ink)]">
-            Nos vehicules
+          <h1 className="font-display text-3xl font-extrabold text-[var(--color-ink)] sm:text-4xl">
+            Nos véhicules
           </h1>
           {hasSearch ? (
-            <p className="mt-3 font-body text-black/60">
-              Disponibilite a {params.ville} du {params.depart} au {params.retour}.
+            <p className="mt-2 font-body text-sm text-black/60 sm:mt-3 sm:text-base">
+              Disponibilité à {params.ville} du {params.depart} au {params.retour}.
             </p>
           ) : (
-            <p className="mt-3 font-body text-black/60">
-              Toute notre flotte, de la citadine economique au SUV premium.
+            <p className="mt-2 font-body text-sm text-black/60 sm:mt-3 sm:text-base">
+              Toute notre flotte, de la citadine économique au SUV premium.
             </p>
           )}
         </div>

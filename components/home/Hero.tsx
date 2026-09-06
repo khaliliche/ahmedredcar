@@ -6,7 +6,7 @@ import BookingBar from "@/components/home/BookingBar";
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pt-32 pb-16 lg:px-10">
+    <section className="relative flex min-h-[100dvh] flex-col justify-center overflow-hidden px-6 pt-28 pb-16 sm:pt-32 lg:px-10">
       {/* Background gradient animé */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-ink)] via-[var(--color-charcoal)] to-[#2D1F1F] animate-gradient" />
       

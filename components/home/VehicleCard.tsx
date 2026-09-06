@@ -11,7 +11,7 @@ function categoryColor(category: Vehicle["category"]) {
 
 export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg shadow-black/5 transition-all duration-500 hover:shadow-2xl hover:shadow-black/15 hover:-translate-y-2 border border-black/5">
+    <div className="group relative flex w-[82vw] max-w-[320px] shrink-0 snap-start flex-col overflow-hidden rounded-2xl bg-white shadow-lg shadow-black/5 transition-all duration-500 hover:shadow-2xl hover:shadow-black/15 sm:w-auto sm:max-w-none sm:shrink sm:hover:-translate-y-2 border border-black/5">
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-charcoal)]">
         <span className={`absolute left-4 top-4 z-10 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${categoryColor(vehicle.category)}`}>
           {vehicle.category}
@@ -22,7 +22,8 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           alt={`${vehicle.brand} ${vehicle.model}`}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes="(max-width: 768px) 82vw, (max-width: 1200px) 50vw, 33vw"
+          loading="lazy"
         />
         
         {/* Overlay au hover */}
