@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
@@ -27,14 +27,24 @@ export default function Testimonials() {
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
           {testimonials.map((t) => (
-            <div key={t.name} className="flex flex-col gap-4 bg-white p-6">
-              <div className="flex gap-1 text-[var(--color-red-primary)]">
+            <div
+              key={t.name}
+              className="relative flex flex-col gap-4 border border-black/10 bg-white p-6 pt-10"
+            >
+              <Quote
+                className="absolute left-6 top-5 text-[var(--color-red-primary)]/15"
+                size={40}
+                fill="currentColor"
+              />
+              <div className="relative flex gap-1 text-[var(--color-brass)]">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={16} fill="currentColor" />
+                  <Star key={i} size={14} fill="currentColor" />
                 ))}
               </div>
-              <p className="font-body text-sm text-black/70">{t.text}</p>
-              <span className="font-display text-sm font-bold text-[var(--color-ink)]">
+              <p className="relative font-body text-sm text-black/70">
+                {t.text}
+              </p>
+              <span className="relative font-display text-sm font-bold text-[var(--color-ink)]">
                 {t.name}
               </span>
             </div>

@@ -12,6 +12,13 @@ const categories: Array<Vehicle["category"] | "Tous"> = [
   "Premium",
 ];
 
+function activeClasses(cat: Vehicle["category"] | "Tous") {
+  if (cat === "Premium") {
+    return "border-[var(--color-brass)] bg-[var(--color-brass)] text-white";
+  }
+  return "border-[var(--color-red-primary)] bg-[var(--color-red-primary)] text-white";
+}
+
 export default function VehiclesGrid({ vehicles }: { vehicles: Vehicle[] }) {
   const [active, setActive] = useState<Vehicle["category"] | "Tous">("Tous");
 
@@ -27,7 +34,7 @@ export default function VehiclesGrid({ vehicles }: { vehicles: Vehicle[] }) {
             onClick={() => setActive(cat)}
             className={`border px-4 py-2 text-sm font-semibold transition-colors ${
               active === cat
-                ? "border-[var(--color-red-primary)] bg-[var(--color-red-primary)] text-white"
+                ? activeClasses(cat)
                 : "border-black/10 text-black/60 hover:border-black/30"
             }`}
           >
@@ -43,9 +50,17 @@ export default function VehiclesGrid({ vehicles }: { vehicles: Vehicle[] }) {
       </div>
 
       {filtered.length === 0 && (
-        <p className="mt-10 text-center text-black/50">
-          Aucun vehicule dans cette categorie pour le moment.
-        </p>
+        <div className="mt-10 flex flex-col items-center gap-2 border border-dashed border-black/15 py-16 text-center">
+          <p className="font-body text-black/60">
+            Aucun vehicule dans cette categorie pour le moment.
+          </p>
+          <button
+            onClick={() => setActive("Tous")}
+            className="font-body text-sm font-semibold text-[var(--color-red-primary)] hover:text-[var(--color-red-dark)]"
+          >
+            Voir toute la flotte
+          </button>
+        </div>
       )}
     </div>
   );

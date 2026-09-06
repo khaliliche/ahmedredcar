@@ -1,3 +1,4 @@
+
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -43,12 +44,14 @@ export default async function VehiclePage({
     notFound();
   }
 
+  const isPremium = vehicle.category === "Premium";
+
   const whatsappMessage = `Bonjour, je souhaite réserver le ${vehicle.brand} ${vehicle.model} (${vehicle.pricePerDay} DH/jour).`;
 
   return (
     <main className="pt-32 pb-20">
       <div className="mx-auto max-w-5xl px-6 lg:px-10">
-        {/* Retour */}
+        {/* Retour aux véhicules */}
         <Link
           href="/vehicules"
           className="inline-flex items-center gap-2 text-sm text-black/60 transition-colors hover:text-black"
@@ -60,6 +63,17 @@ export default async function VehiclePage({
         <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-2">
           {/* Image du véhicule */}
           <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-charcoal)]">
+            {/* Badge catégorie */}
+            <span
+              className={`absolute left-0 top-4 z-10 px-3 py-1 text-xs font-semibold text-white ${
+                isPremium
+                  ? "bg-[var(--color-brass)]"
+                  : "bg-[var(--color-red-primary)]"
+              }`}
+            >
+              {vehicle.category}
+            </span>
+
             <Image
               src={vehicle.image}
               alt={`${vehicle.brand} ${vehicle.model}`}
@@ -68,26 +82,29 @@ export default async function VehiclePage({
               sizes="(max-width: 1024px) 100vw, 50vw"
               priority
             />
+
+            {/* Prix */}
+            <div className="absolute bottom-4 right-4 rotate-[-3deg] border border-[var(--color-ink)]/15 bg-[var(--color-mist)] px-4 py-3 text-right shadow-md">
+              <p className="font-display text-2xl font-extrabold leading-none text-[var(--color-ink)]">
+                {vehicle.pricePerDay} DH
+              </p>
+
+              <p className="mt-1 text-xs text-black/50">
+                par jour
+              </p>
+            </div>
           </div>
 
           {/* Informations du véhicule */}
           <div className="flex flex-col gap-6">
-            {/* Titre et prix */}
+            {/* Titre */}
             <div>
-              <span className="inline-block bg-[var(--color-red-primary)] px-3 py-1 text-xs font-semibold text-white">
-                {vehicle.category}
-              </span>
-
-              <h1 className="mt-3 font-display text-4xl font-extrabold text-[var(--color-ink)]">
+              <h1 className="font-display text-4xl font-extrabold text-[var(--color-ink)]">
                 {vehicle.brand} {vehicle.model}
               </h1>
 
-              <p className="mt-2 font-body text-lg text-black/60">
-                À partir de{" "}
-                <span className="font-semibold text-[var(--color-red-primary)]">
-                  {vehicle.pricePerDay} DH
-                </span>{" "}
-                / jour
+              <p className="mt-2 font-body text-black/60">
+                Catégorie {vehicle.category.toLowerCase()}
               </p>
             </div>
 
@@ -145,3 +162,12 @@ export default async function VehiclePage({
     </main>
   );
 }
+<a
+  href={buildWhatsAppLink(whatsappMessage)}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="..."
+>
+  Réserver ce véhicule via WhatsApp
+</a>
+

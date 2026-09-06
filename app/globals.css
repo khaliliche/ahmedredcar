@@ -2,10 +2,12 @@
 
 @theme {
   --color-red-primary: #C1121F;
-  --color-red-dark: #8B0000;
-  --color-ink: #090909;
-  --color-charcoal: #141414;
-  --color-mist: #F5F5F5;
+  --color-red-dark: #7A0C14;
+  --color-ink: #0B0A08;
+  --color-charcoal: #17140F;
+  --color-mist: #F3ECDF;
+  --color-clay: #9C5A38;
+  --color-brass: #B98B2E;
 }
 
 @theme inline {
@@ -18,7 +20,26 @@ html {
 }
 
 body {
-  background-color: #FFFFFF;
+  background-color: #FBF8F2;
   color: var(--color-ink);
   font-family: var(--font-body);
+}
+
+::selection {
+  background-color: var(--color-red-primary);
+  color: #FFFFFF;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-red-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

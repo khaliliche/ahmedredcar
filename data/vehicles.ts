@@ -22,7 +22,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Manuelle",
     fuel: "Diesel",
     seats: 5,
-    image: "https://placehold.co/800x600/141414/FFFFFF?text=Dacia+Logan",
+    image: "/images/dacia-logan.jpg",
   },
   {
     id: "2",
@@ -34,7 +34,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Manuelle",
     fuel: "Essence",
     seats: 5,
-    image: "https://placehold.co/800x600/141414/FFFFFF?text=Renault+Clio+5",
+    image: "/images/renault-clio-5.jpg",
   },
   {
     id: "3",
@@ -46,7 +46,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Diesel",
     seats: 5,
-    image: "https://placehold.co/800x600/141414/FFFFFF?text=Peugeot+208",
+    image: "/images/peugeot-208.jpg",
   },
   {
     id: "4",
@@ -58,7 +58,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Diesel",
     seats: 5,
-    image: "https://placehold.co/800x600/141414/FFFFFF?text=Dacia+Duster",
+    image: "/images/dacia-duster.jpg",
   },
   {
     id: "5",
@@ -70,7 +70,7 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Diesel",
     seats: 5,
-    image: "https://placehold.co/800x600/141414/FFFFFF?text=Hyundai+Tucson",
+    image: "/images/hyundai-tucson.jpg",
   },
   {
     id: "6",
@@ -82,6 +82,6 @@ export const vehicles: Vehicle[] = [
     transmission: "Automatique",
     fuel: "Essence",
     seats: 5,
-    image: "https://placehold.co/800x600/141414/FFFFFF?text=Range+Rover+Evoque",
+    image: "/images/range-rover-evoque.jpg",
   },
 ];

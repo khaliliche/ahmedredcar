@@ -35,11 +35,16 @@ export default function HowItWorks() {
         </p>
       </div>
 
-      <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="relative mt-16 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          aria-hidden
+          className="absolute left-0 right-0 top-5 hidden border-t-2 border-dashed border-black/15 lg:block"
+        />
+
         {steps.map(({ icon: Icon, title, text }, i) => (
-          <div key={title} className="flex flex-col gap-4">
+          <div key={title} className="relative flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center bg-[var(--color-ink)] font-display text-sm font-bold text-white">
+              <span className="relative z-10 flex h-10 w-10 items-center justify-center bg-[var(--color-ink)] font-display text-sm font-bold text-white">
                 {i + 1}
               </span>
               <Icon className="text-[var(--color-red-primary)]" size={22} />

@@ -30,7 +30,9 @@ export default function AboutSection() {
               key={text}
               className="flex items-center gap-4 border-b border-black/10 pb-6 last:border-0 last:pb-0"
             >
-              <Icon className="shrink-0 text-[var(--color-red-primary)]" size={24} />
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[var(--color-red-primary)]/30 bg-white text-[var(--color-red-primary)]">
+                <Icon size={20} />
+              </span>
               <span className="font-body text-black/80">{text}</span>
             </div>
           ))}
