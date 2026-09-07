@@ -1,29 +1,34 @@
-﻿import { Search, CalendarCheck, KeyRound, MapPinned } from "lucide-react";
+﻿"use client";
 
-const steps = [
-  {
-    icon: Search,
-    title: "Choisissez votre véhicule",
-    text: "Parcourez notre flotte et trouvez le véhicule adapté à votre voyage.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Réservez en quelques clics",
-    text: "Sélectionnez vos dates et confirmez votre réservation via WhatsApp.",
-  },
-  {
-    icon: KeyRound,
-    title: "Récupérez votre véhicule",
-    text: "Récupérez les clés à l'agence ou à l'aéroport, selon votre choix.",
-  },
-  {
-    icon: MapPinned,
-    title: "Profitez du voyage",
-    text: "Prenez la route en toute confiance, où que vous alliez au Maroc.",
-  },
-];
+import { Search, CalendarCheck, KeyRound, MapPinned } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function HowItWorks() {
+  const { t } = useLanguage();
+
+  const steps = [
+    {
+      icon: Search,
+      title: t("howItWorks.steps.0.title"),
+      text: t("howItWorks.steps.0.text"),
+    },
+    {
+      icon: CalendarCheck,
+      title: t("howItWorks.steps.1.title"),
+      text: t("howItWorks.steps.1.text"),
+    },
+    {
+      icon: KeyRound,
+      title: t("howItWorks.steps.2.title"),
+      text: t("howItWorks.steps.2.text"),
+    },
+    {
+      icon: MapPinned,
+      title: t("howItWorks.steps.3.title"),
+      text: t("howItWorks.steps.3.text"),
+    },
+  ];
+
   return (
     <section
       id="comment-ca-marche"
@@ -31,10 +36,10 @@ export default function HowItWorks() {
     >
       <div className="max-w-lg">
         <h2 className="font-display text-2xl font-extrabold text-[var(--color-ink)] sm:text-3xl lg:text-4xl">
-          Comment ça marche
+          {t("howItWorks.title")}
         </h2>
         <p className="mt-2 font-body text-sm text-black/60 sm:mt-3 sm:text-base">
-          Louer une voiture avec Ahmed Red Car en quatre étapes simples.
+          {t("howItWorks.subtitle")}
         </p>
       </div>
 

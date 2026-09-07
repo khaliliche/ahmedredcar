@@ -2,19 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { siteConfig } from "@/lib/site-config";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function Footer() {
   const { t } = useLanguage();
-
-  const navItems = [
-    { href: "/", label: t("nav.home") },
-    { href: "/vehicules", label: t("nav.vehicles") },
-    { href: "/#comment-ca-marche", label: t("nav.howItWorks") },
-    { href: "/#a-propos", label: t("nav.about") },
-    { href: "/#contact", label: t("nav.contact") },
-  ];
 
   return (
     <footer className="relative bg-[var(--color-ink)] pt-10 pb-8 sm:pt-16 overflow-hidden">
@@ -31,20 +22,41 @@ export default function Footer() {
             className="h-10 w-auto object-contain opacity-90"
           />
           <nav className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="font-body text-sm text-white/50 hover:text-white transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
+            <Link
+              href="/"
+              className="font-body text-sm text-white/50 hover:text-white transition-colors"
+            >
+              {t("nav.home")}
+            </Link>
+            <Link
+              href="/vehicules"
+              className="font-body text-sm text-white/50 hover:text-white transition-colors"
+            >
+              {t("nav.vehicles")}
+            </Link>
+            <Link
+              href="/#comment-ca-marche"
+              className="font-body text-sm text-white/50 hover:text-white transition-colors"
+            >
+              {t("nav.howItWorks")}
+            </Link>
+            <Link
+              href="/#a-propos"
+              className="font-body text-sm text-white/50 hover:text-white transition-colors"
+            >
+              {t("nav.about")}
+            </Link>
+            <Link
+              href="/#contact"
+              className="font-body text-sm text-white/50 hover:text-white transition-colors"
+            >
+              {t("nav.contact")}
+            </Link>
           </nav>
         </div>
         <div className="border-t border-white/10 pt-8 text-center">
           <span className="font-body text-xs text-white/30">
-            © {new Date().getFullYear()} {siteConfig.name}. {t("footer.rights")}
+            © {new Date().getFullYear()} Ahmed Red Car. {t("footer.rights")}
           </span>
         </div>
       </div>

@@ -2,15 +2,18 @@
 
 import { motion } from "framer-motion";
 import { Users, Wrench, Headset, Tag } from "lucide-react";
-
-const items = [
-  { icon: Users, value: "500", label: "clients satisfaits", suffix: "+" },
-  { icon: Wrench, value: "100", label: "véhicules entretenus", suffix: "%" },
-  { icon: Headset, value: "7j/7", label: "assistance disponible", suffix: "" },
-  { icon: Tag, value: "0", label: "frais cachés", suffix: "" },
-];
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function TrustIndicators() {
+  const { t } = useLanguage();
+
+  const items = [
+    { icon: Users, value: "500", label: t("trust.clients"), suffix: "+" },
+    { icon: Wrench, value: "100", label: t("trust.maintained"), suffix: "%" },
+    { icon: Headset, value: t("trust.available"), label: t("trust.support"), suffix: "" },
+    { icon: Tag, value: "0", label: t("trust.hiddenFees"), suffix: "" },
+  ];
+
   return (
     <section className="relative overflow-hidden border-y border-black/5 bg-white py-16">
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />

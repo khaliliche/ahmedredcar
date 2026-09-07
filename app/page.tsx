@@ -5,6 +5,7 @@ import TripFinder from "@/components/home/TripFinder";
 import HowItWorks from "@/components/home/HowItWorks";
 import Testimonials from "@/components/home/Testimonials";
 import AboutSection from "@/components/home/AboutSection";
+import Reviews from "@/components/home/Reviews";
 import { getVehicles } from "@/lib/db";
 
 export default async function Home() {
@@ -19,6 +20,7 @@ export default async function Home() {
       <HowItWorks />
       <Testimonials />
       <AboutSection />
+      <Reviews />
     </main>
   );
 }

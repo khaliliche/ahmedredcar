@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { buildWhatsAppLink } from "@/lib/site-config";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -18,20 +19,20 @@ function WhatsAppIcon({ className }: { className?: string }) {
 
 export default function WhatsAppFloat() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   // Les pages détail des véhicules ont déjà leur propre CTA WhatsApp
   // sticky sur mobile, donc on masque la bulle flottante sur ces pages.
   const hasOwnStickyCTA = /^\/vehicules\/[^/]+$/.test(pathname ?? "");
 
-  const whatsappMessage =
-    "Bonjour Ahmed Red Car, je souhaite avoir des informations.";
+  const whatsappMessage = t("whatsapp.defaultMessage");
 
   return (
     <a
       href={buildWhatsAppLink(whatsappMessage)}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Contacter Ahmed Red Car sur WhatsApp"
+      aria-label={t("whatsapp.ariaLabel")}
       className={`group fixed right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#22c55e] text-white shadow-2xl shadow-green-500/30 transition-all duration-300 hover:scale-110 hover:shadow-green-500/50 active:scale-95 sm:right-6 sm:h-16 sm:w-16 ${
         hasOwnStickyCTA ? "hidden sm:flex" : "flex"
       }`}

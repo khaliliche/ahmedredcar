@@ -59,6 +59,19 @@ export const translations = {
         { name: "Karim T.", text: "Deuxième location avec Ahmed Red Car, toujours au top pour les road trips au Maroc." },
       ],
     },
+    reviews: {
+      label: "Avis clients",
+      title: "Ce que nos clients disent de nous",
+      items: [
+        { name: "Hamid A.", rating: 5, text: "Meilleurs service de location, la livraison à temps et l'état de la voiture 👍🏻" },
+        { name: "Nawal E.", rating: 5, text: "Je vous remercie pour le service." },
+        { name: "Amine K.", rating: 4, text: "Voiture propre, prix correct, mais un petit retard au moment de la récupération." },
+        { name: "Fatima Z.", rating: 5, text: "Réservation facile via WhatsApp, l'équipe est très réactive. Je recommande !" },
+        { name: "Omar L.", rating: 4, text: "Bon rapport qualité-prix, la voiture avait juste besoin d'un petit nettoyage." },
+        { name: "Nadia R.", rating: 5, text: "Deuxième location cette année, toujours aussi sérieux et ponctuels." },
+        { name: "Hamza E.", rating: 4, text: "Service correct dans l'ensemble, quelques détails à améliorer sur la communication." },
+      ],
+    },
     contact: { title: "Contact", subtitle: "Une question, une réservation particulière ? Contactez-nous directement.", phone: "Téléphone", whatsapp: "WhatsApp", whatsappResponse: "Réponse rapide, 7j/7", serviceZone: "Zone de service", serviceZoneText: "Rabat, Casablanca, Marrakech et principales villes du Maroc" },
     footer: { rights: "Tous droits réservés. Conçu avec passion au Maroc." },
     whatsapp: { defaultMessage: "Bonjour Ahmed Red Car, je souhaite avoir des informations.", ariaLabel: "Contacter Ahmed Red Car sur WhatsApp" },
@@ -74,6 +87,9 @@ export const translations = {
       whatsappMessage: "Bonjour, je souhaite réserver le {brand} {model} ({price} DH/jour).",
     },
     languageToggle: { fr: "FR", en: "EN", ar: "AR" },
+    metadata: {
+      description: "Louez le véhicule idéal pour vos déplacements, vos voyages et vos aventures au Maroc. Flotte premium, prix transparents."
+    }
   },
   en: {
     nav: { home: "Home", vehicles: "Our Vehicles", howItWorks: "How It Works", about: "About", contact: "Contact", bookNow: "Book Now", openMenu: "Open menu", closeMenu: "Close menu" },
@@ -122,6 +138,19 @@ export const translations = {
         { name: "Youssef B.", text: "Flawless service, clean car picked up right on time. Highly recommend!" },
         { name: "Sara M.", text: "Super simple booking via WhatsApp, quick reply and clear pricing from the start." },
         { name: "Karim T.", text: "Second rental with Ahmed Red Car, always top-notch for road trips in Morocco." },
+      ],
+    },
+    reviews: {
+      label: "Customer Reviews",
+      title: "What our clients say about us",
+      items: [
+        { name: "Hamid A.", rating: 5, text: "Best car rental service, on-time delivery and the car was in great condition 👍🏻" },
+        { name: "Nawal E.", rating: 5, text: "Thank you for the great service." },
+        { name: "Amine K.", rating: 4, text: "Clean car, fair price, but a slight delay when picking it up." },
+        { name: "Fatima Z.", rating: 5, text: "Easy booking via WhatsApp, the team is very responsive. I recommend it!" },
+        { name: "Omar L.", rating: 4, text: "Good value for money, the car just needed a bit of cleaning." },
+        { name: "Nadia R.", rating: 5, text: "Second rental this year, always professional and on time." },
+        { name: "Hamza E.", rating: 4, text: "Overall decent service, a few things to improve on communication." },
       ],
     },
     contact: { title: "Contact", subtitle: "A question, a special booking request? Get in touch directly.", phone: "Phone", whatsapp: "WhatsApp", whatsappResponse: "Fast reply, 7 days a week", serviceZone: "Service area", serviceZoneText: "Rabat, Casablanca, Marrakech and Morocco's main cities" },
@@ -187,6 +216,19 @@ export const translations = {
         { name: "يوسف ب.", text: "خدمة ممتازة، سيارة نظيفة وتم استلامها في الوقت المحدد. أنصح بشدة!" },
         { name: "سارة م.", text: "حجز بسيط جدًا عبر واتساب، رد سريع وسعر واضح منذ البداية." },
         { name: "كريم ت.", text: "ثاني تجربة كراء مع Ahmed Red Car، دائمًا في المستوى للرحلات الطويلة في المغرب." },
+      ],
+    },
+    reviews: {
+      label: "آراء العملاء",
+      title: "ماذا يقول عملاؤنا عنا",
+      items: [
+        { name: "حميد أ.", rating: 5, text: "أفضل خدمة كراء سيارات، التسليم في الوقت المحدد وحالة السيارة ممتازة 👍🏻" },
+        { name: "نوال إ.", rating: 5, text: "أشكركم على الخدمة." },
+        { name: "أمين ك.", rating: 4, text: "سيارة نظيفة وسعر مناسب، لكن كان هناك تأخير بسيط عند الاستلام." },
+        { name: "فاطمة ز.", rating: 5, text: "الحجز سهل عبر واتساب، والفريق سريع الاستجابة. أنصح به!" },
+        { name: "عمر ل.", rating: 4, text: "قيمة جيدة مقابل السعر، السيارة كانت بحاجة فقط لتنظيف بسيط." },
+        { name: "نادية ر.", rating: 5, text: "ثاني تجربة كراء هذا العام، دائمًا محترفون ودقيقون في المواعيد." },
+        { name: "حمزة إ.", rating: 4, text: "خدمة جيدة بشكل عام، هناك بعض التفاصيل التي يمكن تحسينها في التواصل." },
       ],
     },
     contact: { title: "اتصل بنا", subtitle: "لديك سؤال أو طلب حجز خاص؟ تواصل معنا مباشرة.", phone: "الهاتف", whatsapp: "واتساب", whatsappResponse: "رد سريع، طوال أيام الأسبوع", serviceZone: "منطقة الخدمة", serviceZoneText: "الرباط، الدار البيضاء، مراكش وأهم مدن المغرب" },

@@ -84,7 +84,7 @@ body {
   animation: btn-shine-move 3s ease-in-out infinite;
 }
 @utility text-gradient {
-  background: linear-gradient(135deg, var(--color-red-primary), var(--color-brass));
+  background: linear-gradient(135deg, var(--color-red-primary), #ffffff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

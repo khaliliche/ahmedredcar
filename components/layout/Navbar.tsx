@@ -6,11 +6,13 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, Phone } from "lucide-react";
 import { siteConfig, buildWhatsAppLink } from "@/lib/site-config";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import LanguageToggle from "@/components/layout/LanguageToggle";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -32,9 +34,7 @@ export default function Navbar() {
     };
   }, [menuOpen]);
 
-  const whatsappMessage =
-    "Bonjour Ahmed Red Car, je souhaite avoir des informations.";
-
+  const whatsappMessage = t("whatsapp.defaultMessage");
   const phoneLink = `tel:${siteConfig.phone.replace(/\s/g, "")}`;
 
   return (
@@ -60,17 +60,46 @@ export default function Navbar() {
 
           {/* Navigation desktop */}
           <nav className="hidden items-center gap-8 lg:flex">
-            {siteConfig.nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group relative font-body text-sm font-medium text-white/80 transition-colors hover:text-white"
-              >
-                {item.label}
+            <Link
+              href="/"
+              className="group relative font-body text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("nav.home")}
 
-                <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-[var(--color-red-primary)] transition-all duration-300 group-hover:w-full" />
-              </Link>
-            ))}
+              <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-[var(--color-red-primary)] transition-all duration-300 group-hover:w-full" />
+            </Link>
+            <Link
+              href="/vehicules"
+              className="group relative font-body text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("nav.vehicles")}
+
+              <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-[var(--color-red-primary)] transition-all duration-300 group-hover:w-full" />
+            </Link>
+            <Link
+              href="/#comment-ca-marche"
+              className="group relative font-body text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("nav.howItWorks")}
+
+              <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-[var(--color-red-primary)] transition-all duration-300 group-hover:w-full" />
+            </Link>
+            <Link
+              href="/#a-propos"
+              className="group relative font-body text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("nav.about")}
+
+              <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-[var(--color-red-primary)] transition-all duration-300 group-hover:w-full" />
+            </Link>
+            <Link
+              href="/#contact"
+              className="group relative font-body text-sm font-medium text-white/80 transition-colors hover:text-white"
+            >
+              {t("nav.contact")}
+
+              <span className="absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-[var(--color-red-primary)] transition-all duration-300 group-hover:w-full" />
+            </Link>
           </nav>
 
           {/* Actions desktop */}
@@ -95,7 +124,7 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className="btn-shine rounded-full bg-[var(--color-red-primary)] px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-primary/30 transition-all hover:-translate-y-0.5 hover:bg-[var(--color-red-dark)] hover:shadow-red-primary/50"
             >
-              Réserver maintenant
+              {t("nav.bookNow")}
             </a>
           </div>
 
@@ -167,16 +196,41 @@ export default function Navbar() {
 
               {/* Navigation mobile */}
               <nav className="mt-10 flex flex-col gap-5">
-                {siteConfig.nav.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="font-display text-2xl font-bold text-white transition-colors hover:text-[var(--color-red-primary)]"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                <Link
+                  href="/"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-display text-2xl font-bold text-white transition-colors hover:text-[var(--color-red-primary)]"
+                >
+                  {t("nav.home")}
+                </Link>
+                <Link
+                  href="/vehicules"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-display text-2xl font-bold text-white transition-colors hover:text-[var(--color-red-primary)]"
+                >
+                  {t("nav.vehicles")}
+                </Link>
+                <Link
+                  href="/#comment-ca-marche"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-display text-2xl font-bold text-white transition-colors hover:text-[var(--color-red-primary)]"
+                >
+                  {t("nav.howItWorks")}
+                </Link>
+                <Link
+                  href="/#a-propos"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-display text-2xl font-bold text-white transition-colors hover:text-[var(--color-red-primary)]"
+                >
+                  {t("nav.about")}
+                </Link>
+                <Link
+                  href="/#contact"
+                  onClick={() => setMenuOpen(false)}
+                  className="font-display text-2xl font-bold text-white transition-colors hover:text-[var(--color-red-primary)]"
+                >
+                  {t("nav.contact")}
+                </Link>
               </nav>
 
               {/* Actions mobile */}
@@ -197,7 +251,7 @@ export default function Navbar() {
                   rel="noopener noreferrer"
                   className="w-full rounded-full bg-[var(--color-red-primary)] py-3.5 text-center font-semibold text-white shadow-lg transition-all hover:bg-[var(--color-red-dark)]"
                 >
-                  Réserver maintenant
+                  {t("nav.bookNow")}
                 </a>
               </div>
             </motion.div>

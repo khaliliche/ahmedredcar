@@ -3,8 +3,11 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import BookingBar from "@/components/home/BookingBar";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function Hero() {
+  const { t } = useLanguage();
+
   return (
     <section className="relative flex min-h-[100dvh] flex-col justify-center overflow-hidden px-6 pb-16 pt-28 sm:pt-32 lg:px-10">
       {/* Background gradient animé */}
@@ -29,7 +32,7 @@ export default function Hero() {
       />
 
       {/* Grand logo en fond, côté droit */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[62%] lg:block">
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[52%] lg:block">
         <Image
           src="/ahmed-redcar-logo.png"
           alt="Ahmed Red Car"
@@ -60,7 +63,7 @@ export default function Hero() {
             alt="Ahmed Red Car"
             width={400}
             height={220}
-            className="w-full max-w-[280px] sm:max-w-xs"
+            className="w-full max-w-[220px] sm:max-w-[260px]"
             style={{
               maskImage:
                 "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
@@ -78,18 +81,16 @@ export default function Hero() {
             className="order-2 max-w-xl lg:order-none"
           >
             <span className="mb-6 inline-block rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-[var(--color-red-primary)]">
-              Location de voitures au Maroc
+              {t("hero.badge")}
             </span>
 
             <h1 className="font-display text-5xl font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-7xl">
-              Roulez au Maroc <br />
-              <span className="text-gradient">en toute liberté.</span>
+              {t("hero.titleLine1")} <br />
+              <span className="text-gradient">{t("hero.titleHighlight")}</span>
             </h1>
 
             <p className="mt-6 max-w-md font-body text-lg leading-relaxed text-white/60">
-              Une flotte premium, des prix clairs, sans surprise. Réservez
-              votre véhicule en quelques clics et prenez la route dès
-              aujourd&apos;hui.
+              {t("hero.subtitle")}
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -97,14 +98,14 @@ export default function Hero() {
                 href="#vehicules"
                 className="btn-shine rounded-full bg-[var(--color-red-primary)] px-8 py-3.5 text-sm font-bold text-white shadow-xl shadow-red-primary/30 transition-all hover:-translate-y-1 hover:bg-[var(--color-red-dark)]"
               >
-                Voir les véhicules
+                {t("hero.ctaVehicles")}
               </a>
 
               <a
                 href="#contact"
                 className="rounded-full border border-white/20 bg-white/5 px-8 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition-all hover:-translate-y-1 hover:bg-white/10"
               >
-                Nous contacter
+                {t("hero.ctaContact")}
               </a>
             </div>
           </motion.div>

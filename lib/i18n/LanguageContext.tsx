@@ -56,20 +56,25 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+    // Also set a cookie for server-side reading
+    document.cookie = `ahmedredcar-lang=${language}; path=/; max-age=31536000`;
   }, [language]);
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     window.localStorage.setItem(STORAGE_KEY, lang);
+    // Set cookie as well
+    document.cookie = `ahmedredcar-lang=${lang}; path=/; max-age=31536000`;
   }, []);
 
   const t = useCallback(
     (path: string, options?: TranslateOptions) => {
       const value = getByPath(translations[language], path);
-      if (typeof value !== "string") {
-        return path;
+      if (typeof value === "string") {
+        return interpolate(value, options);
       }
-      return interpolate(value, options);
+      // Return the value as is (could be object, array, etc.)
+      return value;
     },
     [language]
   );
