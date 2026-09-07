@@ -6,14 +6,17 @@ import HowItWorks from "@/components/home/HowItWorks";
 import Testimonials from "@/components/home/Testimonials";
 import AboutSection from "@/components/home/AboutSection";
 import ContactSection from "@/components/home/ContactSection";
+import { getVehicles } from "@/lib/db";
 
-export default function Home() {
+export default async function Home() {
+  const vehicles = await getVehicles();
+
   return (
     <main>
       <Hero />
       <TrustIndicators />
       <FeaturedVehicles />
-      <TripFinder />
+      <TripFinder vehicles={vehicles} />
       <HowItWorks />
       <Testimonials />
       <AboutSection />

@@ -4,47 +4,43 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Building2, Waves, Mountain, Route, ArrowRight } from "lucide-react";
-import { vehicles } from "@/data/vehicles";
+import type { Vehicle } from "@/lib/db";
 
 const tripOptions = [
   {
     id: "ville",
     label: "En ville",
     icon: Building2,
-    slug: "renault-clio-5",
-    reason:
-      "Compacte et maniable, parfaite pour circuler et se garer facilement en ville.",
+    reason: "Compacte et maniable, parfaite pour circuler et se garer facilement en ville.",
   },
   {
     id: "plage",
     label: "À la plage",
     icon: Waves,
-    slug: "peugeot-208",
-    reason:
-      "Confortable et économique, idéale pour des trajets côtiers décontractés.",
+    reason: "Confortable et économique, idéale pour des trajets côtiers décontractés.",
   },
   {
     id: "montagne",
     label: "À la montagne",
     icon: Mountain,
-    slug: "dacia-duster",
-    reason:
-      "Confortable, spacieuse et adaptée aux longues routes et aux terrains variés.",
+    reason: "Confortable, spacieuse et adaptée aux longues routes et aux terrains variés.",
   },
   {
     id: "voyage",
     label: "Long voyage",
     icon: Route,
-    slug: "hyundai-tucson",
-    reason:
-      "Spacieux et confortable, conçu pour les longs trajets en toute sérénité.",
+    reason: "Spacieux et confortable, conçu pour les longs trajets en toute sérénité.",
   },
 ];
 
-export default function TripFinder() {
+export default function TripFinder({ vehicles }: { vehicles: Vehicle[] }) {
   const [selected, setSelected] = useState(tripOptions[0].id);
-  const option = tripOptions.find((o) => o.id === selected)!;
-  const vehicle = vehicles.find((v) => v.slug === option.slug)!;
+
+  if (vehicles.length === 0) return null;
+
+  const index = tripOptions.findIndex((o) => o.id === selected);
+  const option = tripOptions[index];
+  const vehicle = vehicles[index % vehicles.length];
 
   return (
     <section className="bg-[var(--color-charcoal)] py-16 sm:py-20">
