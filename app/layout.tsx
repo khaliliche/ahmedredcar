@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "Louez le véhicule idéal pour vos déplacements, vos voyages et vos aventures au Maroc. Flotte premium, prix transparents.",
   icons: {
     icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    apple: "/ahmed-redcar-logo.png",
   },
   manifest: "/manifest.json",
   appleWebApp: {

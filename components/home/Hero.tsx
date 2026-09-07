@@ -34,6 +34,7 @@ export default function Hero() {
           src="/ahmed-redcar-logo.png"
           alt="Ahmed Red Car"
           fill
+          sizes="62vw"
           className="object-contain object-center"
           style={{
             maskImage:

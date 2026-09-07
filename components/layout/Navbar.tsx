@@ -6,6 +6,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X, Phone } from "lucide-react";
 import { siteConfig, buildWhatsAppLink } from "@/lib/site-config";
+import LanguageToggle from "@/components/layout/LanguageToggle";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -74,6 +75,8 @@ export default function Navbar() {
 
           {/* Actions desktop */}
           <div className="hidden items-center gap-4 lg:flex">
+            <LanguageToggle variant="desktop" />
+
             <a
               href={phoneLink}
               className="flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
@@ -178,6 +181,8 @@ export default function Navbar() {
 
               {/* Actions mobile */}
               <div className="mt-auto flex flex-col gap-4">
+                <LanguageToggle variant="mobile" />
+
                 <a
                   href={phoneLink}
                   className="flex items-center gap-2 text-white/80 transition-colors hover:text-white"
