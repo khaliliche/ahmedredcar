@@ -5,16 +5,25 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { put } from "@vercel/blob";
 import { createVehicle, updateVehicle, deleteVehicle } from "@/lib/db";
+import { checkPassword, getExpectedSessionToken } from "@/lib/auth";
 
 export async function loginAction(formData: FormData) {
   const password = formData.get("password") as string;
 
-  if (password !== process.env.ADMIN_PASSWORD) {
+  const isValid = await checkPassword(password);
+  if (!isValid) {
+    redirect("/admin/login?error=1");
+  }
+
+  const sessionToken = await getExpectedSessionToken();
+  if (!sessionToken) {
+    // ADMIN_SESSION_SECRET missing server-side — refuse rather than
+    // issue a cookie middleware can never validate.
     redirect("/admin/login?error=1");
   }
 
   const cookieStore = await cookies();
-  cookieStore.set("admin_session", process.env.ADMIN_PASSWORD as string, {
+  cookieStore.set("admin_session", sessionToken, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
@@ -31,9 +40,27 @@ export async function logoutAction() {
   redirect("/admin/login");
 }
 
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
+const ALLOWED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]);
+
 async function uploadIfPresent(formData: FormData): Promise<string | null> {
   const file = formData.get("image") as File | null;
   if (!file || file.size === 0) return null;
+
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    throw new Error(
+      `Type de fichier non autorisé : ${file.type || "inconnu"}. Formats acceptés : JPEG, PNG, WEBP, GIF.`
+    );
+  }
+
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("Le fichier dépasse la taille maximale autorisée (5 Mo).");
+  }
 
   const blob = await put(`vehicles/${Date.now()}-${file.name}`, file, {
     access: "public",

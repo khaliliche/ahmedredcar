@@ -1,13 +1,15 @@
 import type { MetadataRoute } from "next";
-import { vehicles } from "@/data/vehicles";
+import { getVehicles } from "@/lib/db";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = "https://ahmedredcar.com";
 
   const staticRoutes = ["", "/vehicules"].map((path) => ({
     url: `${base}${path}`,
     lastModified: new Date(),
   }));
+
+  const vehicles = await getVehicles();
 
   const vehicleRoutes = vehicles.map((v) => ({
     url: `${base}/vehicules/${v.slug}`,

@@ -1,13 +1,22 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
+import { getExpectedSessionToken, timingSafeEqual } from "@/lib/auth";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/admin/login")) {
     return NextResponse.next();
   }
 
+  const expectedToken = await getExpectedSessionToken();
+
+  // Fail closed: if ADMIN_PASSWORD / ADMIN_SESSION_SECRET aren't set,
+  // deny access instead of letting everyone in.
+  if (!expectedToken) {
+    return NextResponse.redirect(new URL("/admin/login", request.url));
+  }
+
   const cookie = request.cookies.get("admin_session")?.value;
 
-  if (cookie !== process.env.ADMIN_PASSWORD) {
+  if (!cookie || !timingSafeEqual(cookie, expectedToken)) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
