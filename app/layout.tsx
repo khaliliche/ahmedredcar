@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFloat from "@/components/layout/WhatsAppFloat";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -50,10 +51,12 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${archivo.variable} ${inter.variable} antialiased`}>
-        <Navbar />
-        <div className="pt-[72px] lg:pt-0">{children}</div>
-        <Footer />
-        <WhatsAppFloat />
+        <LanguageProvider>
+          <Navbar />
+          <div className="pt-[72px] lg:pt-0">{children}</div>
+          <Footer />
+          <WhatsAppFloat />
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -5,52 +5,34 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Building2, Waves, Mountain, Route, ArrowRight } from "lucide-react";
 import type { Vehicle } from "@/lib/db";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-const tripOptions = [
-  {
-    id: "ville",
-    label: "En ville",
-    icon: Building2,
-    reason: "Compacte et maniable, parfaite pour circuler et se garer facilement en ville.",
-  },
-  {
-    id: "plage",
-    label: "À la plage",
-    icon: Waves,
-    reason: "Confortable et économique, idéale pour des trajets côtiers décontractés.",
-  },
-  {
-    id: "montagne",
-    label: "À la montagne",
-    icon: Mountain,
-    reason: "Confortable, spacieuse et adaptée aux longues routes et aux terrains variés.",
-  },
-  {
-    id: "voyage",
-    label: "Long voyage",
-    icon: Route,
-    reason: "Spacieux et confortable, conçu pour les longs trajets en toute sérénité.",
-  },
-];
+const tripOptionIcons = [
+  { id: "ville", icon: Building2 },
+  { id: "plage", icon: Waves },
+  { id: "montagne", icon: Mountain },
+  { id: "voyage", icon: Route },
+] as const;
 
 export default function TripFinder({ vehicles }: { vehicles: Vehicle[] }) {
-  const [selected, setSelected] = useState(tripOptions[0].id);
+  const { t } = useLanguage();
+  const [selected, setSelected] = useState<string>(tripOptionIcons[0].id);
 
   if (vehicles.length === 0) return null;
 
-  const index = tripOptions.findIndex((o) => o.id === selected);
-  const option = tripOptions[index];
+  const index = tripOptionIcons.findIndex((o) => o.id === selected);
+  const optionMeta = tripOptionIcons[index];
   const vehicle = vehicles[index % vehicles.length];
 
   return (
     <section className="bg-[var(--color-charcoal)] py-16 sm:py-20">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-10">
         <h2 className="font-display text-2xl font-extrabold text-white sm:text-3xl lg:text-4xl">
-          Quel voyage préparez-vous ?
+          {t("tripFinder.title")}
         </h2>
 
         <div className="mt-8 grid grid-cols-2 gap-px bg-white/10 sm:mt-10 sm:grid-cols-4">
-          {tripOptions.map((opt) => {
+          {tripOptionIcons.map((opt) => {
             const Icon = opt.icon;
             const active = opt.id === selected;
             return (
@@ -65,7 +47,7 @@ export default function TripFinder({ vehicles }: { vehicles: Vehicle[] }) {
                   size={20}
                   className={`mb-0.5 sm:size-[22px] ${active ? "text-[var(--color-red-primary)]" : ""}`}
                 />
-                {opt.label}
+                {t(`tripFinder.options.${opt.id}.label`)}
               </button>
             );
           })}
@@ -73,7 +55,7 @@ export default function TripFinder({ vehicles }: { vehicles: Vehicle[] }) {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={option.id}
+            key={optionMeta.id}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -82,13 +64,13 @@ export default function TripFinder({ vehicles }: { vehicles: Vehicle[] }) {
           >
             <div className="max-w-md">
               <p className="font-body text-xs text-white/50 sm:text-sm">
-                Nous vous recommandons
+                {t("tripFinder.recommend")}
               </p>
               <h3 className="mt-1 font-display text-xl font-bold text-white sm:text-2xl">
                 {vehicle.brand} {vehicle.model}
               </h3>
               <p className="mt-2 font-body text-sm leading-relaxed text-white/70 sm:mt-3">
-                {option.reason}
+                {t(`tripFinder.options.${optionMeta.id}.reason`)}
               </p>
             </div>
 
@@ -96,7 +78,7 @@ export default function TripFinder({ vehicles }: { vehicles: Vehicle[] }) {
               href={`/vehicules/${vehicle.slug}`}
               className="inline-flex h-12 shrink-0 items-center justify-center gap-2 border border-[var(--color-red-primary)] px-5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-red-primary)] active:scale-[0.98] sm:px-6"
             >
-              Voir ce véhicule
+              {t("tripFinder.seeVehicle")}
               <ArrowRight size={16} />
             </Link>
           </motion.div>

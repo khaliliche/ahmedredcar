@@ -28,8 +28,47 @@ export default function Hero() {
         }}
       />
 
+      {/* Grand logo en fond, côté droit */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[62%] lg:block">
+        <Image
+          src="/ahmed-redcar-logo.png"
+          alt="Ahmed Red Car"
+          fill
+          className="object-contain object-center"
+          style={{
+            maskImage:
+              "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
+          }}
+          priority
+        />
+      </div>
+
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-14">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-6">
+                  {/* Logo — mobile only, première chose vue sous la navbar */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative -mt-6 flex justify-center lg:hidden"
+        >
+          <Image
+            src="/ahmed-redcar-logo.png"
+            alt="Ahmed Red Car"
+            width={400}
+            height={220}
+            className="w-full max-w-[280px] sm:max-w-xs"
+            style={{
+              maskImage:
+                "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
+            }}
+            priority
+          />
+        </motion.div>
           {/* Texte */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -42,13 +81,14 @@ export default function Hero() {
             </span>
 
             <h1 className="font-display text-5xl font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-7xl">
-              Votre voyage <br />
-              <span className="text-gradient">commence ici.</span>
+              Roulez au Maroc <br />
+              <span className="text-gradient">en toute liberté.</span>
             </h1>
 
             <p className="mt-6 max-w-md font-body text-lg leading-relaxed text-white/60">
-              Louez le véhicule idéal pour vos déplacements, vos voyages et
-              vos aventures au Maroc. Flotte premium, prix transparents.
+              Une flotte premium, des prix clairs, sans surprise. Réservez
+              votre véhicule en quelques clics et prenez la route dès
+              aujourd&apos;hui.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -68,30 +108,8 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{
-              duration: 1,
-              delay: 0.2,
-              ease: "easeOut",
-            }}
-            className="order-1 relative flex items-center justify-center lg:order-none lg:justify-end"
-          >
-            <div className="absolute h-72 w-72 rounded-full bg-[var(--color-red-primary)]/30 blur-[80px]" />
-
-            <div className="relative rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm">
-              <Image
-                src="/ahmed-redcar-logo.png"
-                alt="Ahmed Red Car"
-                width={400}
-                height={220}
-                className="relative w-full max-w-xs drop-shadow-2xl sm:max-w-sm"
-                priority
-              />
-            </div>
-          </motion.div>
+          {/* Colonne vide à droite — le grand logo est en arrière-plan */}
+          <div className="hidden lg:block" aria-hidden="true" />
         </div>
 
         {/* Barre de réservation */}
