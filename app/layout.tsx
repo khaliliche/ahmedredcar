@@ -1,9 +1,7 @@
 ﻿import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import WhatsAppFloat from "@/components/layout/WhatsAppFloat";
+import SiteChrome from "@/components/layout/SiteChrome";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 
 const archivo = Archivo({
@@ -52,10 +50,7 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${archivo.variable} ${inter.variable} antialiased`}>
         <LanguageProvider>
-          <Navbar />
-          <div className="pt-[72px] lg:pt-0">{children}</div>
-          <Footer />
-          <WhatsAppFloat />
+          <SiteChrome>{children}</SiteChrome>
         </LanguageProvider>
       </body>
     </html>

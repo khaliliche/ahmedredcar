@@ -17,7 +17,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative bg-[var(--color-ink)] pt-16 pb-8 overflow-hidden">
+    <footer className="relative bg-[var(--color-ink)] pt-10 pb-8 sm:pt-16 overflow-hidden">
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--color-red-primary)] to-transparent" />
 
@@ -30,7 +30,7 @@ export default function Footer() {
             height={50}
             className="h-10 w-auto object-contain opacity-90"
           />
-          <nav className="flex flex-wrap justify-center gap-8">
+          <nav className="flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-8">
             {navItems.map((item) => (
               <Link
                 key={item.href}

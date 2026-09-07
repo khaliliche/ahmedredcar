@@ -1,9 +1,13 @@
+
 import { Phone, MapPin, MessageCircle } from "lucide-react";
 import { siteConfig, buildWhatsAppLink } from "@/lib/site-config";
 
 export default function ContactSection() {
   return (
-    <section id="contact" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-10">
+    <section
+      id="contact"
+      className="mx-auto max-w-6xl px-4 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-12 lg:px-10"
+    >
       <div className="max-w-lg">
         <h2 className="font-display text-2xl font-extrabold text-[var(--color-ink)] sm:text-3xl lg:text-4xl">
           Contact
@@ -21,7 +25,10 @@ export default function ContactSection() {
           href={`tel:${siteConfig.phone.replace(/\s/g, "")}`}
           className="group flex flex-col items-start gap-3 border-t-2 border-[var(--color-red-primary)] bg-[var(--color-mist)] p-5 transition-colors hover:bg-white sm:p-6"
         >
-          <Phone className="text-[var(--color-red-primary)]" size={22} />
+          <Phone
+            className="text-[var(--color-red-primary)]"
+            size={22}
+          />
 
           <span className="font-display font-bold text-[var(--color-ink)]">
             Téléphone
@@ -41,7 +48,10 @@ export default function ContactSection() {
           rel="noopener noreferrer"
           className="group flex flex-col items-start gap-3 border-t-2 border-[var(--color-red-primary)] bg-[var(--color-mist)] p-5 transition-colors hover:bg-white sm:p-6"
         >
-          <MessageCircle className="text-[var(--color-red-primary)]" size={22} />
+          <MessageCircle
+            className="text-[var(--color-red-primary)]"
+            size={22}
+          />
 
           <span className="font-display font-bold text-[var(--color-ink)]">
             WhatsApp
@@ -54,7 +64,10 @@ export default function ContactSection() {
 
         {/* Zone de service */}
         <div className="flex flex-col items-start gap-3 border-t-2 border-[var(--color-brass)] bg-[var(--color-mist)] p-5 sm:p-6">
-          <MapPin className="text-[var(--color-brass)]" size={22} />
+          <MapPin
+            className="text-[var(--color-brass)]"
+            size={22}
+          />
 
           <span className="font-display font-bold text-[var(--color-ink)]">
             Zone de service

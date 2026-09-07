@@ -1,5 +1,4 @@
-﻿
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -24,7 +23,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
             />
           ) : (
             <div className="flex h-full items-center justify-center font-body text-sm text-black/40">
-              {t("vehiclesPage.noImage")}
+              {t("common.noPhoto")}
             </div>
           )}
         </div>
@@ -47,7 +46,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
               </span>
 
               <span className="block font-body text-xs text-black/50">
-                {t("vehicle.perDay")}
+                {t("vehicleDetail.perDay")}
               </span>
             </div>
           </div>
@@ -59,7 +58,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           )}
 
           <div className="mt-5 flex items-center gap-2 font-body text-sm font-semibold text-[var(--color-red-primary)]">
-            {t("featured.viewVehicle")}
+            {t("common.seeVehicle")}
             <ArrowRight
               size={16}
               className="transition-transform duration-300 group-hover:translate-x-1"
@@ -70,4 +69,3 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
     </article>
   );
 }
-

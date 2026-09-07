@@ -40,10 +40,8 @@ export default function Navbar() {
     <>
       {/* Header */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "glass-dark shadow-lg shadow-black/10"
-            : "bg-transparent"
+        className={`fixed top-0 left-0 right-0 z-50 glass-dark transition-shadow duration-500 ${
+          scrolled ? "shadow-lg shadow-black/10" : ""
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
