@@ -3,13 +3,15 @@ import { Archivo, Inter } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "@/components/layout/SiteChrome";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
-import { cookies } from 'next/headers';
+import { siteConfig } from "@/lib/site-config";
+import { cookies } from "next/headers";
+import type { Language } from "@/lib/i18n/translations";
 
 const archivo = Archivo({
   subsets: ["latin"],
   variable: "--font-archivo",
   weight: ["600", "700", "800"],
-  display: "swap"
+  display: "swap",
 });
 
 const inter = Inter({
@@ -17,7 +19,7 @@ const inter = Inter({
   variable: "--font-inter",
   weight: ["400", "500", "600"],
   display: "swap",
-);
+});
 
 // Helper function to get a value from an object using a dot-separated path.
 function getByPath(obj: unknown, path: string): unknown {
@@ -30,23 +32,29 @@ function getByPath(obj: unknown, path: string): unknown {
     );
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const cookieStore = await cookies()
-  const lang = cookieStore.get('ahmedredcar-lang')?.value || 'fr'
+const SUPPORTED_LANGUAGES: Language[] = ["fr", "en", "ar"];
 
-  // Import the translations module.
-  const { translations } = await import('@/lib/i18n/translations');
+async function getServerLanguage(): Promise<Language> {
+  const cookieStore = await cookies();
+  const value = cookieStore.get("ahmedredcar-lang")?.value;
+  return SUPPORTED_LANGUAGES.includes(value as Language) ? (value as Language) : "fr";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getServerLanguage();
+
+  const { translations } = await import("@/lib/i18n/translations");
   const t = (path: string) => {
-    const value = getByPath(translations[lang as keyof typeof translations], path);
-    if (typeof value !== 'string') {
+    const value = getByPath(translations[lang], path);
+    if (typeof value !== "string") {
       return path;
     }
     return value;
   };
 
   return {
-    title: `${t('siteConfig.name')} | ${t('siteConfig.tagline')}`,
-    description: t('metadata.description'),
+    title: `${siteConfig.name} | ${t("metadata.title")}`,
+    description: t("metadata.description"),
     icons: {
       icon: "/favicon.ico",
       apple: "/ahmed-redcar-logo.png",
@@ -55,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
-      title: t('siteConfig.name'),
+      title: siteConfig.name,
     },
   };
 }
@@ -67,18 +75,17 @@ export const viewport: Viewport = {
   themeColor: "#0B0A08",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = cookies()
-  const lang = cookieStore.get('ahmedredcar-lang')?.value || 'fr'
+  const lang = await getServerLanguage();
 
   return (
     <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"}>
       <body className={`${archivo.variable} ${inter.variable} antialiased`}>
-        <LanguageProvider>
+        <LanguageProvider initialLanguage={lang}>
           <SiteChrome>{children}</SiteChrome>
         </LanguageProvider>
       </body>
