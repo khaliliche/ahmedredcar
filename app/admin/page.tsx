@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { getVehicles } from "@/lib/db";
 import { deleteVehicleAction, logoutAction } from "@/app/admin/actions";
 
@@ -13,6 +13,13 @@ export default async function AdminDashboard() {
         </h1>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/admin/reservations"
+            className="rounded-lg border border-black/15 px-4 py-2 text-sm font-semibold"
+          >
+            Réservations
+          </Link>
+
           <Link
             href="/admin/new"
             className="rounded-lg bg-[var(--color-red-primary)] px-4 py-2 text-sm font-semibold text-white"

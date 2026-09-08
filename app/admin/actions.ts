@@ -1,10 +1,10 @@
-﻿"use server";
+"use server";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { put } from "@vercel/blob";
-import { createVehicle, updateVehicle, deleteVehicle } from "@/lib/db";
+import { createVehicle, updateVehicle, deleteVehicle, updateReservationStatus, deleteReservation, type ReservationStatus } from "@/lib/db";
 import { checkPassword, getExpectedSessionToken } from "@/lib/auth";
 
 export async function loginAction(formData: FormData) {
@@ -17,8 +17,6 @@ export async function loginAction(formData: FormData) {
 
   const sessionToken = await getExpectedSessionToken();
   if (!sessionToken) {
-    // ADMIN_SESSION_SECRET missing server-side — refuse rather than
-    // issue a cookie middleware can never validate.
     redirect("/admin/login?error=1");
   }
 
@@ -40,7 +38,7 @@ export async function logoutAction() {
   redirect("/admin/login");
 }
 
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -109,4 +107,14 @@ export async function updateVehicleAction(id: number, formData: FormData) {
 export async function deleteVehicleAction(id: number) {
   await deleteVehicle(id);
   revalidateAll();
+}
+
+export async function updateReservationStatusAction(id: number, status: ReservationStatus) {
+  await updateReservationStatus(id, status);
+  revalidatePath("/admin/reservations");
+}
+
+export async function deleteReservationAction(id: number) {
+  await deleteReservation(id);
+  revalidatePath("/admin/reservations");
 }

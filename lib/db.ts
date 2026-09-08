@@ -1,4 +1,4 @@
-﻿import { sql } from "@vercel/postgres";
+import { sql } from "@vercel/postgres";
 
 export type Vehicle = {
   id: number;
@@ -8,6 +8,22 @@ export type Vehicle = {
   price_per_day: number;
   description: string | null;
   image_url: string | null;
+  created_at: string;
+};
+
+export type ReservationStatus = "pending" | "contacted" | "confirmed" | "cancelled";
+
+export type Reservation = {
+  id: number;
+  vehicle_id: number | null;
+  vehicle_label: string;
+  full_name: string;
+  age: number;
+  cin_number: string;
+  license_issue_date: string;
+  start_date: string;
+  end_date: string;
+  status: ReservationStatus;
   created_at: string;
 };
 
@@ -83,4 +99,43 @@ export async function updateVehicle(
 
 export async function deleteVehicle(id: number) {
   await sql`DELETE FROM vehicles WHERE id = ${id}`;
+}
+
+export async function createReservation(data: {
+  vehicle_id: number;
+  vehicle_label: string;
+  full_name: string;
+  age: number;
+  cin_number: string;
+  license_issue_date: string;
+  start_date: string;
+  end_date: string;
+}): Promise<Reservation> {
+  const { rows } = await sql<Reservation>`
+    INSERT INTO reservations
+      (vehicle_id, vehicle_label, full_name, age, cin_number, license_issue_date, start_date, end_date)
+    VALUES
+      (${data.vehicle_id}, ${data.vehicle_label}, ${data.full_name}, ${data.age},
+       ${data.cin_number}, ${data.license_issue_date}, ${data.start_date}, ${data.end_date})
+    RETURNING *
+  `;
+  return rows[0];
+}
+
+export async function getReservations(): Promise<Reservation[]> {
+  const { rows } = await sql<Reservation>`SELECT * FROM reservations ORDER BY created_at DESC`;
+  return rows;
+}
+
+export async function getReservationById(id: number): Promise<Reservation | null> {
+  const { rows } = await sql<Reservation>`SELECT * FROM reservations WHERE id = ${id} LIMIT 1`;
+  return rows[0] ?? null;
+}
+
+export async function updateReservationStatus(id: number, status: ReservationStatus) {
+  await sql`UPDATE reservations SET status = ${status} WHERE id = ${id}`;
+}
+
+export async function deleteReservation(id: number) {
+  await sql`DELETE FROM reservations WHERE id = ${id}`;
 }

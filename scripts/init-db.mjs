@@ -1,4 +1,4 @@
-﻿import { readFileSync } from "fs";
+import { readFileSync } from "fs";
 
 const raw = readFileSync(".env.local", "utf8");
 const env = Object.fromEntries(
@@ -31,4 +31,22 @@ await sql`
   )
 `;
 
-console.log("Table ready.");
+await sql`DROP TABLE IF EXISTS reservations`;
+
+await sql`
+  CREATE TABLE reservations (
+    id SERIAL PRIMARY KEY,
+    vehicle_id INTEGER REFERENCES vehicles(id) ON DELETE SET NULL,
+    vehicle_label TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    age INTEGER NOT NULL,
+    cin_number TEXT NOT NULL,
+    license_issue_date DATE NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )
+`;
+
+console.log("Tables ready.");

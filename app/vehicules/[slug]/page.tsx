@@ -1,10 +1,10 @@
-﻿import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { getVehicles, getVehicleBySlug } from "@/lib/db";
-import { buildWhatsAppLink } from "@/lib/site-config";
+import ReservationSection from "@/components/vehicules/ReservationSection";
 
 export async function generateStaticParams() {
   const vehicles = await getVehicles();
@@ -40,8 +40,6 @@ export default async function VehiclePage({
   if (!vehicle) {
     notFound();
   }
-
-  const whatsappMessage = `Bonjour, je souhaite reserver le ${vehicle.brand} ${vehicle.model} (${vehicle.price_per_day} DH/jour).`;
 
   return (
     <main className="pb-28 pt-32 sm:pb-20">
@@ -94,27 +92,9 @@ export default async function VehiclePage({
               </div>
             )}
 
-            <a
-              href={buildWhatsAppLink(whatsappMessage)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden items-center justify-center bg-[var(--color-red-primary)] px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-red-dark)] sm:inline-flex"
-            >
-              Reserver ce vehicule via WhatsApp
-            </a>
+            <ReservationSection vehicle={vehicle} />
           </div>
         </div>
-      </div>
-
-      <div className="safe-bottom fixed bottom-0 left-0 right-0 z-40 border-t border-black/5 bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] sm:hidden">
-        <a
-          href={buildWhatsAppLink(whatsappMessage)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-red-primary)] text-sm font-bold text-white transition-all active:scale-[0.98]"
-        >
-          Reserver via WhatsApp - {vehicle.price_per_day} DH/j
-        </a>
       </div>
     </main>
   );

@@ -87,9 +87,10 @@ export const translations = {
       whatsappMessage: "Bonjour, je souhaite réserver le {brand} {model} ({price} DH/jour).",
     },
     languageToggle: { fr: "FR", en: "EN", ar: "AR" },
-    metadata: {
-      description: "Louez le véhicule idéal pour vos déplacements, vos voyages et vos aventures au Maroc. Flotte premium, prix transparents."
-    }
+        metadata: {
+      title: "Location de voitures au Maroc",
+      description: "Louez le véhicule idéal pour vos déplacements, vos voyages et vos aventures au Maroc. Flotte premium, prix transparents.",
+    },
   },
   en: {
     nav: { home: "Home", vehicles: "Our Vehicles", howItWorks: "How It Works", about: "About", contact: "Contact", bookNow: "Book Now", openMenu: "Open menu", closeMenu: "Close menu" },
@@ -167,7 +168,11 @@ export const translations = {
       seeAll: "View all vehicles",
       whatsappMessage: "Hello, I'd like to book the {brand} {model} ({price} DH/day).",
     },
-    languageToggle: { fr: "FR", en: "EN", ar: "AR" },
+        languageToggle: { fr: "FR", en: "EN", ar: "AR" },
+    metadata: {
+      title: "Car rental in Morocco",
+      description: "Rent the ideal vehicle for your travels and adventures across Morocco. Premium fleet, transparent pricing.",
+    },
   },
   ar: {
     nav: { home: "الرئيسية", vehicles: "سياراتنا", howItWorks: "كيف يعمل", about: "من نحن", contact: "اتصل بنا", bookNow: "احجز الآن", openMenu: "فتح القائمة", closeMenu: "إغلاق القائمة" },
@@ -245,7 +250,11 @@ export const translations = {
       seeAll: "شاهد جميع السيارات",
       whatsappMessage: "مرحبًا، أرغب في حجز {brand} {model} ({price} درهم/يوم).",
     },
-    languageToggle: { fr: "FR", en: "EN", ar: "AR" },
+        languageToggle: { fr: "FR", en: "EN", ar: "AR" },
+    metadata: {
+      title: "كراء السيارات في المغرب",
+      description: "استأجر السيارة المثالية لتنقلاتك ورحلاتك ومغامراتك في المغرب. أسطول متميز وأسعار شفافة.",
+    },
   },
 } as const;
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useMotionValue, useAnimationFrame } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { useAnimationFrame } from "framer-motion";
 import { Star } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 
 const SPEED_PX_PER_SEC = 36;
+const RESUME_DELAY_MS = 1200;
 
 type ReviewItem = {
   name: string;
@@ -16,46 +17,60 @@ type ReviewItem = {
 
 export default function Reviews() {
   const { t, language, dir } = useLanguage();
-  const items = [...translations[language].reviews.items];
+  const items: ReviewItem[] = [...translations[language].reviews.items];
   const loopItems = [...items, ...items];
 
   const trackRef = useRef<HTMLDivElement>(null);
   const halfWidthRef = useRef(0);
-  const hasMeasured = useRef(false);
-  const isInteracting = useRef(false);
-  const x = useMotionValue(0);
+  const isInteractingRef = useRef(false);
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    halfWidthRef.current = track.scrollWidth / 2;
+    track.scrollLeft = track.scrollLeft % halfWidthRef.current || 1;
+  }, [language]);
 
   useAnimationFrame((_, delta) => {
     const track = trackRef.current;
     if (!track) return;
 
-    if (!hasMeasured.current) {
+    if (halfWidthRef.current <= 0) {
       halfWidthRef.current = track.scrollWidth / 2;
-      x.set(-halfWidthRef.current);
-      hasMeasured.current = true;
     }
-
-    if (isInteracting.current) return;
-
     const half = halfWidthRef.current;
     if (half <= 0) return;
+
+    if (isInteractingRef.current) return;
 
     const prefersReducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
 
-    let next = x.get() + (SPEED_PX_PER_SEC * delta) / 1000;
-    if (next >= 0) next -= half;
-    x.set(next);
+    let next = track.scrollLeft + (SPEED_PX_PER_SEC * delta) / 1000;
+    if (next >= half) next -= half;
+    track.scrollLeft = next;
   });
 
-  const normalize = () => {
-    const half = halfWidthRef.current;
-    if (half <= 0) return;
-    let value = x.get() % half;
-    if (value > 0) value -= half;
-    x.set(value);
+  const pause = () => {
+    isInteractingRef.current = true;
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+  };
+
+  const scheduleResume = () => {
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = setTimeout(() => {
+      const track = trackRef.current;
+      const half = halfWidthRef.current;
+      if (track && half > 0) {
+        let value = track.scrollLeft % half;
+        if (value < 0) value += half;
+        track.scrollLeft = value;
+      }
+      isInteractingRef.current = false;
+    }, RESUME_DELAY_MS);
   };
 
   return (
@@ -74,26 +89,18 @@ export default function Reviews() {
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[var(--color-mist)] to-transparent sm:w-24" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[var(--color-mist)] to-transparent sm:w-24" />
 
-        <motion.div
+        <div
           ref={trackRef}
-          className="flex w-max cursor-grab gap-5 px-6 active:cursor-grabbing sm:gap-6 sm:px-10"
-          style={{ x }}
-          drag="x"
-          dragMomentum={false}
-          dragElastic={0.06}
-          onPointerEnter={() => {
-            isInteracting.current = true;
-          }}
-          onPointerLeave={() => {
-            isInteracting.current = false;
-          }}
-          onDragStart={() => {
-            isInteracting.current = true;
-          }}
-          onDragEnd={() => {
-            normalize();
-            isInteracting.current = false;
-          }}
+          dir="ltr"
+          className="reviews-track flex gap-5 overflow-x-auto px-6 sm:gap-6 sm:px-10"
+          onPointerDown={pause}
+          onPointerUp={scheduleResume}
+          onPointerCancel={scheduleResume}
+          onTouchStart={pause}
+          onTouchEnd={scheduleResume}
+          onMouseEnter={pause}
+          onMouseLeave={scheduleResume}
+          onWheel={pause}
         >
           {loopItems.map((item, index) => (
             <ReviewTicket
@@ -104,7 +111,7 @@ export default function Reviews() {
               dir={dir}
             />
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
