@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   createContext,
@@ -38,19 +38,32 @@ function getByPath(obj: unknown, path: string): unknown {
 function interpolate(value: string, options?: TranslateOptions): string {
   if (!options) return value;
   return Object.entries(options).reduce(
-    (str, [key, val]) => str.replaceAll(`{${key}}`, String(val)),
+    (str, [key, val]) => str.replaceAll(`${key}`, String(val)),
     value
   );
 }
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("fr");
+export function LanguageProvider({
+  children,
+  initialLanguage,
+}: {
+  children: ReactNode;
+  initialLanguage?: Language;
+}) {
+  const [language, setLanguageState] = useState<Language>(
+    initialLanguage ?? "fr"
+  );
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY) as Language | null;
-    if (stored === "fr" || stored === "en" || stored === "ar") {
+    if (
+      (stored === "fr" || stored === "en" || stored === "ar") &&
+      stored !== initialLanguage
+    ) {
       setLanguageState(stored);
     }
+    // Only run on mount - initialLanguage is the SSR-provided source of truth
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -73,8 +86,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (typeof value === "string") {
         return interpolate(value, options);
       }
-      // Return the value as is (could be object, array, etc.)
-      return value;
+      // Missing or non-string key: fall back to the path itself
+      return path;
     },
     [language]
   );
