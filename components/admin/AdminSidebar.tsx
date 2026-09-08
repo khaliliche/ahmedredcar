@@ -75,7 +75,7 @@ export default function AdminSidebar({
         </form>
       </aside>
 
-      <div className="flex items-center gap-2 overflow-x-auto border-b border-black/10 bg-[var(--color-charcoal)] px-3 py-3 lg:hidden">
+      <div className="sticky top-0 z-30 flex items-center gap-2 overflow-x-auto border-b border-black/10 bg-[var(--color-charcoal)] px-3 py-2.5 lg:hidden">
         {NAV.map(({ key, href, label, icon: Icon }) => (
           <Link
             key={key}

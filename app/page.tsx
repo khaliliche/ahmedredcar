@@ -1,4 +1,5 @@
 ﻿﻿import Hero from "@/components/home/Hero";
+import DeliveryBanner from "@/components/home/DeliveryBanner";
 import TrustIndicators from "@/components/home/TrustIndicators";
 import FeaturedVehicles from "@/components/home/FeaturedVehicles";
 import TripFinder from "@/components/home/TripFinder";
@@ -14,6 +15,7 @@ export default async function Home() {
   return (
     <main>
       <Hero />
+      <DeliveryBanner />
       <TrustIndicators />
       <FeaturedVehicles />
       <TripFinder vehicles={vehicles} />
