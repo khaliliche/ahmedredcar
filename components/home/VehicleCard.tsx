@@ -42,7 +42,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
 
             <div className="shrink-0 text-right">
               <span className="font-display text-lg font-extrabold text-[var(--color-ink)]">
-                {vehicle.price_per_day} €
+                {vehicle.price_per_day} DH
               </span>
 
               <span className="block font-body text-xs text-black/50">

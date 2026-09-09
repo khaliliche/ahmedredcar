@@ -1,4 +1,4 @@
-export type Language = "fr" | "en" | "ar";
+﻿export type Language = "fr" | "en" | "ar";
 
 export const translations = {
   fr: {
@@ -12,7 +12,7 @@ export const translations = {
       openMenu: "Ouvrir le menu",
       closeMenu: "Fermer le menu",
     },
-    common: { noPhoto: "Pas de photo", seeVehicle: "Voir le véhicule", dayShort: "j" },
+    common: { noPhoto: "Pas de photo", seeVehicle: "Voir le véhicule", dayShort: "j", close: "Fermer" },
     hero: {
       badge: "Location de voitures à Rabat & Salé",
       titleLine1: "Votre voyage",
@@ -87,15 +87,34 @@ export const translations = {
       seeAll: "Voir tous les véhicules",
       whatsappMessage: "Bonjour, je souhaite réserver le {brand} {model} ({price} DH/jour).",
     },
+    reservation: {
+      modalTitleReserve: "Réserver",
+      reserveButton: "Réserver ce véhicule",
+      fullName: "Nom complet",
+      age: "Âge",
+      cinNumber: "Numéro de carte nationale (CIN)",
+      licenseIssueDate: "Date d'obtention du permis",
+      startDate: "Du",
+      endDate: "Au",
+      confirmSend: "Confirmer et envoyer sur WhatsApp",
+      sending: "Envoi...",
+    },
+    reservationErrors: {
+      missingFields: "Veuillez remplir tous les champs.",
+      invalidAge: "L'âge doit être compris entre 18 et 99 ans.",
+      invalidDateRange: "La date de retour doit être après la date de départ.",
+      licenseDateInFuture: "La date d'obtention du permis ne peut pas être dans le futur.",
+      vehicleNotFound: "Véhicule introuvable.",
+    },
     languageToggle: { fr: "FR", en: "EN", ar: "AR" },
-        metadata: {
+    metadata: {
       title: "Location de voitures à Rabat & Salé",
       description: "Louez le véhicule idéal pour vos déplacements à Rabat et Salé. Flotte premium, prix transparents.",
     },
   },
   en: {
     nav: { home: "Home", vehicles: "Our Vehicles", howItWorks: "How It Works", about: "About", contact: "Contact", bookNow: "Book Now", openMenu: "Open menu", closeMenu: "Close menu" },
-    common: { noPhoto: "No photo", seeVehicle: "View vehicle", dayShort: "d" },
+    common: { noPhoto: "No photo", seeVehicle: "View vehicle", dayShort: "d", close: "Close" },
     hero: {
       badge: "Car rental in Rabat & Salé",
       titleLine1: "Your journey",
@@ -170,7 +189,26 @@ export const translations = {
       seeAll: "View all vehicles",
       whatsappMessage: "Hello, I'd like to book the {brand} {model} ({price} DH/day).",
     },
-        languageToggle: { fr: "FR", en: "EN", ar: "AR" },
+    reservation: {
+      modalTitleReserve: "Book",
+      reserveButton: "Book this vehicle",
+      fullName: "Full name",
+      age: "Age",
+      cinNumber: "National ID number (CIN)",
+      licenseIssueDate: "Driving license issue date",
+      startDate: "From",
+      endDate: "To",
+      confirmSend: "Confirm and send via WhatsApp",
+      sending: "Sending...",
+    },
+    reservationErrors: {
+      missingFields: "Please fill in all fields.",
+      invalidAge: "Age must be between 18 and 99.",
+      invalidDateRange: "The return date must be after the pick-up date.",
+      licenseDateInFuture: "The license issue date cannot be in the future.",
+      vehicleNotFound: "Vehicle not found.",
+    },
+    languageToggle: { fr: "FR", en: "EN", ar: "AR" },
     metadata: {
       title: "Car rental in Rabat & Salé",
       description: "Rent the ideal vehicle for your trips in Rabat and Salé. Premium fleet, transparent pricing.",
@@ -178,7 +216,7 @@ export const translations = {
   },
   ar: {
     nav: { home: "الرئيسية", vehicles: "سياراتنا", howItWorks: "كيف يعمل", about: "من نحن", contact: "اتصل بنا", bookNow: "احجز الآن", openMenu: "فتح القائمة", closeMenu: "إغلاق القائمة" },
-    common: { noPhoto: "لا توجد صورة", seeVehicle: "عرض السيارة", dayShort: "ي" },
+    common: { noPhoto: "لا توجد صورة", seeVehicle: "عرض السيارة", dayShort: "ي", close: "إغلاق" },
     hero: {
       badge: "كراء السيارات في الرباط وسلا",
       titleLine1: "رحلتك",
@@ -253,7 +291,26 @@ export const translations = {
       seeAll: "شاهد جميع السيارات",
       whatsappMessage: "مرحبًا، أرغب في حجز {brand} {model} ({price} درهم/يوم).",
     },
-        languageToggle: { fr: "FR", en: "EN", ar: "AR" },
+    reservation: {
+      modalTitleReserve: "احجز",
+      reserveButton: "احجز هذه السيارة",
+      fullName: "الاسم الكامل",
+      age: "العمر",
+      cinNumber: "رقم البطاقة الوطنية (CIN)",
+      licenseIssueDate: "تاريخ الحصول على رخصة القيادة",
+      startDate: "من",
+      endDate: "إلى",
+      confirmSend: "تأكيد والإرسال عبر واتساب",
+      sending: "جارٍ الإرسال...",
+    },
+    reservationErrors: {
+      missingFields: "يرجى ملء جميع الحقول.",
+      invalidAge: "يجب أن يكون العمر بين 18 و99 سنة.",
+      invalidDateRange: "يجب أن يكون تاريخ العودة بعد تاريخ الانطلاق.",
+      licenseDateInFuture: "لا يمكن أن يكون تاريخ الحصول على رخصة القيادة في المستقبل.",
+      vehicleNotFound: "السيارة غير موجودة.",
+    },
+    languageToggle: { fr: "FR", en: "EN", ar: "AR" },
     metadata: {
       title: "كراء السيارات في الرباط وسلا",
       description: "استأجر السيارة المثالية لتنقلاتك في الرباط وسلا. أسطول متميز وأسعار شفافة.",

@@ -14,14 +14,17 @@ const env = Object.fromEntries(
     })
 );
 
-process.env.POSTGRES_URL = env.POSTGRES_URL;
+process.env.DATABASE_URL = env.DATABASE_URL;
 
-const url = new URL(env.POSTGRES_URL);
+const url = new URL(env.DATABASE_URL);
 console.log("Connected host:", url.hostname);
 
-const { sql } = await import("@vercel/postgres");
+const { default: postgres } = await import("postgres");
+const sql = postgres(process.env.DATABASE_URL, { ssl: "require" });
 
 const { rows } = await sql`
   SELECT column_name FROM information_schema.columns WHERE table_name = 'reservations'
 `;
 console.log("reservations columns:", rows.map(r => r.column_name));
+
+await sql.end();

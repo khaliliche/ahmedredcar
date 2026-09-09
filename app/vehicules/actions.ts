@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { createReservation, getVehicleById } from "@/lib/db";
 
@@ -14,7 +14,7 @@ type WhatsAppData = {
 
 type ActionResult =
   | { success: true; whatsappData: WhatsAppData }
-  | { success: false; error: string };
+  | { success: false; errorCode: string };
 
 export async function createReservationAction(
   formData: FormData
@@ -28,21 +28,21 @@ export async function createReservationAction(
   const endDate = String(formData.get("end_date") || "");
 
   if (!vehicleId || !fullName || !cinNumber || !licenseIssueDate || !startDate || !endDate) {
-    return { success: false, error: "Veuillez remplir tous les champs." };
+    return { success: false, errorCode: "missingFields" };
   }
   if (!Number.isFinite(age) || age < 18 || age > 99) {
-    return { success: false, error: "L'âge doit être compris entre 18 et 99 ans." };
+    return { success: false, errorCode: "invalidAge" };
   }
   if (new Date(endDate) <= new Date(startDate)) {
-    return { success: false, error: "La date de retour doit être après la date de départ." };
+    return { success: false, errorCode: "invalidDateRange" };
   }
   if (new Date(licenseIssueDate) > new Date()) {
-    return { success: false, error: "La date d'obtention du permis ne peut pas être dans le futur." };
+    return { success: false, errorCode: "licenseDateInFuture" };
   }
 
   const vehicle = await getVehicleById(vehicleId);
   if (!vehicle) {
-    return { success: false, error: "Véhicule introuvable." };
+    return { success: false, errorCode: "vehicleNotFound" };
   }
 
   const vehicleLabel = `${vehicle.brand} ${vehicle.model}`;

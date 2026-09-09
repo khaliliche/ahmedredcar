@@ -14,9 +14,10 @@ const env = Object.fromEntries(
     })
 );
 
-process.env.POSTGRES_URL = env.POSTGRES_URL;
+process.env.DATABASE_URL = env.DATABASE_URL;
 
-const { sql } = await import("@vercel/postgres");
+const { default: postgres } = await import("postgres");
+const sql = postgres(process.env.DATABASE_URL, { ssl: "require" });
 
 await sql`
   CREATE TABLE IF NOT EXISTS vehicles (
@@ -50,3 +51,5 @@ await sql`
 `;
 
 console.log("Tables ready.");
+
+await sql.end();
