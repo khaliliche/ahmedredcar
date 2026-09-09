@@ -22,7 +22,7 @@ console.log("Connected host:", url.hostname);
 const { default: postgres } = await import("postgres");
 const sql = postgres(process.env.DATABASE_URL, { ssl: "require" });
 
-const { rows } = await sql`
+const rows = await sql`
   SELECT column_name FROM information_schema.columns WHERE table_name = 'reservations'
 `;
 console.log("reservations columns:", rows.map(r => r.column_name));

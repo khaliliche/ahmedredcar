@@ -1,4 +1,4 @@
-import postgres from "postgres";
+﻿import postgres from "postgres";
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
 
@@ -15,16 +15,61 @@ export type Vehicle = {
 
 export type ReservationStatus = "pending" | "contacted" | "confirmed" | "cancelled";
 
+// zone matches DAMAGE_ZONES in lib/contract.ts; type is a short free label
+// ("rayure", "bosse", "fissure", ...) entered by the admin, not an enum,
+// to avoid over-constraining a physical inspection.
+export type DamageEntry = {
+  zone: string;
+  type: string;
+  note: string;
+};
+
+// key matches EQUIPMENT_ITEMS in lib/contract.ts.
+export type EquipmentChecklist = Record<string, boolean>;
+
 export type Reservation = {
   id: number;
   vehicle_id: number | null;
   vehicle_label: string;
+
+  // Driver (main)
   full_name: string;
   age: number;
   cin_number: string;
   license_issue_date: string;
+  driver_address: string;
+  driver_phone: string;
+  driver_license_number: string;
+  driver_passport_number: string;
+
+  // Second driver (optional block)
+  has_second_driver: boolean;
+  second_driver_full_name: string;
+  second_driver_address: string;
+  second_driver_phone: string;
+  second_driver_cin_number: string;
+  second_driver_license_number: string;
+  second_driver_passport_number: string;
+
+  // Rental period
   start_date: string;
   end_date: string;
+  start_time: string;
+  end_time: string;
+
+  // Admin handover completion
+  registration_plate: string;
+  mileage_start: number | null;
+  mileage_end: number | null;
+  damages: DamageEntry[];
+  equipment: EquipmentChecklist;
+  delivery_fee: number;
+  pickup_fee: number;
+
+  // Contract identity
+  contract_number: string | null;
+  contract_generated_at: string | null;
+
   status: ReservationStatus;
   created_at: string;
 };
@@ -103,22 +148,57 @@ export async function deleteVehicle(id: number) {
   await sql`DELETE FROM vehicles WHERE id = ${id}`;
 }
 
-export async function createReservation(data: {
+// Fields the client-facing reservation form collects. Admin handover
+// fields (plate, mileage, damages, equipment, fees) are deliberately not
+// accepted here — they're only ever set via updateReservationHandover()
+// (see Step 4), so a client submission can never forge them.
+export type CreateReservationInput = {
   vehicle_id: number;
   vehicle_label: string;
+
   full_name: string;
   age: number;
   cin_number: string;
   license_issue_date: string;
+  driver_address: string;
+  driver_phone: string;
+  driver_license_number: string;
+  driver_passport_number: string;
+
+  has_second_driver: boolean;
+  second_driver_full_name?: string;
+  second_driver_address?: string;
+  second_driver_phone?: string;
+  second_driver_cin_number?: string;
+  second_driver_license_number?: string;
+  second_driver_passport_number?: string;
+
   start_date: string;
   end_date: string;
-}): Promise<Reservation> {
+  start_time: string;
+  end_time: string;
+};
+
+export async function createReservation(
+  data: CreateReservationInput
+): Promise<Reservation> {
   const rows = await sql<Reservation[]>`
     INSERT INTO reservations
-      (vehicle_id, vehicle_label, full_name, age, cin_number, license_issue_date, start_date, end_date)
+      (vehicle_id, vehicle_label,
+       full_name, age, cin_number, license_issue_date,
+       driver_address, driver_phone, driver_license_number, driver_passport_number,
+       has_second_driver,
+       second_driver_full_name, second_driver_address, second_driver_phone,
+       second_driver_cin_number, second_driver_license_number, second_driver_passport_number,
+       start_date, end_date, start_time, end_time)
     VALUES
-      (${data.vehicle_id}, ${data.vehicle_label}, ${data.full_name}, ${data.age},
-       ${data.cin_number}, ${data.license_issue_date}, ${data.start_date}, ${data.end_date})
+      (${data.vehicle_id}, ${data.vehicle_label},
+       ${data.full_name}, ${data.age}, ${data.cin_number}, ${data.license_issue_date},
+       ${data.driver_address}, ${data.driver_phone}, ${data.driver_license_number}, ${data.driver_passport_number},
+       ${data.has_second_driver},
+       ${data.second_driver_full_name ?? ""}, ${data.second_driver_address ?? ""}, ${data.second_driver_phone ?? ""},
+       ${data.second_driver_cin_number ?? ""}, ${data.second_driver_license_number ?? ""}, ${data.second_driver_passport_number ?? ""},
+       ${data.start_date}, ${data.end_date}, ${data.start_time}, ${data.end_time})
     RETURNING *
   `;
   return rows[0];
