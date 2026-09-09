@@ -4,8 +4,10 @@ import { useState, useTransition } from "react";
 import type { Vehicle } from "@/lib/db";
 import { createReservationAction } from "@/app/vehicules/actions";
 import { buildWhatsAppLink, buildReservationWhatsAppMessage } from "@/lib/site-config";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -15,7 +17,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
     startTransition(async () => {
       const result = await createReservationAction(formData);
       if (!result.success) {
-        setError(result.error);
+        setError(t(`reservationErrors.${result.errorCode}`));
         return;
       }
       const message = buildReservationWhatsAppMessage(result.whatsappData);
