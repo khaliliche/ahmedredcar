@@ -1,4 +1,6 @@
-import { sql } from "@vercel/postgres";
+import postgres from "postgres";
+
+const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
 
 export type Vehicle = {
   id: number;
@@ -40,7 +42,7 @@ async function uniqueSlug(base: string, excludeId?: number) {
   let slug = base;
   let i = 2;
   while (true) {
-    const { rows } = excludeId
+    const rows = excludeId
       ? await sql`SELECT id FROM vehicles WHERE slug = ${slug} AND id != ${excludeId}`
       : await sql`SELECT id FROM vehicles WHERE slug = ${slug}`;
     if (rows.length === 0) return slug;
@@ -50,17 +52,17 @@ async function uniqueSlug(base: string, excludeId?: number) {
 }
 
 export async function getVehicles(): Promise<Vehicle[]> {
-  const { rows } = await sql<Vehicle>`SELECT * FROM vehicles ORDER BY created_at DESC`;
+  const rows = await sql<Vehicle[]>`SELECT * FROM vehicles ORDER BY created_at DESC`;
   return rows;
 }
 
 export async function getVehicleBySlug(slug: string): Promise<Vehicle | null> {
-  const { rows } = await sql<Vehicle>`SELECT * FROM vehicles WHERE slug = ${slug} LIMIT 1`;
+  const rows = await sql<Vehicle[]>`SELECT * FROM vehicles WHERE slug = ${slug} LIMIT 1`;
   return rows[0] ?? null;
 }
 
 export async function getVehicleById(id: number): Promise<Vehicle | null> {
-  const { rows } = await sql<Vehicle>`SELECT * FROM vehicles WHERE id = ${id} LIMIT 1`;
+  const rows = await sql<Vehicle[]>`SELECT * FROM vehicles WHERE id = ${id} LIMIT 1`;
   return rows[0] ?? null;
 }
 
@@ -72,7 +74,7 @@ export async function createVehicle(data: {
   image_url: string;
 }) {
   const slug = await uniqueSlug(slugify(data.brand, data.model));
-  const { rows } = await sql<Vehicle>`
+  const rows = await sql<Vehicle[]>`
     INSERT INTO vehicles (slug, brand, model, price_per_day, description, image_url)
     VALUES (${slug}, ${data.brand}, ${data.model}, ${data.price_per_day}, ${data.description}, ${data.image_url})
     RETURNING *
@@ -86,7 +88,7 @@ export async function updateVehicle(
 ) {
   const base = slugify(data.brand, data.model);
   const slug = await uniqueSlug(base, id);
-  const { rows } = await sql<Vehicle>`
+  const rows = await sql<Vehicle[]>`
     UPDATE vehicles
     SET slug = ${slug}, brand = ${data.brand}, model = ${data.model},
         price_per_day = ${data.price_per_day}, description = ${data.description},
@@ -111,7 +113,7 @@ export async function createReservation(data: {
   start_date: string;
   end_date: string;
 }): Promise<Reservation> {
-  const { rows } = await sql<Reservation>`
+  const rows = await sql<Reservation[]>`
     INSERT INTO reservations
       (vehicle_id, vehicle_label, full_name, age, cin_number, license_issue_date, start_date, end_date)
     VALUES
@@ -123,12 +125,12 @@ export async function createReservation(data: {
 }
 
 export async function getReservations(): Promise<Reservation[]> {
-  const { rows } = await sql<Reservation>`SELECT * FROM reservations ORDER BY created_at DESC`;
+  const rows = await sql<Reservation[]>`SELECT * FROM reservations ORDER BY created_at DESC`;
   return rows;
 }
 
 export async function getReservationById(id: number): Promise<Reservation | null> {
-  const { rows } = await sql<Reservation>`SELECT * FROM reservations WHERE id = ${id} LIMIT 1`;
+  const rows = await sql<Reservation[]>`SELECT * FROM reservations WHERE id = ${id} LIMIT 1`;
   return rows[0] ?? null;
 }
 

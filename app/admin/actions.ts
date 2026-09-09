@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { put } from "@vercel/blob";
+import { supabaseAdmin } from "@/lib/supabase";
 import { createVehicle, updateVehicle, deleteVehicle, updateReservationStatus, deleteReservation, type ReservationStatus } from "@/lib/db";
 import { checkPassword, getExpectedSessionToken } from "@/lib/auth";
 
@@ -46,6 +46,8 @@ const ALLOWED_IMAGE_TYPES = new Set([
   "image/gif",
 ]);
 
+const STORAGE_BUCKET = "vehicles";
+
 async function uploadIfPresent(formData: FormData): Promise<string | null> {
   const file = formData.get("image") as File | null;
   if (!file || file.size === 0) return null;
@@ -60,11 +62,25 @@ async function uploadIfPresent(formData: FormData): Promise<string | null> {
     throw new Error("Le fichier dépasse la taille maximale autorisée (5 Mo).");
   }
 
-  const blob = await put(`vehicles/${Date.now()}-${file.name}`, file, {
-    access: "public",
-  });
+  const safeName = file.name
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9._-]/g, "-");
+const fileName = `${Date.now()}-${safeName}`;
 
-  return blob.url;
+  const { error } = await supabaseAdmin.storage
+    .from(STORAGE_BUCKET)
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`Échec de l'upload : ${error.message}`);
+  }
+
+  const { data } = supabaseAdmin.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
+  return data.publicUrl;
 }
 
 function revalidateAll() {
