@@ -10,6 +10,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasSecondDriver, setHasSecondDriver] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
@@ -100,6 +101,16 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               </label>
 
               <label className="flex flex-col gap-1">
+                <span className="text-sm font-semibold">Numéro de permis de conduire</span>
+                <input
+                  type="text"
+                  name="driver_license_number"
+                  required
+                  className="rounded-lg border border-black/15 px-3 py-2"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1">
                 <span className="text-sm font-semibold">Date d&apos;obtention du permis</span>
                 <input
                   type="date"
@@ -108,6 +119,107 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                   className="rounded-lg border border-black/15 px-3 py-2"
                 />
               </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-semibold">Numéro de passeport</span>
+                <input
+                  type="text"
+                  name="driver_passport_number"
+                  required
+                  className="rounded-lg border border-black/15 px-3 py-2"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-semibold">Adresse</span>
+                <input
+                  type="text"
+                  name="driver_address"
+                  required
+                  className="rounded-lg border border-black/15 px-3 py-2"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-semibold">Téléphone</span>
+                <input
+                  type="tel"
+                  name="driver_phone"
+                  required
+                  className="rounded-lg border border-black/15 px-3 py-2"
+                />
+              </label>
+
+              <label className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  name="has_second_driver"
+                  checked={hasSecondDriver}
+                  onChange={(e) => setHasSecondDriver(e.target.checked)}
+                  className="h-4 w-4 rounded border-black/25"
+                />
+                <span className="text-sm font-semibold">Ajouter un 2e conducteur</span>
+              </label>
+
+              {hasSecondDriver && (
+                <div className="flex flex-col gap-4 rounded-lg border border-black/10 bg-black/[0.02] p-3">
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold">Nom complet (2e conducteur)</span>
+                    <input
+                      type="text"
+                      name="second_driver_full_name"
+                      required={hasSecondDriver}
+                      className="rounded-lg border border-black/15 bg-white px-3 py-2"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold">CIN (2e conducteur)</span>
+                    <input
+                      type="text"
+                      name="second_driver_cin_number"
+                      required={hasSecondDriver}
+                      className="rounded-lg border border-black/15 bg-white px-3 py-2"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold">Téléphone (2e conducteur)</span>
+                    <input
+                      type="tel"
+                      name="second_driver_phone"
+                      className="rounded-lg border border-black/15 bg-white px-3 py-2"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold">Adresse (2e conducteur)</span>
+                    <input
+                      type="text"
+                      name="second_driver_address"
+                      className="rounded-lg border border-black/15 bg-white px-3 py-2"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold">Numéro de permis (2e conducteur)</span>
+                    <input
+                      type="text"
+                      name="second_driver_license_number"
+                      className="rounded-lg border border-black/15 bg-white px-3 py-2"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold">Numéro de passeport (2e conducteur)</span>
+                    <input
+                      type="text"
+                      name="second_driver_passport_number"
+                      className="rounded-lg border border-black/15 bg-white px-3 py-2"
+                    />
+                  </label>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1">
@@ -125,6 +237,30 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                   <input
                     type="date"
                     name="end_date"
+                    required
+                    className="rounded-lg border border-black/15 px-3 py-2"
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold">Heure de prise en charge</span>
+                  <input
+                    type="time"
+                    name="start_time"
+                    defaultValue="10:00"
+                    required
+                    className="rounded-lg border border-black/15 px-3 py-2"
+                  />
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold">Heure de retour</span>
+                  <input
+                    type="time"
+                    name="end_time"
+                    defaultValue="10:00"
                     required
                     className="rounded-lg border border-black/15 px-3 py-2"
                   />

@@ -23,17 +23,43 @@ export function buildReservationWhatsAppMessage(data: {
   age: number;
   cinNumber: string;
   licenseIssueDate: string;
+  driverAddress: string;
+  driverPhone: string;
+  driverLicenseNumber: string;
+  driverPassportNumber: string;
+  hasSecondDriver: boolean;
+  secondDriverFullName?: string;
+  secondDriverCinNumber?: string;
   startDate: string;
   endDate: string;
+  startTime: string;
+  endTime: string;
 }) {
-  return [
+  const lines = [
     `Nouvelle demande de reservation - Ahmed Red Car`,
     ``,
     `Vehicule : ${data.vehicleLabel}`,
     `Client : ${data.fullName} (${data.age} ans)`,
     `CIN N° : ${data.cinNumber}`,
+    `N° permis : ${data.driverLicenseNumber}`,
     `Permis obtenu le : ${data.licenseIssueDate}`,
-    `Du : ${data.startDate}`,
-    `Au : ${data.endDate}`,
-  ].join("\n");
+    `Passeport N° : ${data.driverPassportNumber}`,
+    `Adresse : ${data.driverAddress}`,
+    `Telephone : ${data.driverPhone}`,
+  ];
+
+  if (data.hasSecondDriver) {
+    lines.push(
+      ``,
+      `2e conducteur : ${data.secondDriverFullName ?? ""} (CIN ${data.secondDriverCinNumber ?? ""})`
+    );
+  }
+
+  lines.push(
+    ``,
+    `Du : ${data.startDate} a ${data.startTime}`,
+    `Au : ${data.endDate} a ${data.endTime}`
+  );
+
+  return lines.join("\n");
 }

@@ -218,6 +218,122 @@ export async function updateReservationStatus(id: number, status: ReservationSta
   await sql`UPDATE reservations SET status = ${status} WHERE id = ${id}`;
 }
 
+// Feature 2 — availability. Only CONFIRMED reservations block a vehicle;
+// pending/contacted requests are just leads and don't reserve the car.
+// Uses idx_reservations_vehicle_status_dates (see migrations/002_*.sql).
+export async function isVehicleAvailable(
+  vehicleId: number,
+  startDate: string,
+  endDate: string,
+  excludeReservationId?: number
+): Promise<boolean> {
+  const rows = excludeReservationId
+    ? await sql`
+        SELECT id FROM reservations
+        WHERE vehicle_id = ${vehicleId}
+          AND status = 'confirmed'
+          AND id != ${excludeReservationId}
+          AND start_date <= ${endDate}
+          AND end_date >= ${startDate}
+        LIMIT 1
+      `
+    : await sql`
+        SELECT id FROM reservations
+        WHERE vehicle_id = ${vehicleId}
+          AND status = 'confirmed'
+          AND start_date <= ${endDate}
+          AND end_date >= ${startDate}
+        LIMIT 1
+      `;
+  return rows.length === 0;
+}
+
+// Vehicles list for /vehicules. If no dates are given, returns the full
+// fleet (unchanged behaviour). If dates are given, excludes any vehicle
+// with a confirmed reservation overlapping that range.
+export async function getAvailableVehicles(
+  startDate?: string,
+  endDate?: string
+): Promise<Vehicle[]> {
+  const vehicles = await getVehicles();
+  if (!startDate || !endDate) return vehicles;
+
+  const rows = await sql<{ vehicle_id: number | null }[]>`
+    SELECT DISTINCT vehicle_id FROM reservations
+    WHERE status = 'confirmed'
+      AND start_date <= ${endDate}
+      AND end_date >= ${startDate}
+  `;
+  const bookedIds = new Set(rows.map((r) => r.vehicle_id));
+  return vehicles.filter((v) => !bookedIds.has(v.id));
+}
+
+// Confirming a reservation is the moment it actually blocks the vehicle,
+// so this is where we re-check for a conflicting confirmed booking
+// (another admin could have confirmed an overlapping request in the
+// meantime). Returns a reason instead of throwing so the UI can show a
+// friendly message.
+export async function confirmReservation(
+  id: number
+): Promise<{ ok: true } | { ok: false; reason: "conflict" | "notFound" }> {
+  const reservation = await getReservationById(id);
+  if (!reservation || !reservation.vehicle_id) {
+    return { ok: false, reason: "notFound" };
+  }
+
+  const available = await isVehicleAvailable(
+    reservation.vehicle_id,
+    reservation.start_date,
+    reservation.end_date,
+    reservation.id
+  );
+  if (!available) {
+    return { ok: false, reason: "conflict" };
+  }
+
+  await sql`
+    UPDATE reservations
+    SET status = 'confirmed',
+        contract_number = COALESCE(
+          contract_number,
+          'ARC-' || to_char(now(), 'YYYY') || '-' || lpad(id::text, 5, '0')
+        ),
+        contract_generated_at = COALESCE(contract_generated_at, now())
+    WHERE id = ${id}
+  `;
+  return { ok: true };
+}
+
+// Feature 1 — admin handover completion (plate, mileage, damages,
+// equipment, delivery/pickup fees). Deliberately separate from the
+// client-facing createReservation() input.
+export async function updateReservationHandover(
+  id: number,
+  data: {
+    registration_plate: string;
+    mileage_start: number | null;
+    mileage_end: number | null;
+    damages: DamageEntry[];
+    equipment: EquipmentChecklist;
+    delivery_fee: number;
+    pickup_fee: number;
+  }
+): Promise<Reservation> {
+  const rows = await sql<Reservation[]>`
+    UPDATE reservations
+    SET registration_plate = ${data.registration_plate},
+        mileage_start = ${data.mileage_start},
+        mileage_end = ${data.mileage_end},
+        damages = ${sql.json(data.damages)},
+        equipment = ${sql.json(data.equipment)},
+        delivery_fee = ${data.delivery_fee},
+        pickup_fee = ${data.pickup_fee}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rows[0];
+}
+
 export async function deleteReservation(id: number) {
   await sql`DELETE FROM reservations WHERE id = ${id}`;
 }

@@ -135,7 +135,10 @@ export default async function AdminReservationsPage({
                 {filtered.map((r) => (
                   <tr key={r.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.015]">
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
+                      <Link
+                        href={`/admin/reservations/${r.id}`}
+                        className="flex items-center gap-2.5 hover:opacity-80"
+                      >
                         <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarColor(r.full_name)}`}>
                           {initials(r.full_name)}
                         </div>
@@ -143,7 +146,7 @@ export default async function AdminReservationsPage({
                           <p className="font-semibold text-[var(--color-ink)]">{r.full_name}</p>
                           <p className="text-xs text-black/40">{r.age} ans · CIN {r.cin_number} · Permis {licenseYears(r.license_issue_date)}</p>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-black/70">{r.vehicle_label}</td>
                     <td className="px-4 py-3 text-black/70">
@@ -197,7 +200,7 @@ export default async function AdminReservationsPage({
             {filtered.map((r) => (
               <div key={r.id} className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
+                  <Link href={`/admin/reservations/${r.id}`} className="flex items-center gap-2.5">
                     <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarColor(r.full_name)}`}>
                       {initials(r.full_name)}
                     </div>
@@ -205,7 +208,7 @@ export default async function AdminReservationsPage({
                       <p className="font-semibold text-[var(--color-ink)]">{r.full_name}</p>
                       <p className="text-xs text-black/45">{r.vehicle_label}</p>
                     </div>
-                  </div>
+                  </Link>
                   <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_BADGE[r.status]}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[r.status]}`} />
                     {STATUS_LABELS[r.status]}

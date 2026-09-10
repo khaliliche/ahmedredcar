@@ -4,8 +4,20 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
-import { createVehicle, updateVehicle, deleteVehicle, updateReservationStatus, deleteReservation, type ReservationStatus } from "@/lib/db";
+import {
+  createVehicle,
+  updateVehicle,
+  deleteVehicle,
+  updateReservationStatus,
+  deleteReservation,
+  confirmReservation,
+  updateReservationHandover,
+  type ReservationStatus,
+  type DamageEntry,
+  type EquipmentChecklist,
+} from "@/lib/db";
 import { checkPassword, getExpectedSessionToken } from "@/lib/auth";
+import { EQUIPMENT_ITEMS } from "@/lib/contract";
 
 export async function loginAction(formData: FormData) {
   const password = formData.get("password") as string;
@@ -126,11 +138,60 @@ export async function deleteVehicleAction(id: number) {
 }
 
 export async function updateReservationStatusAction(id: number, status: ReservationStatus) {
-  await updateReservationStatus(id, status);
+  if (status === "confirmed") {
+    const result = await confirmReservation(id);
+    if (!result.ok) {
+      revalidatePath("/admin/reservations");
+      redirect(`/admin/reservations/${id}?error=${result.reason}`);
+    }
+  } else {
+    await updateReservationStatus(id, status);
+  }
   revalidatePath("/admin/reservations");
+  revalidatePath(`/admin/reservations/${id}`);
 }
 
 export async function deleteReservationAction(id: number) {
   await deleteReservation(id);
+  revalidatePath("/admin/reservations");
+}
+
+export async function updateReservationHandoverAction(id: number, formData: FormData) {
+  const registrationPlate = String(formData.get("registration_plate") || "").trim();
+
+  const mileageStartRaw = formData.get("mileage_start");
+  const mileageEndRaw = formData.get("mileage_end");
+  const mileageStart =
+    mileageStartRaw && mileageStartRaw !== "" ? Number(mileageStartRaw) : null;
+  const mileageEnd = mileageEndRaw && mileageEndRaw !== "" ? Number(mileageEndRaw) : null;
+
+  const deliveryFee = Number(formData.get("delivery_fee") || 0);
+  const pickupFee = Number(formData.get("pickup_fee") || 0);
+
+  let damages: DamageEntry[] = [];
+  try {
+    const raw = String(formData.get("damages_json") || "[]");
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) damages = parsed;
+  } catch {
+    damages = [];
+  }
+
+  const equipment: EquipmentChecklist = {};
+  for (const item of EQUIPMENT_ITEMS) {
+    equipment[item.key] = formData.get(`equipment__${item.key}`) === "on";
+  }
+
+  await updateReservationHandover(id, {
+    registration_plate: registrationPlate,
+    mileage_start: mileageStart,
+    mileage_end: mileageEnd,
+    damages,
+    equipment,
+    delivery_fee: deliveryFee,
+    pickup_fee: pickupFee,
+  });
+
+  revalidatePath(`/admin/reservations/${id}`);
   revalidatePath("/admin/reservations");
 }

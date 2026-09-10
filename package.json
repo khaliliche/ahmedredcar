@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@react-pdf/renderer": "^4.9.0",
     "@supabase/supabase-js": "^2.116.0",
     "framer-motion": "^13.2.0",
     "lucide-react": "^1.41.0",

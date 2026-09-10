@@ -1,4 +1,4 @@
-﻿import { getVehicles } from "@/lib/db";
+﻿import { getAvailableVehicles } from "@/lib/db";
 import VehicleCard from "@/components/home/VehicleCard";
 
 export default async function VehiclesPage({
@@ -7,8 +7,8 @@ export default async function VehiclesPage({
   searchParams: Promise<{ ville?: string; depart?: string; retour?: string }>;
 }) {
   const params = await searchParams;
-  const hasSearch = params.ville && params.depart && params.retour;
-  const vehicles = await getVehicles();
+  const hasSearch = Boolean(params.ville && params.depart && params.retour);
+  const vehicles = await getAvailableVehicles(params.depart, params.retour);
 
   return (
     <main className="pb-20 pt-24 sm:pt-32">
@@ -30,7 +30,11 @@ export default async function VehiclesPage({
 
         {vehicles.length === 0 ? (
           <div className="mt-10 flex flex-col items-center gap-2 border border-dashed border-black/15 py-16 text-center">
-            <p className="font-body text-black/60">Aucun véhicule pour le moment.</p>
+            <p className="font-body text-black/60">
+              {hasSearch
+                ? "Aucun véhicule disponible pour ces dates."
+                : "Aucun véhicule pour le moment."}
+            </p>
           </div>
         ) : (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
