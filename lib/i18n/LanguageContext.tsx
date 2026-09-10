@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   createContext,
@@ -38,7 +38,7 @@ function getByPath(obj: unknown, path: string): unknown {
 function interpolate(value: string, options?: TranslateOptions): string {
   if (!options) return value;
   return Object.entries(options).reduce(
-    (str, [key, val]) => str.replaceAll(`${key}`, String(val)),
+    (str, [key, val]) => str.replaceAll(`{${key}}`, String(val)),
     value
   );
 }
