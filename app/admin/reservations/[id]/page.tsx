@@ -7,7 +7,7 @@ import {
   updateReservationHandoverAction,
   deleteReservationAction,
 } from "@/app/admin/actions";
-import { calculateBilling } from "@/lib/contract";
+import { calculateBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import HandoverForm from "@/components/admin/HandoverForm";
 
@@ -52,15 +52,21 @@ export default async function AdminReservationDetailPage({
   }
 
   const vehicle = reservation.vehicle_id ? await getVehicleById(reservation.vehicle_id) : null;
-  const pricePerDay = vehicle?.price_per_day ?? 0;
-
-  const billing = calculateBilling({
-    pricePerDay,
-    startDate: reservation.start_date,
-    endDate: reservation.end_date,
-    deliveryFee: Number(reservation.delivery_fee),
-    pickupFee: Number(reservation.pickup_fee),
-  });
+  const vehiclePricing = {
+    price_per_day: vehicle?.price_per_day ?? 0,
+    price_extended_15: vehicle?.price_extended_15 ?? vehicle?.price_per_day ?? 0,
+    price_monthly_30: vehicle?.price_monthly_30 ?? vehicle?.price_per_day ?? 0,
+    min_rental_days: vehicle?.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS,
+  };
+  const rentalBilling = calculateBilling(vehiclePricing, reservation.start_date, reservation.end_date);
+  const deliveryFee = Number(reservation.delivery_fee);
+  const pickupFee = Number(reservation.pickup_fee);
+  const billing = {
+    days: rentalBilling.days,
+    totalHT: rentalBilling.subtotal + deliveryFee + pickupFee,
+    tva: rentalBilling.tva,
+    totalTTC: rentalBilling.total + deliveryFee + pickupFee,
+  };
 
   return (
     <div className="min-h-screen bg-[var(--color-mist)]/40 lg:flex">

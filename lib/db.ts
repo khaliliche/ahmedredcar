@@ -8,6 +8,8 @@ export type Vehicle = {
   brand: string;
   model: string;
   price_per_day: number;
+  price_extended_15: number;
+  price_monthly_30: number;
   min_rental_days: number;
   description: string | null;
   image_url: string | null;

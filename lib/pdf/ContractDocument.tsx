@@ -1,6 +1,6 @@
 import { Document, Page, View, Text, StyleSheet, Svg, Circle, Rect } from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
-import { DAMAGE_TYPES, EQUIPMENT_ITEMS, calculateBilling } from "@/lib/contract";
+import { DAMAGE_TYPES, EQUIPMENT_ITEMS, calculateBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 
 const BLACK = "#000000";
 
@@ -255,14 +255,21 @@ export function ContractDocument({
   reservation: Reservation;
   vehicle: Vehicle | null;
 }) {
-  const pricePerDay = vehicle?.price_per_day ?? 0;
-  const billing = calculateBilling({
-    pricePerDay,
-    startDate: reservation.start_date,
-    endDate: reservation.end_date,
-    deliveryFee: Number(reservation.delivery_fee),
-    pickupFee: Number(reservation.pickup_fee),
-  });
+  const vehiclePricing = {
+    price_per_day: vehicle?.price_per_day ?? 0,
+    price_extended_15: vehicle?.price_extended_15 ?? vehicle?.price_per_day ?? 0,
+    price_monthly_30: vehicle?.price_monthly_30 ?? vehicle?.price_per_day ?? 0,
+    min_rental_days: vehicle?.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS,
+  };
+  const rentalBilling = calculateBilling(vehiclePricing, reservation.start_date, reservation.end_date);
+  const deliveryFee = Number(reservation.delivery_fee);
+  const pickupFee = Number(reservation.pickup_fee);
+  const billing = {
+    days: rentalBilling.days,
+    totalHT: rentalBilling.subtotal + deliveryFee + pickupFee,
+    tva: rentalBilling.tva,
+    totalTTC: rentalBilling.total + deliveryFee + pickupFee,
+  };
   const contractNumber = reservation.contract_number ?? "—";
 
   return (
