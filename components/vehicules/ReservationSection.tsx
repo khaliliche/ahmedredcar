@@ -18,7 +18,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
     startTransition(async () => {
       const result = await createReservationAction(formData);
       if (!result.success) {
-        setError(t(`reservationErrors.${result.errorCode}`));
+        setError(t(`reservationErrors.${result.errorCode}`, result.errorParams));
         return;
       }
       const message = buildReservationWhatsAppMessage(result.whatsappData);
