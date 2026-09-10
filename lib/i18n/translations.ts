@@ -1,4 +1,4 @@
-﻿export type Language = "fr" | "en" | "ar";
+export type Language = "fr" | "en" | "ar";
 
 export const translations = {
   fr: {
@@ -105,6 +105,7 @@ export const translations = {
       invalidDateRange: "La date de retour doit être après la date de départ.",
       licenseDateInFuture: "La date d'obtention du permis ne peut pas être dans le futur.",
       vehicleNotFound: "Véhicule introuvable.",
+      minRentalDays: "La durée minimale de location est de {min} jours (vous avez sélectionné {days}).",
     },
     languageToggle: { fr: "FR", en: "EN", ar: "AR" },
     metadata: {
@@ -207,6 +208,7 @@ export const translations = {
       invalidDateRange: "The return date must be after the pick-up date.",
       licenseDateInFuture: "The license issue date cannot be in the future.",
       vehicleNotFound: "Vehicle not found.",
+      minRentalDays: "The minimum rental duration is {min} days (you selected {days}).",
     },
     languageToggle: { fr: "FR", en: "EN", ar: "AR" },
     metadata: {
@@ -309,6 +311,7 @@ export const translations = {
       invalidDateRange: "يجب أن يكون تاريخ العودة بعد تاريخ الانطلاق.",
       licenseDateInFuture: "لا يمكن أن يكون تاريخ الحصول على رخصة القيادة في المستقبل.",
       vehicleNotFound: "السيارة غير موجودة.",
+      minRentalDays: "المدة الدنيا للكراء هي {min} أيام (لقد اخترت {days}).",
     },
     languageToggle: { fr: "FR", en: "EN", ar: "AR" },
     metadata: {

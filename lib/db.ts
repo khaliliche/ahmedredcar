@@ -1,4 +1,4 @@
-﻿import postgres from "postgres";
+import postgres from "postgres";
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
 
@@ -8,6 +8,7 @@ export type Vehicle = {
   brand: string;
   model: string;
   price_per_day: number;
+  min_rental_days: number;
   description: string | null;
   image_url: string | null;
   created_at: string;

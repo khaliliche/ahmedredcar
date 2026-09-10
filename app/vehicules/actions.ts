@@ -1,6 +1,7 @@
 "use server";
 
 import { createReservation, getVehicleById } from "@/lib/db";
+import { daysBetween, isRentalDurationValid, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 
 type WhatsAppData = {
   vehicleLabel: string;
@@ -23,7 +24,7 @@ type WhatsAppData = {
 
 type ActionResult =
   | { success: true; whatsappData: WhatsAppData }
-  | { success: false; errorCode: string };
+  | { success: false; errorCode: string; errorParams?: Record<string, string | number> };
 
 export async function createReservationAction(
   formData: FormData
@@ -81,6 +82,16 @@ export async function createReservationAction(
   const vehicle = await getVehicleById(vehicleId);
   if (!vehicle) {
     return { success: false, errorCode: "vehicleNotFound" };
+  }
+
+  const minDays = vehicle.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS;
+  const requestedDays = daysBetween(startDate, endDate);
+  if (!isRentalDurationValid(requestedDays, minDays)) {
+    return {
+      success: false,
+      errorCode: "minRentalDays",
+      errorParams: { min: minDays, days: requestedDays },
+    };
   }
 
   const vehicleLabel = `${vehicle.brand} ${vehicle.model}`;
