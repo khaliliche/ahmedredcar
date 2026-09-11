@@ -45,6 +45,10 @@ export async function createReservationAction(
         driverLicenseNumber: "",
         driverPassportNumber: "",
         hasSecondDriver: false,
+        startDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
       },
     };
   }
