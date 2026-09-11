@@ -4,6 +4,15 @@ import { useState } from "react";
 import { DAMAGE_ZONES, DAMAGE_TYPES, EQUIPMENT_ITEMS } from "@/lib/contract";
 import type { DamageEntry, EquipmentChecklist } from "@/lib/db";
 
+// postgres.js returns DATE columns as JS Date objects (not strings), so
+// values coming from the DB can be either depending on the query path.
+function toDateInputValue(value: string | Date | null | undefined) {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+}
+
 type Initial = {
   full_name: string;
   age: number;
@@ -94,19 +103,19 @@ export default function ContractEditForm({
             <input type="number" name="age" defaultValue={initial.age} className={inputClass} />
           </label>
           <label className={labelClass}>
-            <span className={spanClass}>N° C.I.N</span>
+            <span className={spanClass}>N&deg; C.I.N</span>
             <input type="text" name="cin_number" defaultValue={initial.cin_number} className={inputClass} />
           </label>
           <label className={labelClass}>
             <span className={spanClass}>Permis obtenu le</span>
-            <input type="date" name="license_issue_date" defaultValue={initial.license_issue_date?.slice(0, 10)} className={inputClass} />
+            <input type="date" name="license_issue_date" defaultValue={toDateInputValue(initial.license_issue_date)} className={inputClass} />
           </label>
           <label className={labelClass}>
-            <span className={spanClass}>N° permis</span>
+            <span className={spanClass}>N&deg; permis</span>
             <input type="text" name="driver_license_number" defaultValue={initial.driver_license_number} className={inputClass} />
           </label>
           <label className={labelClass}>
-            <span className={spanClass}>N° passeport</span>
+            <span className={spanClass}>N&deg; passeport</span>
             <input type="text" name="driver_passport_number" defaultValue={initial.driver_passport_number} className={inputClass} />
           </label>
           <label className={labelClass}>
@@ -144,15 +153,15 @@ export default function ContractEditForm({
               <input type="text" name="second_driver_full_name" defaultValue={initial.second_driver_full_name} className={inputClass} />
             </label>
             <label className={labelClass}>
-              <span className={spanClass}>N° C.I.N</span>
+              <span className={spanClass}>N&deg; C.I.N</span>
               <input type="text" name="second_driver_cin_number" defaultValue={initial.second_driver_cin_number} className={inputClass} />
             </label>
             <label className={labelClass}>
-              <span className={spanClass}>N° permis</span>
+              <span className={spanClass}>N&deg; permis</span>
               <input type="text" name="second_driver_license_number" defaultValue={initial.second_driver_license_number} className={inputClass} />
             </label>
             <label className={labelClass}>
-              <span className={spanClass}>N° passeport</span>
+              <span className={spanClass}>N&deg; passeport</span>
               <input type="text" name="second_driver_passport_number" defaultValue={initial.second_driver_passport_number} className={inputClass} />
             </label>
             <label className={labelClass}>
@@ -183,7 +192,7 @@ export default function ContractEditForm({
           </label>
           <label className={labelClass}>
             <span className={spanClass}>Date depart</span>
-            <input type="date" name="start_date" defaultValue={initial.start_date?.slice(0, 10)} className={inputClass} />
+            <input type="date" name="start_date" defaultValue={toDateInputValue(initial.start_date)} className={inputClass} />
           </label>
           <label className={labelClass}>
             <span className={spanClass}>Heure depart</span>
@@ -191,7 +200,7 @@ export default function ContractEditForm({
           </label>
           <label className={labelClass}>
             <span className={spanClass}>Date retour</span>
-            <input type="date" name="end_date" defaultValue={initial.end_date?.slice(0, 10)} className={inputClass} />
+            <input type="date" name="end_date" defaultValue={toDateInputValue(initial.end_date)} className={inputClass} />
           </label>
           <label className={labelClass}>
             <span className={spanClass}>Heure retour</span>
