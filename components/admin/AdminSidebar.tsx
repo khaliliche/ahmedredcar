@@ -1,18 +1,19 @@
-import Link from "next/link";
-import { Car, CalendarClock, Users, LogOut, MessageCircle } from "lucide-react";
+﻿import Link from "next/link";
+import { Car, CalendarClock, Users, FileText, LogOut, MessageCircle } from "lucide-react";
 import { logoutAction } from "@/app/admin/actions";
 import { buildWhatsAppLink } from "@/lib/site-config";
 
 const NAV = [
   { key: "vehicules", href: "/admin", label: "Véhicules", icon: Car },
   { key: "reservations", href: "/admin/reservations", label: "Réservations", icon: CalendarClock },
+  { key: "contracts", href: "/admin/contracts", label: "Contrats", icon: FileText },
   { key: "clients", href: "/admin/clients", label: "Clients", icon: Users },
 ] as const;
 
 export default function AdminSidebar({
   active,
 }: {
-  active: "vehicules" | "reservations" | "clients";
+  active: "vehicules" | "reservations" | "contracts" | "clients";
 }) {
   const whatsappHref = buildWhatsAppLink(
     "Bonjour, j'ai besoin d'aide sur l'espace admin."

@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
@@ -13,6 +13,7 @@ import {
   confirmReservation,
   updateReservationHandover,
   updateReservationContract,
+  getReservationById,
   type ReservationStatus,
   type DamageEntry,
   type EquipmentChecklist,
@@ -67,12 +68,12 @@ async function uploadIfPresent(formData: FormData): Promise<string | null> {
 
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
     throw new Error(
-      `Type de fichier non autorisé : ${file.type || "inconnu"}. Formats acceptés : JPEG, PNG, WEBP, GIF.`
+      `Type de fichier non autorisÃ© : ${file.type || "inconnu"}. Formats acceptÃ©s : JPEG, PNG, WEBP, GIF.`
     );
   }
 
   if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("Le fichier dépasse la taille maximale autorisée (5 Mo).");
+    throw new Error("Le fichier dÃ©passe la taille maximale autorisÃ©e (5 Mo).");
   }
 
   const safeName = file.name
@@ -89,7 +90,7 @@ const fileName = `${Date.now()}-${safeName}`;
     });
 
   if (error) {
-    throw new Error(`Échec de l'upload : ${error.message}`);
+    throw new Error(`Ã‰chec de l'upload : ${error.message}`);
   }
 
   const { data } = supabaseAdmin.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
@@ -197,82 +198,103 @@ export async function updateReservationHandoverAction(id: number, formData: Form
   revalidatePath("/admin/reservations");
 }
 
-// Feature 3 — full contract editing. One form, every editable section of
+// Feature 3 â€” full contract editing. One form, every editable section of
 // the PDF, with an optional manual override for the three billing
 // totals (left blank = keep using the calculated value).
-export async function updateReservationContractAction(id: number, formData: FormData) {
-  const mileageStartRaw = formData.get("mileage_start");
-  const mileageEndRaw = formData.get("mileage_end");
-  const mileageStart =
-    mileageStartRaw && mileageStartRaw !== "" ? Number(mileageStartRaw) : null;
-  const mileageEnd = mileageEndRaw && mileageEndRaw !== "" ? Number(mileageEndRaw) : null;
+export async function updateReservationContractAction(
+  id: number,
+  formData: FormData
+) {
+  const reservation = await getReservationById(id);
+
+  if (!reservation) {
+    notFound();
+  }
+
+  const text = (name: string) =>
+    String(formData.get(name) ?? "").trim();
+
+  const numberOrNull = (name: string) => {
+    const value = String(formData.get(name) ?? "").trim();
+    if (value === "") return null;
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  };
 
   let damages: DamageEntry[] = [];
+
   try {
-    const raw = String(formData.get("damages_json") || "[]");
+    const raw = String(formData.get("damages_json") ?? "[]");
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) damages = parsed;
+
+    if (Array.isArray(parsed)) {
+      damages = parsed;
+    }
   } catch {
     damages = [];
   }
 
   const equipment: EquipmentChecklist = {};
-  for (const item of EQUIPMENT_ITEMS) {
-    equipment[item.key] = formData.get(`equipment__${item.key}`) === "on";
-  }
 
-  function overrideNumber(field: string): number | null {
-    const raw = formData.get(field);
-    if (raw === null || raw === "") return null;
-    const value = Number(raw);
-    return Number.isFinite(value) ? value : null;
+  for (const item of EQUIPMENT_ITEMS) {
+    equipment[item.key] =
+      formData.get(`equipment__${item.key}`) === "on";
   }
 
   await updateReservationContract(id, {
-    full_name: String(formData.get("full_name") || "").trim(),
-    age: Number(formData.get("age") || 0),
-    cin_number: String(formData.get("cin_number") || "").trim(),
-    license_issue_date: String(formData.get("license_issue_date") || ""),
-    driver_address: String(formData.get("driver_address") || "").trim(),
-    driver_phone: String(formData.get("driver_phone") || "").trim(),
-    driver_license_number: String(formData.get("driver_license_number") || "").trim(),
-    driver_passport_number: String(formData.get("driver_passport_number") || "").trim(),
+    full_name: text("full_name"),
+    age: Number(text("age")) || 0,
+    cin_number: text("cin_number"),
+    license_issue_date: text("license_issue_date"),
+    driver_address: text("driver_address"),
+    driver_phone: text("driver_phone"),
+    driver_license_number: text("driver_license_number"),
+    driver_passport_number: text("driver_passport_number"),
 
-    has_second_driver: formData.get("has_second_driver") === "on",
-    second_driver_full_name: String(formData.get("second_driver_full_name") || "").trim(),
-    second_driver_address: String(formData.get("second_driver_address") || "").trim(),
-    second_driver_phone: String(formData.get("second_driver_phone") || "").trim(),
-    second_driver_cin_number: String(formData.get("second_driver_cin_number") || "").trim(),
-    second_driver_license_number: String(
-      formData.get("second_driver_license_number") || ""
-    ).trim(),
-    second_driver_passport_number: String(
-      formData.get("second_driver_passport_number") || ""
-    ).trim(),
+    has_second_driver:
+      formData.get("has_second_driver") === "on",
 
-    vehicle_label: String(formData.get("vehicle_label") || "").trim(),
-    registration_plate: String(formData.get("registration_plate") || "").trim(),
+    second_driver_full_name: text("second_driver_full_name"),
+    second_driver_address: text("second_driver_address"),
+    second_driver_phone: text("second_driver_phone"),
+    second_driver_cin_number: text("second_driver_cin_number"),
+    second_driver_license_number: text(
+      "second_driver_license_number"
+    ),
+    second_driver_passport_number: text(
+      "second_driver_passport_number"
+    ),
 
-    start_date: String(formData.get("start_date") || ""),
-    end_date: String(formData.get("end_date") || ""),
-    start_time: String(formData.get("start_time") || "10:00"),
-    end_time: String(formData.get("end_time") || "10:00"),
+    vehicle_label: text("vehicle_label"),
+    registration_plate: text("registration_plate"),
 
-    mileage_start: mileageStart,
-    mileage_end: mileageEnd,
+    start_date: text("start_date"),
+    end_date: text("end_date"),
+    start_time: text("start_time"),
+    end_time: text("end_time"),
+
+    mileage_start: numberOrNull("mileage_start"),
+    mileage_end: numberOrNull("mileage_end"),
+
     damages,
     equipment,
-    delivery_fee: Number(formData.get("delivery_fee") || 0),
-    pickup_fee: Number(formData.get("pickup_fee") || 0),
 
-    fait_a: String(formData.get("fait_a") || "").trim(),
-    override_total_ht: overrideNumber("override_total_ht"),
-    override_tva: overrideNumber("override_tva"),
-    override_total_ttc: overrideNumber("override_total_ttc"),
+    delivery_fee: Number(text("delivery_fee")) || 0,
+    pickup_fee: Number(text("pickup_fee")) || 0,
+
+    fait_a: text("fait_a"),
+
+    override_total_ht: numberOrNull("override_total_ht"),
+    override_tva: numberOrNull("override_tva"),
+    override_total_ttc: numberOrNull("override_total_ttc"),
   });
 
   revalidatePath(`/admin/reservations/${id}`);
   revalidatePath(`/admin/reservations/${id}/edit-contract`);
+  revalidatePath(`/admin/reservations/${id}/contract`);
   revalidatePath("/admin/reservations");
+  revalidatePath("/admin/contracts");
+
   redirect(`/admin/reservations/${id}`);
 }

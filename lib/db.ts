@@ -1,4 +1,4 @@
-﻿import postgres from "postgres";
+import postgres from "postgres";
 import { getTieredPricing } from "./pricing";
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
@@ -432,12 +432,7 @@ export async function updateReservationContract(
         damages = ${sql.json(data.damages)},
         equipment = ${sql.json(data.equipment)},
         delivery_fee = ${data.delivery_fee},
-        pickup_fee = ${data.pickup_fee},
-
-        fait_a = ${data.fait_a},
-        override_total_ht = ${data.override_total_ht},
-        override_tva = ${data.override_tva},
-        override_total_ttc = ${data.override_total_ttc}
+        pickup_fee = ${data.pickup_fee}
     WHERE id = ${id}
     RETURNING *
   `;

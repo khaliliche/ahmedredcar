@@ -25,34 +25,41 @@ export default async function EditContractPage({
 
   const vehiclePricing = {
     price_per_day: vehicle?.price_per_day ?? 0,
-    price_extended_15: vehicle?.price_extended_15 ?? vehicle?.price_per_day ?? 0,
-    price_monthly_30: vehicle?.price_monthly_30 ?? vehicle?.price_per_day ?? 0,
-    min_rental_days: vehicle?.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS,
+    price_extended_15:
+      vehicle?.price_extended_15 ?? vehicle?.price_per_day ?? 0,
+    price_monthly_30:
+      vehicle?.price_monthly_30 ?? vehicle?.price_per_day ?? 0,
+    min_rental_days:
+      vehicle?.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS,
   };
 
   const billing = resolveBilling(vehiclePricing, reservation);
 
   return (
     <div className="min-h-screen bg-[var(--color-mist)]/40 lg:flex">
-      <AdminSidebar active="reservations" />
+      <AdminSidebar active="contracts" />
 
       <main className="flex-1 px-4 py-8 sm:px-8">
         <div className="mx-auto max-w-4xl">
           <Link
-            href={`/admin/reservations/${reservation.id}`}
+            href="/admin/contracts"
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-black/50 transition-colors hover:text-black/80"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour a la reservation
+            Retour aux contrats
           </Link>
 
           <h1 className="font-display text-2xl font-extrabold text-[var(--color-ink)]">
-            Modifier le contrat #{reservation.id}
+            Modifier le contrat{" "}
+            {reservation.contract_number ?? `#${reservation.id}`}
           </h1>
 
           <div className="mt-6">
             <ContractEditForm
-              action={updateReservationContractAction.bind(null, reservation.id)}
+              action={updateReservationContractAction.bind(
+                null,
+                reservation.id
+              )}
               initial={{
                 full_name: reservation.full_name,
                 age: reservation.age,
@@ -62,34 +69,38 @@ export default async function EditContractPage({
                 driver_phone: reservation.driver_phone,
                 driver_license_number: reservation.driver_license_number,
                 driver_passport_number: reservation.driver_passport_number,
-
                 has_second_driver: reservation.has_second_driver,
-                second_driver_full_name: reservation.second_driver_full_name,
-                second_driver_address: reservation.second_driver_address,
-                second_driver_phone: reservation.second_driver_phone,
-                second_driver_cin_number: reservation.second_driver_cin_number,
-                second_driver_license_number: reservation.second_driver_license_number,
-                second_driver_passport_number: reservation.second_driver_passport_number,
-
+                second_driver_full_name:
+                  reservation.second_driver_full_name,
+                second_driver_address:
+                  reservation.second_driver_address,
+                second_driver_phone:
+                  reservation.second_driver_phone,
+                second_driver_cin_number:
+                  reservation.second_driver_cin_number,
+                second_driver_license_number:
+                  reservation.second_driver_license_number,
+                second_driver_passport_number:
+                  reservation.second_driver_passport_number,
                 vehicle_label: reservation.vehicle_label,
-                registration_plate: reservation.registration_plate,
-
+                registration_plate:
+                  reservation.registration_plate,
                 start_date: reservation.start_date,
                 end_date: reservation.end_date,
                 start_time: reservation.start_time,
                 end_time: reservation.end_time,
-
                 mileage_start: reservation.mileage_start,
                 mileage_end: reservation.mileage_end,
                 damages: reservation.damages,
                 equipment: reservation.equipment,
                 delivery_fee: Number(reservation.delivery_fee),
                 pickup_fee: Number(reservation.pickup_fee),
-
                 fait_a: reservation.fait_a,
-                override_total_ht: reservation.override_total_ht,
+                override_total_ht:
+                  reservation.override_total_ht,
                 override_tva: reservation.override_tva,
-                override_total_ttc: reservation.override_total_ttc,
+                override_total_ttc:
+                  reservation.override_total_ttc,
               }}
               calculated={{
                 totalHT: billing.calculatedTotalHT,
