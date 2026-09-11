@@ -1,4 +1,5 @@
-import postgres from "postgres";
+﻿import postgres from "postgres";
+import { getTieredPricing } from "./pricing";
 
 const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
 
@@ -122,9 +123,10 @@ export async function createVehicle(data: {
   image_url: string;
 }) {
   const slug = await uniqueSlug(slugify(data.brand, data.model));
+  const { price_extended_15, price_monthly_30 } = getTieredPricing(data.price_per_day);
   const rows = await sql<Vehicle[]>`
-    INSERT INTO vehicles (slug, brand, model, price_per_day, description, image_url)
-    VALUES (${slug}, ${data.brand}, ${data.model}, ${data.price_per_day}, ${data.description}, ${data.image_url})
+    INSERT INTO vehicles (slug, brand, model, price_per_day, price_extended_15, price_monthly_30, description, image_url)
+    VALUES (${slug}, ${data.brand}, ${data.model}, ${data.price_per_day}, ${price_extended_15}, ${price_monthly_30}, ${data.description}, ${data.image_url})
     RETURNING *
   `;
   return rows[0];
@@ -136,10 +138,12 @@ export async function updateVehicle(
 ) {
   const base = slugify(data.brand, data.model);
   const slug = await uniqueSlug(base, id);
+  const { price_extended_15, price_monthly_30 } = getTieredPricing(data.price_per_day);
   const rows = await sql<Vehicle[]>`
     UPDATE vehicles
     SET slug = ${slug}, brand = ${data.brand}, model = ${data.model},
-        price_per_day = ${data.price_per_day}, description = ${data.description},
+        price_per_day = ${data.price_per_day}, price_extended_15 = ${price_extended_15},
+        price_monthly_30 = ${price_monthly_30}, description = ${data.description},
         image_url = ${data.image_url}
     WHERE id = ${id}
     RETURNING *
@@ -153,7 +157,7 @@ export async function deleteVehicle(id: number) {
 
 // Fields the client-facing reservation form collects. Admin handover
 // fields (plate, mileage, damages, equipment, fees) are deliberately not
-// accepted here — they're only ever set via updateReservationHandover()
+// accepted here â€” they're only ever set via updateReservationHandover()
 // (see Step 4), so a client submission can never forge them.
 export type CreateReservationInput = {
   vehicle_id: number;
@@ -221,7 +225,7 @@ export async function updateReservationStatus(id: number, status: ReservationSta
   await sql`UPDATE reservations SET status = ${status} WHERE id = ${id}`;
 }
 
-// Feature 2 — availability. Only CONFIRMED reservations block a vehicle;
+// Feature 2 â€” availability. Only CONFIRMED reservations block a vehicle;
 // pending/contacted requests are just leads and don't reserve the car.
 // Uses idx_reservations_vehicle_status_dates (see migrations/002_*.sql).
 export async function isVehicleAvailable(
@@ -307,7 +311,7 @@ export async function confirmReservation(
   return { ok: true };
 }
 
-// Feature 1 — admin handover completion (plate, mileage, damages,
+// Feature 1 â€” admin handover completion (plate, mileage, damages,
 // equipment, delivery/pickup fees). Deliberately separate from the
 // client-facing createReservation() input.
 export async function updateReservationHandover(
@@ -340,3 +344,6 @@ export async function updateReservationHandover(
 export async function deleteReservation(id: number) {
   await sql`DELETE FROM reservations WHERE id = ${id}`;
 }
+
+
+
