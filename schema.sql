@@ -54,6 +54,12 @@ CREATE TABLE reservations (
   delivery_fee NUMERIC(10,2) NOT NULL DEFAULT 0,
   pickup_fee NUMERIC(10,2) NOT NULL DEFAULT 0,
 
+  -- Admin contract editing
+  fait_a TEXT NOT NULL DEFAULT '',
+  override_total_ht NUMERIC(10,2),
+  override_tva NUMERIC(10,2),
+  override_total_ttc NUMERIC(10,2),
+
   -- Contract identity
   contract_number TEXT UNIQUE,
   contract_generated_at TIMESTAMPTZ,

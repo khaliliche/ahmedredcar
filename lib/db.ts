@@ -70,6 +70,12 @@ export type Reservation = {
   delivery_fee: number;
   pickup_fee: number;
 
+  // Admin contract editing
+  fait_a: string;
+  override_total_ht: number | null;
+  override_tva: number | null;
+  override_total_ttc: number | null;
+
   // Contract identity
   contract_number: string | null;
   contract_generated_at: string | null;
@@ -345,5 +351,95 @@ export async function deleteReservation(id: number) {
   await sql`DELETE FROM reservations WHERE id = ${id}`;
 }
 
+// Feature 3 — full contract editing. Lets an admin correct any section of
+// the PDF (driver, second driver, vehicle label/plate, dates, handover
+// details, and an optional manual override of the three billing totals)
+// from one form, before (re)generating the PDF. Billing overrides are
+// nullable: leaving them blank keeps the normal calculated value (see
+// lib/contract.ts:resolveBilling).
+export type UpdateReservationContractInput = {
+  full_name: string;
+  age: number;
+  cin_number: string;
+  license_issue_date: string;
+  driver_address: string;
+  driver_phone: string;
+  driver_license_number: string;
+  driver_passport_number: string;
 
+  has_second_driver: boolean;
+  second_driver_full_name: string;
+  second_driver_address: string;
+  second_driver_phone: string;
+  second_driver_cin_number: string;
+  second_driver_license_number: string;
+  second_driver_passport_number: string;
 
+  vehicle_label: string;
+  registration_plate: string;
+
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
+
+  mileage_start: number | null;
+  mileage_end: number | null;
+  damages: DamageEntry[];
+  equipment: EquipmentChecklist;
+  delivery_fee: number;
+  pickup_fee: number;
+
+  fait_a: string;
+  override_total_ht: number | null;
+  override_tva: number | null;
+  override_total_ttc: number | null;
+};
+
+export async function updateReservationContract(
+  id: number,
+  data: UpdateReservationContractInput
+): Promise<Reservation> {
+  const rows = await sql<Reservation[]>`
+    UPDATE reservations
+    SET full_name = ${data.full_name},
+        age = ${data.age},
+        cin_number = ${data.cin_number},
+        license_issue_date = ${data.license_issue_date},
+        driver_address = ${data.driver_address},
+        driver_phone = ${data.driver_phone},
+        driver_license_number = ${data.driver_license_number},
+        driver_passport_number = ${data.driver_passport_number},
+
+        has_second_driver = ${data.has_second_driver},
+        second_driver_full_name = ${data.second_driver_full_name},
+        second_driver_address = ${data.second_driver_address},
+        second_driver_phone = ${data.second_driver_phone},
+        second_driver_cin_number = ${data.second_driver_cin_number},
+        second_driver_license_number = ${data.second_driver_license_number},
+        second_driver_passport_number = ${data.second_driver_passport_number},
+
+        vehicle_label = ${data.vehicle_label},
+        registration_plate = ${data.registration_plate},
+
+        start_date = ${data.start_date},
+        end_date = ${data.end_date},
+        start_time = ${data.start_time},
+        end_time = ${data.end_time},
+
+        mileage_start = ${data.mileage_start},
+        mileage_end = ${data.mileage_end},
+        damages = ${sql.json(data.damages)},
+        equipment = ${sql.json(data.equipment)},
+        delivery_fee = ${data.delivery_fee},
+        pickup_fee = ${data.pickup_fee},
+
+        fait_a = ${data.fait_a},
+        override_total_ht = ${data.override_total_ht},
+        override_tva = ${data.override_tva},
+        override_total_ttc = ${data.override_total_ttc}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rows[0];
+}

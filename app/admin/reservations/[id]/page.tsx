@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
 import { getReservationById, getVehicleById, type ReservationStatus } from "@/lib/db";
@@ -13,9 +13,9 @@ import HandoverForm from "@/components/admin/HandoverForm";
 
 const STATUS_LABELS: Record<ReservationStatus, string> = {
   pending: "En attente",
-  contacted: "Contacté",
-  confirmed: "Confirmé",
-  cancelled: "Annulé",
+  contacted: "ContactÃ©",
+  confirmed: "ConfirmÃ©",
+  cancelled: "AnnulÃ©",
 };
 const STATUS_OPTIONS: ReservationStatus[] = ["pending", "contacted", "confirmed", "cancelled"];
 
@@ -79,13 +79,13 @@ export default async function AdminReservationDetailPage({
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-black/50 transition-colors hover:text-black/80"
           >
             <ArrowLeft className="h-4 w-4" />
-            Réservations
+            RÃ©servations
           </Link>
 
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="font-display text-2xl font-extrabold text-[var(--color-ink)]">
-                Réservation #{reservation.id} — {reservation.full_name}
+                RÃ©servation #{reservation.id} â€” {reservation.full_name}
               </h1>
               {reservation.contract_number && (
                 <p className="mt-1 text-xs font-semibold text-black/40">
@@ -100,13 +100,13 @@ export default async function AdminReservationDetailPage({
 
           {error === "conflict" && (
             <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
-              Impossible de confirmer : ce véhicule a déjà une réservation confirmée qui chevauche
+              Impossible de confirmer : ce vÃ©hicule a dÃ©jÃ  une rÃ©servation confirmÃ©e qui chevauche
               ces dates.
             </p>
           )}
           {error === "notFound" && (
             <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
-              Réservation ou véhicule introuvable.
+              RÃ©servation ou vÃ©hicule introuvable.
             </p>
           )}
 
@@ -133,19 +133,26 @@ export default async function AdminReservationDetailPage({
                 className="flex items-center gap-1.5 rounded-lg border border-black/15 px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5"
               >
                 <FileText className="h-3.5 w-3.5" />
-                Voir / réimprimer le contrat
+                Voir / rÃ©imprimer le contrat
               </a>
             ) : (
               <button
                 type="button"
                 disabled
-                title="Confirmez la réservation pour générer le contrat"
+                title="Confirmez la rÃ©servation pour gÃ©nÃ©rer le contrat"
                 className="flex items-center gap-1.5 rounded-lg border border-black/10 px-3 py-1.5 text-xs font-semibold text-black/30"
               >
                 <FileText className="h-3.5 w-3.5" />
-                Générer le contrat
+                GÃ©nÃ©rer le contrat
               </button>
             )}
+
+            <Link
+              href={`/admin/reservations/${reservation.id}/edit-contract`}
+              className="rounded-lg border border-black/15 px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5"
+            >
+              Modifier le contrat
+            </Link>
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -155,13 +162,13 @@ export default async function AdminReservationDetailPage({
               </h2>
               <dl className="mt-3 flex flex-col gap-2 text-sm">
                 <Row label="Nom" value={reservation.full_name} />
-                <Row label="Âge" value={`${reservation.age} ans`} />
+                <Row label="Ã‚ge" value={`${reservation.age} ans`} />
                 <Row label="CIN" value={reservation.cin_number} />
-                <Row label="Permis N°" value={reservation.driver_license_number || "—"} />
+                <Row label="Permis NÂ°" value={reservation.driver_license_number || "â€”"} />
                 <Row label="Permis obtenu le" value={formatDate(reservation.license_issue_date)} />
-                <Row label="Passeport N°" value={reservation.driver_passport_number || "—"} />
-                <Row label="Adresse" value={reservation.driver_address || "—"} />
-                <Row label="Téléphone" value={reservation.driver_phone || "—"} />
+                <Row label="Passeport NÂ°" value={reservation.driver_passport_number || "â€”"} />
+                <Row label="Adresse" value={reservation.driver_address || "â€”"} />
+                <Row label="TÃ©lÃ©phone" value={reservation.driver_phone || "â€”"} />
               </dl>
             </section>
 
@@ -171,18 +178,18 @@ export default async function AdminReservationDetailPage({
               </h2>
               {reservation.has_second_driver ? (
                 <dl className="mt-3 flex flex-col gap-2 text-sm">
-                  <Row label="Nom" value={reservation.second_driver_full_name || "—"} />
-                  <Row label="CIN" value={reservation.second_driver_cin_number || "—"} />
+                  <Row label="Nom" value={reservation.second_driver_full_name || "â€”"} />
+                  <Row label="CIN" value={reservation.second_driver_cin_number || "â€”"} />
                   <Row
-                    label="Permis N°"
-                    value={reservation.second_driver_license_number || "—"}
+                    label="Permis NÂ°"
+                    value={reservation.second_driver_license_number || "â€”"}
                   />
                   <Row
-                    label="Passeport N°"
-                    value={reservation.second_driver_passport_number || "—"}
+                    label="Passeport NÂ°"
+                    value={reservation.second_driver_passport_number || "â€”"}
                   />
-                  <Row label="Adresse" value={reservation.second_driver_address || "—"} />
-                  <Row label="Téléphone" value={reservation.second_driver_phone || "—"} />
+                  <Row label="Adresse" value={reservation.second_driver_address || "â€”"} />
+                  <Row label="TÃ©lÃ©phone" value={reservation.second_driver_phone || "â€”"} />
                 </dl>
               ) : (
                 <p className="mt-3 text-sm text-black/40">Aucun autre conducteur.</p>
@@ -192,28 +199,28 @@ export default async function AdminReservationDetailPage({
 
           <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5">
             <h2 className="font-display text-sm font-bold uppercase tracking-wide text-black/50">
-              Véhicule &amp; période
+              VÃ©hicule &amp; pÃ©riode
             </h2>
             <dl className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-              <Row label="Véhicule" value={reservation.vehicle_label} />
+              <Row label="VÃ©hicule" value={reservation.vehicle_label} />
               <Row
                 label="Prix / jour"
-                value={vehicle ? `${vehicle.price_per_day} DH` : "Véhicule supprimé"}
+                value={vehicle ? `${vehicle.price_per_day} DH` : "VÃ©hicule supprimÃ©"}
               />
               <Row
-                label="Départ"
-                value={`${formatDate(reservation.start_date)} à ${reservation.start_time}`}
+                label="DÃ©part"
+                value={`${formatDate(reservation.start_date)} Ã  ${reservation.start_time}`}
               />
               <Row
                 label="Retour"
-                value={`${formatDate(reservation.end_date)} à ${reservation.end_time}`}
+                value={`${formatDate(reservation.end_date)} Ã  ${reservation.end_time}`}
               />
             </dl>
           </section>
 
           <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5">
             <h2 className="font-display text-sm font-bold uppercase tracking-wide text-black/50">
-              Facturation (estimée)
+              Facturation (estimÃ©e)
             </h2>
             <dl className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
               <Row label="Jours" value={`${billing.days}`} />
@@ -225,7 +232,7 @@ export default async function AdminReservationDetailPage({
 
           <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5">
             <h2 className="font-display text-sm font-bold uppercase tracking-wide text-black/50">
-              Complétion remise du véhicule
+              ComplÃ©tion remise du vÃ©hicule
             </h2>
             <div className="mt-4">
               <HandoverForm
@@ -249,7 +256,7 @@ export default async function AdminReservationDetailPage({
                 type="submit"
                 className="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
               >
-                Supprimer la réservation
+                Supprimer la rÃ©servation
               </button>
             </form>
           </div>

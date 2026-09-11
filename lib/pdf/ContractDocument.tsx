@@ -1,6 +1,6 @@
 import { Document, Page, View, Text, StyleSheet, Svg, Circle, Rect } from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
-import { DAMAGE_TYPES, EQUIPMENT_ITEMS, calculateBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
+import { DAMAGE_TYPES, EQUIPMENT_ITEMS, resolveBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 
 const BLACK = "#000000";
 
@@ -261,15 +261,7 @@ export function ContractDocument({
     price_monthly_30: vehicle?.price_monthly_30 ?? vehicle?.price_per_day ?? 0,
     min_rental_days: vehicle?.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS,
   };
-  const rentalBilling = calculateBilling(vehiclePricing, reservation.start_date, reservation.end_date);
-  const deliveryFee = Number(reservation.delivery_fee);
-  const pickupFee = Number(reservation.pickup_fee);
-  const billing = {
-    days: rentalBilling.days,
-    totalHT: rentalBilling.subtotal + deliveryFee + pickupFee,
-    tva: rentalBilling.tva,
-    totalTTC: rentalBilling.total + deliveryFee + pickupFee,
-  };
+  const billing = resolveBilling(vehiclePricing, reservation);
   const contractNumber = reservation.contract_number ?? "—";
 
   return (
@@ -367,7 +359,7 @@ export function ContractDocument({
         <View style={styles.row3}>
           <View style={styles.validationCol}>
             <Card title="Validation du contrat">
-              <Field label="Fait à" />
+              <Field label="Fait à" value={reservation.fait_a} />
               <Field
                 label="Date"
                 value={

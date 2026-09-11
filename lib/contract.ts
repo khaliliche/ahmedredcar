@@ -83,3 +83,53 @@ export function calculateBilling(
   const tva = subtotal * TVA_RATE;
   return { days, dailyRate, subtotal, tva, total: subtotal + tva };
 }
+
+// Resolves the four figures shown on the contract (days, Total HT, TVA,
+// Total à payer), applying any admin override on top of the normal
+// formula. The underlying formula (TVA on rental only, not on
+// delivery/pickup fees) is left untouched by design — overrides are the
+// per-contract escape hatch instead of a formula change.
+export function resolveBilling(
+  vehicle: VehiclePricing,
+  input: {
+    start_date: string;
+    end_date: string;
+    delivery_fee: number | string;
+    pickup_fee: number | string;
+    override_total_ht?: number | string | null;
+    override_tva?: number | string | null;
+    override_total_ttc?: number | string | null;
+  }
+) {
+  const rentalBilling = calculateBilling(vehicle, input.start_date, input.end_date);
+  const deliveryFee = Number(input.delivery_fee) || 0;
+  const pickupFee = Number(input.pickup_fee) || 0;
+
+  const calculatedTotalHT = rentalBilling.subtotal + deliveryFee + pickupFee;
+  const calculatedTVA = rentalBilling.tva;
+  const calculatedTotalTTC = rentalBilling.total + deliveryFee + pickupFee;
+
+  const overrideHT =
+    input.override_total_ht != null && input.override_total_ht !== ""
+      ? Number(input.override_total_ht)
+      : null;
+  const overrideTVA =
+    input.override_tva != null && input.override_tva !== ""
+      ? Number(input.override_tva)
+      : null;
+  const overrideTTC =
+    input.override_total_ttc != null && input.override_total_ttc !== ""
+      ? Number(input.override_total_ttc)
+      : null;
+
+  return {
+    days: rentalBilling.days,
+    calculatedTotalHT,
+    calculatedTVA,
+    calculatedTotalTTC,
+    totalHT: overrideHT ?? calculatedTotalHT,
+    tva: overrideTVA ?? calculatedTVA,
+    totalTTC: overrideTTC ?? calculatedTotalTTC,
+    isOverridden: overrideHT != null || overrideTVA != null || overrideTTC != null,
+  };
+}
