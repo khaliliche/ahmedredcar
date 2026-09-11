@@ -68,6 +68,15 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
             <form action={handleSubmit} className="mt-4 flex flex-col gap-4">
               <input type="hidden" name="vehicle_id" value={vehicle.id} />
 
+              <input
+                type="text"
+                name="website"
+                autoComplete="off"
+                tabIndex={-1}
+                aria-hidden="true"
+                className="hidden"
+              />
+
               <label className="flex flex-col gap-1">
                 <span className="text-sm font-semibold">Nom complet</span>
                 <input

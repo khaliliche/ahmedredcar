@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -18,16 +18,27 @@ import {
   type DamageEntry,
   type EquipmentChecklist,
 } from "@/lib/db";
-import { checkPassword, getExpectedSessionToken } from "@/lib/auth";
+import { checkPassword, getExpectedSessionToken, checkLoginRateLimit, recordLoginFailure, resetLoginFailures } from "@/lib/auth";
 import { EQUIPMENT_ITEMS } from "@/lib/contract";
 
 export async function loginAction(formData: FormData) {
+  const h = await headers();
+  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+  const rl = checkLoginRateLimit(ip);
+  if (!rl.allowed) {
+    redirect("/admin/login?error=locked");
+  }
+
   const password = formData.get("password") as string;
 
   const isValid = await checkPassword(password);
   if (!isValid) {
+    recordLoginFailure(ip);
+    await new Promise((resolve) => setTimeout(resolve, 800));
     redirect("/admin/login?error=1");
   }
+  resetLoginFailures(ip);
 
   const sessionToken = await getExpectedSessionToken();
   if (!sessionToken) {
@@ -68,12 +79,12 @@ async function uploadIfPresent(formData: FormData): Promise<string | null> {
 
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
     throw new Error(
-      `Type de fichier non autorisÃ© : ${file.type || "inconnu"}. Formats acceptÃ©s : JPEG, PNG, WEBP, GIF.`
+      `Type de fichier non autorisÃÂ© : ${file.type || "inconnu"}. Formats acceptÃÂ©s : JPEG, PNG, WEBP, GIF.`
     );
   }
 
   if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("Le fichier dÃ©passe la taille maximale autorisÃ©e (5 Mo).");
+    throw new Error("Le fichier dÃÂ©passe la taille maximale autorisÃÂ©e (5 Mo).");
   }
 
   const safeName = file.name
@@ -90,7 +101,7 @@ const fileName = `${Date.now()}-${safeName}`;
     });
 
   if (error) {
-    throw new Error(`Ã‰chec de l'upload : ${error.message}`);
+    throw new Error(`Ãâ°chec de l'upload : ${error.message}`);
   }
 
   const { data } = supabaseAdmin.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
@@ -198,7 +209,7 @@ export async function updateReservationHandoverAction(id: number, formData: Form
   revalidatePath("/admin/reservations");
 }
 
-// Feature 3 â€” full contract editing. One form, every editable section of
+// Feature 3 Ã¢â¬â full contract editing. One form, every editable section of
 // the PDF, with an optional manual override for the three billing
 // totals (left blank = keep using the calculated value).
 export async function updateReservationContractAction(

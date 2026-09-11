@@ -1,4 +1,4 @@
-﻿import { loginAction } from "@/app/admin/actions";
+import { loginAction } from "@/app/admin/actions";
 
 export default async function AdminLoginPage({
   searchParams,
@@ -19,7 +19,9 @@ export default async function AdminLoginPage({
 
         {params.error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-            Mot de passe incorrect.
+            {params.error === "locked"
+              ? "Trop de tentatives. Compte verrouille 15 minutes."
+              : "Mot de passe incorrect."}
           </p>
         )}
 

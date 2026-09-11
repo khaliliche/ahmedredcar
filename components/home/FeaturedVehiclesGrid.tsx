@@ -41,7 +41,7 @@ export default function FeaturedVehiclesGrid({
         </p>
       ) : (
         <>
-          <div className="mt-10 flex snap-x gap-4 overflow-x-auto pb-4 pl-6 pr-6 sm:hidden">
+          <div className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 pl-6 pr-6 sm:hidden [&>article]:w-[85%] [&>article]:shrink-0 [&>article]:snap-start">
             {vehicles.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}

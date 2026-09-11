@@ -1,7 +1,7 @@
-﻿﻿import Hero from "@/components/home/Hero";
+﻿import Hero from "@/components/home/Hero";
 import DeliveryBanner from "@/components/home/DeliveryBanner";
 import TrustIndicators from "@/components/home/TrustIndicators";
-import FeaturedVehicles from "@/components/home/FeaturedVehicles";
+import FeaturedVehiclesGrid from "@/components/home/FeaturedVehiclesGrid";
 import TripFinder from "@/components/home/TripFinder";
 import HowItWorks from "@/components/home/HowItWorks";
 import Testimonials from "@/components/home/Testimonials";
@@ -17,7 +17,7 @@ export default async function Home() {
       <Hero />
       <DeliveryBanner />
       <TrustIndicators />
-      <FeaturedVehicles />
+      <FeaturedVehiclesGrid vehicles={vehicles.slice(0, 6)} />
       <TripFinder vehicles={vehicles} />
       <HowItWorks />
       <Testimonials />

@@ -29,6 +29,26 @@ type ActionResult =
 export async function createReservationAction(
   formData: FormData
 ): Promise<ActionResult> {
+  // Honeypot: real users never fill this field; bots that do get a fake
+  // success so they move on without writing anything to the database.
+  if (String(formData.get("website") || "").trim() !== "") {
+    return {
+      success: true,
+      whatsappData: {
+        vehicleLabel: "",
+        fullName: "",
+        age: 0,
+        cinNumber: "",
+        licenseIssueDate: "",
+        driverAddress: "",
+        driverPhone: "",
+        driverLicenseNumber: "",
+        driverPassportNumber: "",
+        hasSecondDriver: false,
+      },
+    };
+  }
+
   const vehicleId = Number(formData.get("vehicle_id"));
   const fullName = String(formData.get("full_name") || "").trim();
   const age = Number(formData.get("age"));
