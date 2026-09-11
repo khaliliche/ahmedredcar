@@ -11,6 +11,7 @@ import {
   updateReservationStatus,
   deleteReservation,
   confirmReservation,
+  createSigningToken,
   updateReservationHandover,
   updateReservationContract,
   getReservationById,
@@ -79,12 +80,12 @@ async function uploadIfPresent(formData: FormData): Promise<string | null> {
 
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
     throw new Error(
-      `Type de fichier non autorisÃÂ© : ${file.type || "inconnu"}. Formats acceptÃÂ©s : JPEG, PNG, WEBP, GIF.`
+      `Type de fichier non autoris�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?© : ${file.type || "inconnu"}. Formats accept�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?©s : JPEG, PNG, WEBP, GIF.`
     );
   }
 
   if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("Le fichier dÃÂ©passe la taille maximale autorisÃÂ©e (5 Mo).");
+    throw new Error("Le fichier d�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?©passe la taille maximale autoris�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?©e (5 Mo).");
   }
 
   const safeName = file.name
@@ -101,7 +102,7 @@ const fileName = `${Date.now()}-${safeName}`;
     });
 
   if (error) {
-    throw new Error(`Ãâ°chec de l'upload : ${error.message}`);
+    throw new Error(`�?�?�?�?�?�?�?�?�?�?�?¢�?�?�?�?�?�?�?°chec de l'upload : ${error.message}`);
   }
 
   const { data } = supabaseAdmin.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
@@ -209,7 +210,7 @@ export async function updateReservationHandoverAction(id: number, formData: Form
   revalidatePath("/admin/reservations");
 }
 
-// Feature 3 Ã¢â¬â full contract editing. One form, every editable section of
+// Feature 3 �?�?�?�?�?�?�?¢�?�?�?¢�?�?�?�?�?�?�?¬�?�?�?¢�?�?�?�?�?�?�? full contract editing. One form, every editable section of
 // the PDF, with an optional manual override for the three billing
 // totals (left blank = keep using the calculated value).
 export async function updateReservationContractAction(
@@ -308,4 +309,41 @@ export async function updateReservationContractAction(
   revalidatePath("/admin/contracts");
 
   redirect(`/admin/reservations/${id}`);
+}
+// Builds the client's signing link and a WhatsApp click-to-chat URL that
+// pre-fills the message with the link. Phone accepts local Moroccan
+// format (0612345678) or international (+212...); if it cannot be
+// normalized, waUrl is null and the UI falls back to copying the link.
+function normalizePhoneForWa(raw: string): string | null {
+  const digits = raw.replace(/\D/g, "");
+  if (/^00\d{9,15}$/.test(digits)) return digits.slice(2);
+  if (/^0\d{9}$/.test(digits)) return `212${digits.slice(1)}`;
+  if (/^212\d{9}$/.test(digits)) return digits;
+  if (/^[1-9]\d{8,14}$/.test(digits)) return digits;
+  return null;
+}
+
+export async function generateSigningLinkAction(id: number): Promise<
+  | { ok: true; signingUrl: string; waUrl: string | null }
+  | { ok: false; error: "notFound" | "cancelled" | "alreadySigned" }
+> {
+  const reservation = await getReservationById(id);
+  if (!reservation) return { ok: false, error: "notFound" };
+  if (reservation.status === "cancelled") return { ok: false, error: "cancelled" };
+  if (reservation.signed_at) return { ok: false, error: "alreadySigned" };
+
+  const token = await createSigningToken(id);
+  if (!token) return { ok: false, error: "notFound" };
+
+  const h = await headers();
+  const origin = h.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const signingUrl = `${origin}/sign/${token}`;
+
+  const phone = normalizePhoneForWa(reservation.driver_phone);
+  const message = encodeURIComponent(
+    `Bonjour ${reservation.full_name}, voici votre contrat de location (${reservation.vehicle_label}) a signer : ${signingUrl} - lien valable 7 jours.`
+  );
+  const waUrl = phone && origin ? `https://wa.me/${phone}?text=${message}` : null;
+
+  return { ok: true, signingUrl, waUrl };
 }

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import postgres from "postgres";
 import { getTieredPricing } from "./pricing";
 
@@ -79,6 +80,14 @@ export type Reservation = {
   // Contract identity
   contract_number: string | null;
   contract_generated_at: string | null;
+
+  // Remote signing
+  signing_token: string | null;
+  signing_token_expires_at: string | null;
+  signer_name: string | null;
+  signed_at: string | null;
+  signer_ip: string | null;
+  signature_data: string | null;
 
   status: ReservationStatus;
   created_at: string;
@@ -432,9 +441,60 @@ export async function updateReservationContract(
         damages = ${sql.json(data.damages)},
         equipment = ${sql.json(data.equipment)},
         delivery_fee = ${data.delivery_fee},
-        pickup_fee = ${data.pickup_fee}
+        pickup_fee = ${data.pickup_fee},
+
+        fait_a = ${data.fait_a},
+        override_total_ht = ${data.override_total_ht},
+        override_tva = ${data.override_tva},
+        override_total_ttc = ${data.override_total_ttc}
     WHERE id = ${id}
     RETURNING *
   `;
   return rows[0];
+}
+
+// Feature 4 - remote signing. The admin generates a single-use, expiring
+// link; the client signs on a public page; the signature (PNG data URL),
+// typed name, IP and timestamp land on the reservation and are rendered
+// in the contract PDF.
+export async function createSigningToken(id: number): Promise<string | null> {
+  const token = randomUUID();
+  const rows = await sql<{ signing_token: string }[]>`
+    UPDATE reservations
+    SET signing_token = ${token},
+        signing_token_expires_at = now() + interval '7 days'
+    WHERE id = ${id}
+    RETURNING signing_token
+  `;
+  return rows[0]?.signing_token ?? null;
+}
+
+export async function getReservationBySigningToken(token: string): Promise<Reservation | null> {
+  const rows = await sql<Reservation[]>`
+    SELECT * FROM reservations WHERE signing_token = ${token} LIMIT 1
+  `;
+  return rows[0] ?? null;
+}
+
+// Consumes the token exactly once: the UPDATE only matches while the
+// token is unused, unexpired and the reservation is not cancelled.
+export async function consumeSigningToken(
+  token: string,
+  data: { signer_name: string; signer_ip: string; signature_data: string }
+): Promise<boolean> {
+  const rows = await sql<{ id: number }[]>`
+    UPDATE reservations
+    SET signer_name = ${data.signer_name},
+        signer_ip = ${data.signer_ip},
+        signature_data = ${data.signature_data},
+        signed_at = now(),
+        signing_token = NULL,
+        signing_token_expires_at = NULL
+    WHERE signing_token = ${token}
+      AND signed_at IS NULL
+      AND status != 'cancelled'
+      AND (signing_token_expires_at IS NULL OR signing_token_expires_at > now())
+    RETURNING id
+  `;
+  return rows.length === 1;
 }

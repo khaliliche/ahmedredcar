@@ -1,4 +1,4 @@
-import { Document, Page, View, Text, StyleSheet, Svg, Circle, Rect } from "@react-pdf/renderer";
+import { Document, Page, View, Text, Image, StyleSheet, Svg, Circle, Rect } from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
 import { DAMAGE_TYPES, EQUIPMENT_ITEMS, resolveBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 
@@ -117,6 +117,8 @@ const styles = StyleSheet.create({
   },
   sigStripHeaderText: { color: "#fff", fontSize: 7.5, fontWeight: 700, textAlign: "center" },
   sigStripBody: { height: 46 },
+  sigImage: { width: "100%", height: "100%", objectFit: "contain" },
+  auditLine: { fontSize: 6.5, color: "#333", marginBottom: 10 },
 
   // ---- Footer ----
   footer: {
@@ -439,7 +441,11 @@ export function ContractDocument({
             <View style={styles.sigStripHeader}>
               <Text style={styles.sigStripHeaderText}>1er conducteur</Text>
             </View>
-            <View style={styles.sigStripBody} />
+            <View style={styles.sigStripBody}>
+              {reservation.signature_data ? (
+                <Image src={reservation.signature_data} style={styles.sigImage} />
+              ) : null}
+            </View>
           </View>
           <View style={styles.sigStripCol}>
             <View style={styles.sigStripHeader}>
@@ -447,9 +453,15 @@ export function ContractDocument({
             </View>
             <View style={styles.sigStripBody} />
           </View>
-        </View>
 
-        <View style={styles.footer} fixed>
+          {reservation.signed_at && (
+            <Text style={styles.auditLine}>
+              Signe electroniquement le{" "}
+              {new Date(reservation.signed_at).toLocaleString("fr-FR")} par{" "}
+              {reservation.signer_name}{" "}
+              (IP: {reservation.signer_ip})
+            </Text>
+          )}
           <View style={styles.footerRow}>
             <View style={styles.footerItem}>
               <Text style={styles.footerText}>Tél : +212 664 883 106</Text>
