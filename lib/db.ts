@@ -470,6 +470,10 @@ export async function createSigningToken(id: number): Promise<string | null> {
 }
 
 export async function getReservationBySigningToken(token: string): Promise<Reservation | null> {
+  // Guard garbage tokens that Postgres would reject as invalid UUIDs.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
+    return null;
+  }
   const rows = await sql<Reservation[]>`
     SELECT * FROM reservations WHERE signing_token = ${token} LIMIT 1
   `;
