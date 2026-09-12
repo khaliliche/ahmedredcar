@@ -358,7 +358,7 @@ function normalizePhoneForWa(raw: string): string | null {
   return null;
 }
 
-export async function generateSigningLinkAction(id: number): Promise
+export async function generateSigningLinkAction(id: number): Promise<
   | { ok: true; signingUrl: string; waUrl: string | null }
   | { ok: false; error: "notFound" | "cancelled" | "alreadySigned" }
 > {
@@ -387,7 +387,7 @@ export async function generateSigningLinkAction(id: number): Promise
 // Same as generateSigningLinkAction but for the SECOND driver: its own
 // token, own link, sent to second_driver_phone — completely independent
 // of the main driver's signature.
-export async function generateSigningLinkAction2(id: number): Promise
+export async function generateSigningLinkAction2(id: number): Promise<
   | { ok: true; signingUrl: string; waUrl: string | null }
   | { ok: false; error: "notFound" | "cancelled" | "alreadySigned" | "noSecondDriver" }
 > {
@@ -413,3 +413,7 @@ export async function generateSigningLinkAction2(id: number): Promise
 
   return { ok: true, signingUrl, waUrl };
 }
+
+
+
+

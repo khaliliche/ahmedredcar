@@ -155,7 +155,7 @@ export default async function AdminReservationDetailPage({
             )}
 
             {reservation.contract_number ? (
-              
+              <a
                 href={`/admin/real/reservations/${reservation.id}/contract`}
                 target="_blank"
                 rel="noopener noreferrer"
