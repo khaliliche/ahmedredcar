@@ -1,4 +1,4 @@
-﻿import { createVehicleAction } from "@/app/admin/actions";
+﻿import { createVehicleAction } from "@/app/admin/real/actions";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export default function NewVehiclePage() {
@@ -74,3 +74,4 @@ export default function NewVehiclePage() {
     </div>
   );
 }
+

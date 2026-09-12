@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getReservationById, getVehicleById } from "@/lib/db";
-import { updateReservationContractAction } from "@/app/admin/actions";
+import { updateReservationContractAction } from "@/app/admin/real/actions";
 import { resolveBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import ContractEditForm from "@/components/admin/ContractEditForm";
@@ -42,7 +42,7 @@ export default async function EditContractPage({
       <main className="flex-1 px-4 py-8 sm:px-8">
         <div className="mx-auto max-w-4xl">
           <Link
-            href="/admin/contracts"
+            href="/admin/real/contracts"
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-black/50 transition-colors hover:text-black/80"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -114,3 +114,4 @@ export default async function EditContractPage({
     </div>
   );
 }
+

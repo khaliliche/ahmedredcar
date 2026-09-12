@@ -29,7 +29,7 @@ export async function loginAction(formData: FormData) {
 
   const rl = await checkLoginRateLimit(ip);
   if (!rl.allowed) {
-    redirect("/admin/login?error=locked");
+    redirect("/admin/real/login?error=locked");
   }
 
   const password = formData.get("password") as string;
@@ -38,13 +38,13 @@ export async function loginAction(formData: FormData) {
   if (!isValid) {
     await recordLoginFailure(ip);
     await new Promise((resolve) => setTimeout(resolve, 800));
-    redirect("/admin/login?error=1");
+    redirect("/admin/real/login?error=1");
   }
   await resetLoginFailures(ip);
 
   const sessionToken = await getExpectedSessionToken();
   if (!sessionToken) {
-    redirect("/admin/login?error=1");
+    redirect("/admin/real/login?error=1");
   }
 
   const cookieStore = await cookies();
@@ -56,13 +56,13 @@ export async function loginAction(formData: FormData) {
     maxAge: 60 * 60 * 24 * 30,
   });
 
-  redirect("/admin");
+  redirect("/admin/real");
 }
 
 export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete("admin_session");
-  redirect("/admin/login");
+  redirect("/admin/real/login");
 }
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -111,7 +111,7 @@ const fileName = `${Date.now()}-${safeName}`;
 }
 
 function revalidateAll() {
-  revalidatePath("/admin");
+  revalidatePath("/admin/real");
   revalidatePath("/vehicules");
   revalidatePath("/");
 }
@@ -128,7 +128,7 @@ export async function createVehicleAction(formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/admin");
+  redirect("/admin/real");
 }
 
 export async function updateVehicleAction(id: number, formData: FormData) {
@@ -144,7 +144,7 @@ export async function updateVehicleAction(id: number, formData: FormData) {
   });
 
   revalidateAll();
-  redirect("/admin");
+  redirect("/admin/real");
 }
 
 export async function deleteVehicleAction(id: number) {
@@ -156,19 +156,19 @@ export async function updateReservationStatusAction(id: number, status: Reservat
   if (status === "confirmed") {
     const result = await confirmReservation(id);
     if (!result.ok) {
-      revalidatePath("/admin/reservations");
-      redirect(`/admin/reservations/${id}?error=${result.reason}`);
+      revalidatePath("/admin/real/reservations");
+      redirect(`/admin/real/reservations/${id}?error=${result.reason}`);
     }
   } else {
     await updateReservationStatus(id, status);
   }
-  revalidatePath("/admin/reservations");
-  revalidatePath(`/admin/reservations/${id}`);
+  revalidatePath("/admin/real/reservations");
+  revalidatePath(`/admin/real/reservations/${id}`);
 }
 
 export async function deleteReservationAction(id: number) {
   await deleteReservation(id);
-  revalidatePath("/admin/reservations");
+  revalidatePath("/admin/real/reservations");
 }
 
 export async function updateReservationHandoverAction(id: number, formData: FormData) {
@@ -207,8 +207,8 @@ export async function updateReservationHandoverAction(id: number, formData: Form
     pickup_fee: pickupFee,
   });
 
-  revalidatePath(`/admin/reservations/${id}`);
-  revalidatePath("/admin/reservations");
+  revalidatePath(`/admin/real/reservations/${id}`);
+  revalidatePath("/admin/real/reservations");
 }
 
 // Feature 3 â€” full contract editing. One form, every editable section of
@@ -303,13 +303,13 @@ export async function updateReservationContractAction(
     override_total_ttc: numberOrNull("override_total_ttc"),
   });
 
-  revalidatePath(`/admin/reservations/${id}`);
-  revalidatePath(`/admin/reservations/${id}/edit-contract`);
-  revalidatePath(`/admin/reservations/${id}/contract`);
-  revalidatePath("/admin/reservations");
-  revalidatePath("/admin/contracts");
+  revalidatePath(`/admin/real/reservations/${id}`);
+  revalidatePath(`/admin/real/reservations/${id}/edit-contract`);
+  revalidatePath(`/admin/real/reservations/${id}/contract`);
+  revalidatePath("/admin/real/reservations");
+  revalidatePath("/admin/real/contracts");
 
-  redirect(`/admin/reservations/${id}`);
+  redirect(`/admin/real/reservations/${id}`);
 }
 // Builds the client's signing link and a WhatsApp click-to-chat URL that
 // pre-fills the message with the link. Phone accepts local Moroccan
@@ -348,4 +348,5 @@ export async function generateSigningLinkAction(id: number): Promise<
 
   return { ok: true, signingUrl, waUrl };
 }
+
 

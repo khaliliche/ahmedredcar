@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
@@ -11,7 +11,7 @@ export default function SiteChrome({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin");
+  const isAdmin = pathname?.startsWith("/admin/real");
 
   if (isAdmin) {
     return <>{children}</>;

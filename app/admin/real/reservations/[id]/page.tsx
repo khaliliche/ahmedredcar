@@ -6,7 +6,7 @@ import {
   updateReservationStatusAction,
   updateReservationHandoverAction,
   deleteReservationAction,
-} from "@/app/admin/actions";
+} from "@/app/admin/real/actions";
 import { calculateBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import HandoverForm from "@/components/admin/HandoverForm";
@@ -95,7 +95,7 @@ export default async function AdminReservationDetailPage({
       <main className="flex-1 px-4 py-8 sm:px-8">
         <div className="mx-auto max-w-4xl">
           <Link
-            href="/admin/reservations"
+            href="/admin/real/reservations"
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-black/50 transition-colors hover:text-black/80"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -156,7 +156,7 @@ export default async function AdminReservationDetailPage({
 
             {reservation.contract_number ? (
               <a
-                href={`/admin/reservations/${reservation.id}/contract`}
+                href={`/admin/real/reservations/${reservation.id}/contract`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 rounded-lg border border-black/15 px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5"
@@ -177,7 +177,7 @@ export default async function AdminReservationDetailPage({
             )}
 
             <Link
-              href={`/admin/reservations/${reservation.id}/edit-contract`}
+              href={`/admin/real/reservations/${reservation.id}/edit-contract`}
               className="rounded-lg border border-black/15 px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-black/5"
             >
               Modifier le contrat
@@ -355,3 +355,5 @@ export default async function AdminReservationDetailPage({
     </div>
   );
 }
+
+

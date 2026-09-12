@@ -1,14 +1,14 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { getReservations, getVehicles } from "@/lib/db";
-import { updateReservationStatusAction, deleteReservationAction } from "@/app/admin/actions";
+import { updateReservationStatusAction, deleteReservationAction } from "@/app/admin/real/actions";
 import { CalendarClock, Clock, CheckCircle2, Wallet } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "En attente",
-  contacted: "Contacté",
-  confirmed: "Confirmé",
-  cancelled: "Annulé",
+  contacted: "ContactÃ©",
+  confirmed: "ConfirmÃ©",
+  cancelled: "AnnulÃ©",
 };
 const STATUS_DOT: Record<string, string> = {
   pending: "bg-yellow-500",
@@ -83,7 +83,7 @@ export default async function AdminReservationsPage({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="font-display text-2xl font-extrabold text-[var(--color-ink)]">
-                Réservations
+                RÃ©servations
               </h1>
               <p className="mt-1 text-sm text-black/50">{reservations.length} au total</p>
             </div>
@@ -92,29 +92,29 @@ export default async function AdminReservationsPage({
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard icon={CalendarClock} label="Total" value={reservations.length} tone="ink" />
             <StatCard icon={Clock} label="En attente" value={counts.pending ?? 0} tone="yellow" />
-            <StatCard icon={CheckCircle2} label="Confirmées" value={counts.confirmed ?? 0} tone="green" />
-            <StatCard icon={Wallet} label="Revenu confirmé" value={`${confirmedRevenue.toLocaleString("fr-FR")} DH`} tone="ink" />
+            <StatCard icon={CheckCircle2} label="ConfirmÃ©es" value={counts.confirmed ?? 0} tone="green" />
+            <StatCard icon={Wallet} label="Revenu confirmÃ©" value={`${confirmedRevenue.toLocaleString("fr-FR")} DH`} tone="ink" />
           </div>
 
           <div className="mt-8 flex flex-wrap gap-2 border-b border-black/10 pb-4">
             <Link
-              href="/admin/reservations"
+              href="/admin/real/reservations"
               className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                 !activeFilter ? "bg-[var(--color-ink)] text-white" : "bg-black/5 text-black/60 hover:bg-black/10"
               }`}
             >
-              Toutes · {reservations.length}
+              Toutes Â· {reservations.length}
             </Link>
             {STATUS_OPTIONS.map((status) => (
               <Link
                 key={status}
-                href={`/admin/reservations?status=${status}`}
+                href={`/admin/real/reservations?status=${status}`}
                 className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                   activeFilter === status ? "bg-[var(--color-ink)] text-white" : "bg-black/5 text-black/60 hover:bg-black/10"
                 }`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} />
-                {STATUS_LABELS[status]} · {counts[status] ?? 0}
+                {STATUS_LABELS[status]} Â· {counts[status] ?? 0}
               </Link>
             ))}
           </div>
@@ -124,9 +124,9 @@ export default async function AdminReservationsPage({
               <thead>
                 <tr className="border-b border-black/10 text-left text-xs font-semibold uppercase tracking-wide text-black/40">
                   <th className="px-4 py-3">Client</th>
-                  <th className="px-4 py-3">Véhicule</th>
+                  <th className="px-4 py-3">VÃ©hicule</th>
                   <th className="px-4 py-3">Dates</th>
-                  <th className="px-4 py-3">Durée</th>
+                  <th className="px-4 py-3">DurÃ©e</th>
                   <th className="px-4 py-3">Statut</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
@@ -136,7 +136,7 @@ export default async function AdminReservationsPage({
                   <tr key={r.id} className="border-b border-black/5 last:border-0 hover:bg-black/[0.015]">
                     <td className="px-4 py-3">
                       <Link
-                        href={`/admin/reservations/${r.id}`}
+                        href={`/admin/real/reservations/${r.id}`}
                         className="flex items-center gap-2.5 hover:opacity-80"
                       >
                         <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarColor(r.full_name)}`}>
@@ -144,13 +144,13 @@ export default async function AdminReservationsPage({
                         </div>
                         <div>
                           <p className="font-semibold text-[var(--color-ink)]">{r.full_name}</p>
-                          <p className="text-xs text-black/40">{r.age} ans · CIN {r.cin_number} · Permis {licenseYears(r.license_issue_date)}</p>
+                          <p className="text-xs text-black/40">{r.age} ans Â· CIN {r.cin_number} Â· Permis {licenseYears(r.license_issue_date)}</p>
                         </div>
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-black/70">{r.vehicle_label}</td>
                     <td className="px-4 py-3 text-black/70">
-                      {formatDate(r.start_date)} → {formatDate(r.end_date)}
+                      {formatDate(r.start_date)} â†’ {formatDate(r.end_date)}
                     </td>
                     <td className="px-4 py-3 text-black/70">{daysBetween(r.start_date, r.end_date)} j</td>
                     <td className="px-4 py-3">
@@ -187,20 +187,20 @@ export default async function AdminReservationsPage({
             </table>
 
             {filtered.length === 0 && (
-              <p className="p-8 text-center text-black/50">Aucune réservation ici.</p>
+              <p className="p-8 text-center text-black/50">Aucune rÃ©servation ici.</p>
             )}
           </div>
 
           <div className="mt-6 flex flex-col gap-3 md:hidden">
             {filtered.length === 0 && (
               <p className="rounded-xl border border-dashed border-black/15 p-8 text-center text-black/50">
-                Aucune réservation ici.
+                Aucune rÃ©servation ici.
               </p>
             )}
             {filtered.map((r) => (
               <div key={r.id} className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <Link href={`/admin/reservations/${r.id}`} className="flex items-center gap-2.5">
+                  <Link href={`/admin/real/reservations/${r.id}`} className="flex items-center gap-2.5">
                     <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${avatarColor(r.full_name)}`}>
                       {initials(r.full_name)}
                     </div>
@@ -276,3 +276,4 @@ function StatCard({
     </div>
   );
 }
+

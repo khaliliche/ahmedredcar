@@ -1,13 +1,13 @@
 ﻿import Link from "next/link";
 import { Car, CalendarClock, Users, FileText, LogOut, MessageCircle } from "lucide-react";
-import { logoutAction } from "@/app/admin/actions";
+import { logoutAction } from "@/app/admin/real/actions";
 import { buildWhatsAppLink } from "@/lib/site-config";
 
 const NAV = [
-  { key: "vehicules", href: "/admin", label: "Véhicules", icon: Car },
-  { key: "reservations", href: "/admin/reservations", label: "Réservations", icon: CalendarClock },
-  { key: "contracts", href: "/admin/contracts", label: "Contrats", icon: FileText },
-  { key: "clients", href: "/admin/clients", label: "Clients", icon: Users },
+  { key: "vehicules", href: "/admin/real", label: "Véhicules", icon: Car },
+  { key: "reservations", href: "/admin/real/reservations", label: "Réservations", icon: CalendarClock },
+  { key: "contracts", href: "/admin/real/contracts", label: "Contrats", icon: FileText },
+  { key: "clients", href: "/admin/real/clients", label: "Clients", icon: Users },
 ] as const;
 
 export default function AdminSidebar({
@@ -22,7 +22,7 @@ export default function AdminSidebar({
   return (
     <>
       <aside className="hidden w-60 shrink-0 flex-col bg-[var(--color-charcoal)] px-4 py-6 lg:flex">
-        <Link href="/admin" className="mb-8 flex items-center gap-2 px-2">
+        <Link href="/admin/real" className="mb-8 flex items-center gap-2 px-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/ahmed-redcar-logo.png"
@@ -104,3 +104,4 @@ export default function AdminSidebar({
     </>
   );
 }
+

@@ -1,4 +1,4 @@
-import { loginAction } from "@/app/admin/actions";
+﻿import { loginAction } from "@/app/admin/real/actions";
 
 export default async function AdminLoginPage({
   searchParams,
@@ -46,3 +46,4 @@ export default async function AdminLoginPage({
     </main>
   );
 }
+

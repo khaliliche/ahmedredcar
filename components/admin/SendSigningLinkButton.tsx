@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState, useTransition } from "react";
 import { PenLine } from "lucide-react";
-import { generateSigningLinkAction } from "@/app/admin/actions";
+import { generateSigningLinkAction } from "@/app/admin/real/actions";
 
 export default function SendSigningLinkButton({
   reservationId,

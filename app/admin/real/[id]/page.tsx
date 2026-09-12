@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import VehicleForm from "@/components/admin/VehicleForm";
 import { getVehicleById } from "@/lib/db";
-import { updateVehicleAction } from "@/app/admin/actions";
+import { updateVehicleAction } from "@/app/admin/real/actions";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export default async function EditVehiclePage({
@@ -25,7 +25,7 @@ export default async function EditVehiclePage({
       <main className="flex-1 px-4 py-8 sm:px-8">
         <div className="mx-auto max-w-4xl">
           <Link
-            href="/admin"
+            href="/admin/real"
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-black/50 transition-colors hover:text-black/80"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -47,3 +47,4 @@ export default async function EditVehiclePage({
     </div>
   );
 }
+
