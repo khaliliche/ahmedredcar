@@ -6,9 +6,9 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "En attente",
-  contacted: "ContactÃ©",
-  confirmed: "ConfirmÃ©",
-  cancelled: "AnnulÃ©",
+  contacted: "Contacté",
+  confirmed: "Confirmé",
+  cancelled: "Annulé",
 };
 const STATUS_DOT: Record<string, string> = {
   pending: "bg-yellow-500",
@@ -83,7 +83,7 @@ export default async function AdminReservationsPage({
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="font-display text-2xl font-extrabold text-[var(--color-ink)]">
-                RÃ©servations
+                Réservations
               </h1>
               <p className="mt-1 text-sm text-black/50">{reservations.length} au total</p>
             </div>
@@ -92,8 +92,8 @@ export default async function AdminReservationsPage({
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard icon={CalendarClock} label="Total" value={reservations.length} tone="ink" />
             <StatCard icon={Clock} label="En attente" value={counts.pending ?? 0} tone="yellow" />
-            <StatCard icon={CheckCircle2} label="ConfirmÃ©es" value={counts.confirmed ?? 0} tone="green" />
-            <StatCard icon={Wallet} label="Revenu confirmÃ©" value={`${confirmedRevenue.toLocaleString("fr-FR")} DH`} tone="ink" />
+            <StatCard icon={CheckCircle2} label="Confirmées" value={counts.confirmed ?? 0} tone="green" />
+            <StatCard icon={Wallet} label="Revenu confirmé" value={`${confirmedRevenue.toLocaleString("fr-FR")} DH`} tone="ink" />
           </div>
 
           <div className="mt-8 flex flex-wrap gap-2 border-b border-black/10 pb-4">
@@ -103,7 +103,7 @@ export default async function AdminReservationsPage({
                 !activeFilter ? "bg-[var(--color-ink)] text-white" : "bg-black/5 text-black/60 hover:bg-black/10"
               }`}
             >
-              Toutes Â· {reservations.length}
+              Toutes · {reservations.length}
             </Link>
             {STATUS_OPTIONS.map((status) => (
               <Link
@@ -114,7 +114,7 @@ export default async function AdminReservationsPage({
                 }`}
               >
                 <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[status]}`} />
-                {STATUS_LABELS[status]} Â· {counts[status] ?? 0}
+                {STATUS_LABELS[status]} · {counts[status] ?? 0}
               </Link>
             ))}
           </div>
@@ -124,9 +124,9 @@ export default async function AdminReservationsPage({
               <thead>
                 <tr className="border-b border-black/10 text-left text-xs font-semibold uppercase tracking-wide text-black/40">
                   <th className="px-4 py-3">Client</th>
-                  <th className="px-4 py-3">VÃ©hicule</th>
+                  <th className="px-4 py-3">Véhicule</th>
                   <th className="px-4 py-3">Dates</th>
-                  <th className="px-4 py-3">DurÃ©e</th>
+                  <th className="px-4 py-3">Durée</th>
                   <th className="px-4 py-3">Statut</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
@@ -144,13 +144,13 @@ export default async function AdminReservationsPage({
                         </div>
                         <div>
                           <p className="font-semibold text-[var(--color-ink)]">{r.full_name}</p>
-                          <p className="text-xs text-black/40">{r.age} ans Â· CIN {r.cin_number} Â· Permis {licenseYears(r.license_issue_date)}</p>
+                          <p className="text-xs text-black/40">{r.age} ans · CIN {r.cin_number} · Permis {licenseYears(r.license_issue_date)}</p>
                         </div>
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-black/70">{r.vehicle_label}</td>
                     <td className="px-4 py-3 text-black/70">
-                      {formatDate(r.start_date)} â†’ {formatDate(r.end_date)}
+                      {formatDate(r.start_date)} → {formatDate(r.end_date)}
                     </td>
                     <td className="px-4 py-3 text-black/70">{daysBetween(r.start_date, r.end_date)} j</td>
                     <td className="px-4 py-3">
@@ -187,14 +187,14 @@ export default async function AdminReservationsPage({
             </table>
 
             {filtered.length === 0 && (
-              <p className="p-8 text-center text-black/50">Aucune rÃ©servation ici.</p>
+              <p className="p-8 text-center text-black/50">Aucune réservation ici.</p>
             )}
           </div>
 
           <div className="mt-6 flex flex-col gap-3 md:hidden">
             {filtered.length === 0 && (
               <p className="rounded-xl border border-dashed border-black/15 p-8 text-center text-black/50">
-                Aucune rÃ©servation ici.
+                Aucune réservation ici.
               </p>
             )}
             {filtered.map((r) => (
@@ -276,4 +276,5 @@ function StatCard({
     </div>
   );
 }
+
 

@@ -21,9 +21,9 @@ export default async function AdminDashboard() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="font-display text-2xl font-extrabold text-[var(--color-ink)]">
-                VÃ©hicules
+                Véhicules
               </h1>
-              <p className="mt-1 text-sm text-black/50">Votre flotte, en un coup d&apos;Å“il.</p>
+              <p className="mt-1 text-sm text-black/50">Votre flotte, en un coup d&apos;œil.</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -31,7 +31,7 @@ export default async function AdminDashboard() {
                 href="/admin/real/reservations"
                 className="rounded-lg border border-black/15 px-4 py-2 text-sm font-semibold transition-colors hover:bg-black/5"
               >
-                RÃ©servations
+                Réservations
               </Link>
               <Link
                 href="/admin/real/new"
@@ -43,7 +43,7 @@ export default async function AdminDashboard() {
           </div>
 
           <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <StatCard icon={Car} label="VÃ©hicules" value={vehicles.length} tone="ink" />
+            <StatCard icon={Car} label="Véhicules" value={vehicles.length} tone="ink" />
             <StatCard icon={CalendarClock} label="En attente" value={pendingCount} tone="yellow" />
             <StatCard
               icon={Wallet}
@@ -57,7 +57,7 @@ export default async function AdminDashboard() {
           <div className="mt-10">
             {vehicles.length === 0 && (
               <p className="rounded-xl border border-dashed border-black/15 p-8 text-center text-black/50">
-                Aucun vÃ©hicule pour le moment.
+                Aucun véhicule pour le moment.
               </p>
             )}
 
@@ -147,4 +147,5 @@ function StatCard({
     </div>
   );
 }
+
 

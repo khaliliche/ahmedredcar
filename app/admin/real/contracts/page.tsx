@@ -1,7 +1,7 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { FileText, FileSearch, Pencil } from "lucide-react";
 import { getReservations } from "@/lib/db";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminSidebar from "@/components/admin/real/AdminSidebar";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "En attente",
@@ -186,7 +186,7 @@ export default async function AdminContractsPage({
 
                     <div className="flex shrink-0 items-center gap-2">
                       <a
-                        href={`/admin/reservations/${reservation.id}/contract`}
+                        href={`/admin/real/reservations/${reservation.id}/contract`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1.5 rounded-lg border border-black/15 px-3 py-2 text-xs font-semibold text-black/70 transition-colors hover:bg-black/5"
@@ -196,7 +196,7 @@ export default async function AdminContractsPage({
                       </a>
 
                       <Link
-                        href={`/admin/reservations/${reservation.id}/edit-contract`}
+                        href={`/admin/real/reservations/${reservation.id}/edit-contract`}
                         className="flex items-center gap-1.5 rounded-lg bg-[var(--color-red-primary)] px-3 py-2 text-xs font-semibold text-white transition-transform hover:scale-[1.02]"
                       >
                         <Pencil className="h-3.5 w-3.5" />
@@ -213,3 +213,5 @@ export default async function AdminContractsPage({
     </div>
   );
 }
+
+
