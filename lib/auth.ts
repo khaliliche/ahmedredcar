@@ -26,7 +26,7 @@ export function getClientIp(h: Headers): string {
 
 // ---- Persistent brute-force protection ----
 // DB-backed, so a ban survives redeploys and cookie clearing.
-export const LOGIN_MAX_ATTEMPTS = 8;
+export const LOGIN_MAX_ATTEMPTS = 4;
 export const LOGIN_BAN_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export const SIGN_MAX_ATTEMPTS = 10;
