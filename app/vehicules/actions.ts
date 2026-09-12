@@ -1,7 +1,9 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createReservation, getVehicleById } from "@/lib/db";
 import { daysBetween, isRentalDurationValid, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
+import { getClientIp, checkReservationLimit } from "@/lib/auth";
 
 type WhatsAppData = {
   vehicleLabel: string;
@@ -29,6 +31,13 @@ type ActionResult =
 export async function createReservationAction(
   formData: FormData
 ): Promise<ActionResult> {
+  // Per-IP budget so this public endpoint can't flood the reservations table.
+  const h = await headers();
+  const allowed = await checkReservationLimit(`res:${getClientIp(h)}`);
+  if (!allowed) {
+    return { success: false, errorCode: "rateLimited" };
+  }
+
   // Honeypot: real users never fill this field; bots that do get a fake
   // success so they move on without writing anything to the database.
   if (String(formData.get("website") || "").trim() !== "") {

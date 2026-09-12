@@ -17,11 +17,9 @@ export default async function AdminLoginPage({
           Admin
         </h1>
 
-        {params.error && (
+        {params.error === "1" && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-            {params.error === "locked"
-              ? "Trop de tentatives. Compte verrouille 15 minutes."
-              : "Mot de passe incorrect."}
+            Mot de passe incorrect.
           </p>
         )}
 

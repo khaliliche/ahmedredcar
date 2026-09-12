@@ -2,7 +2,14 @@
 
 import { headers } from "next/headers";
 import { consumeSigningToken } from "@/lib/db";
-import { checkLoginRateLimit, recordLoginFailure, resetLoginFailures } from "@/lib/db";
+import {
+  getClientIp,
+  checkFailureLimit,
+  recordFailure,
+  resetFailures,
+  SIGN_MAX_ATTEMPTS,
+  SIGN_BAN_MS,
+} from "@/lib/auth";
 
 export type SignatureActionState = { ok: boolean; error: string };
 
@@ -19,9 +26,10 @@ export async function submitSignatureAction(
   }
 
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip = getClientIp(h);
 
-  const rl = await checkLoginRateLimit(`sign:${ip}`);
+  const limitKey = `sign:${ip}`;
+  const rl = await checkFailureLimit(limitKey);
   if (!rl.allowed) {
     return {
       ok: false,
@@ -33,7 +41,10 @@ export async function submitSignatureAction(
   const signature = String(formData.get("signature") || "");
 
   if (signerName.length < 3 || signerName.length > 120) {
-    await recordLoginFailure(`sign:${ip}`);
+    await recordFailure(limitKey, {
+      maxAttempts: SIGN_MAX_ATTEMPTS,
+      banMs: SIGN_BAN_MS,
+    });
     return { ok: false, error: "Nom incomplet." };
   }
 
@@ -41,7 +52,10 @@ export async function submitSignatureAction(
     !signature.startsWith("data:image/png;base64,") ||
     signature.length > MAX_SIGNATURE_CHARS
   ) {
-    await recordLoginFailure(`sign:${ip}`);
+    await recordFailure(limitKey, {
+      maxAttempts: SIGN_MAX_ATTEMPTS,
+      banMs: SIGN_BAN_MS,
+    });
     return {
       ok: false,
       error: "Signature invalide, veuillez recommencer."
@@ -61,7 +75,7 @@ export async function submitSignatureAction(
     };
   }
 
-  await resetLoginFailures(`sign:${ip}`);
+  await resetFailures(limitKey);
   return { ok: true, error: "" };
 }
 
