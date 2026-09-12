@@ -1,4 +1,4 @@
-﻿import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, FileText } from "lucide-react";
 import { getReservationById, getVehicleById, type ReservationStatus } from "@/lib/db";
@@ -155,7 +155,7 @@ export default async function AdminReservationDetailPage({
             )}
 
             {reservation.contract_number ? (
-              <a
+              
                 href={`/admin/real/reservations/${reservation.id}/contract`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -187,6 +187,15 @@ export default async function AdminReservationDetailPage({
               reservationId={reservation.id}
               signedAt={reservation.signed_at}
             />
+
+            {reservation.has_second_driver && (
+              <SendSigningLinkButton
+                reservationId={reservation.id}
+                signedAt={reservation.signed_2_at}
+                driver="second"
+                label="Envoyer au 2e conducteur"
+              />
+            )}
           </div>
 
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -355,5 +364,3 @@ export default async function AdminReservationDetailPage({
     </div>
   );
 }
-
-

@@ -81,13 +81,21 @@ export type Reservation = {
   contract_number: string | null;
   contract_generated_at: string | null;
 
-  // Remote signing
+  // Remote signing (main driver)
   signing_token: string | null;
   signing_token_expires_at: string | null;
   signer_name: string | null;
   signed_at: string | null;
   signer_ip: string | null;
   signature_data: string | null;
+
+  // Remote signing (second driver) — fully independent link/signature
+  signing_token_2: string | null;
+  signing_token_2_expires_at: string | null;
+  signer_2_name: string | null;
+  signed_2_at: string | null;
+  signer_2_ip: string | null;
+  signature_2_data: string | null;
 
   status: ReservationStatus;
   created_at: string;
@@ -172,7 +180,7 @@ export async function deleteVehicle(id: number) {
 
 // Fields the client-facing reservation form collects. Admin handover
 // fields (plate, mileage, damages, equipment, fees) are deliberately not
-// accepted here â€” they're only ever set via updateReservationHandover()
+// accepted here — they're only ever set via updateReservationHandover()
 // (see Step 4), so a client submission can never forge them.
 export type CreateReservationInput = {
   vehicle_id: number;
@@ -240,7 +248,7 @@ export async function updateReservationStatus(id: number, status: ReservationSta
   await sql`UPDATE reservations SET status = ${status} WHERE id = ${id}`;
 }
 
-// Feature 2 â€” availability. Only CONFIRMED reservations block a vehicle;
+// Feature 2 — availability. Only CONFIRMED reservations block a vehicle;
 // pending/contacted requests are just leads and don't reserve the car.
 // Uses idx_reservations_vehicle_status_dates (see migrations/002_*.sql).
 export async function isVehicleAvailable(
@@ -326,7 +334,7 @@ export async function confirmReservation(
   return { ok: true };
 }
 
-// Feature 1 â€” admin handover completion (plate, mileage, damages,
+// Feature 1 — admin handover completion (plate, mileage, damages,
 // equipment, delivery/pickup fees). Deliberately separate from the
 // client-facing createReservation() input.
 export async function updateReservationHandover(
@@ -360,7 +368,7 @@ export async function deleteReservation(id: number) {
   await sql`DELETE FROM reservations WHERE id = ${id}`;
 }
 
-// Feature 3 â€” full contract editing. Lets an admin correct any section of
+// Feature 3 — full contract editing. Lets an admin correct any section of
 // the PDF (driver, second driver, vehicle label/plate, dates, handover
 // details, and an optional manual override of the three billing totals)
 // from one form, before (re)generating the PDF. Billing overrides are
@@ -474,10 +482,22 @@ export async function getReservationBySigningToken(token: string): Promise<Reser
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
     return null;
   }
+  // A link may belong to either the main driver's token or the second
+  // driver's token — check both, the UUID space makes a collision between
+  // the two columns astronomically unlikely.
   const rows = await sql<Reservation[]>`
-    SELECT * FROM reservations WHERE signing_token = ${token} LIMIT 1
+    SELECT * FROM reservations
+    WHERE signing_token = ${token} OR signing_token_2 = ${token}
+    LIMIT 1
   `;
   return rows[0] ?? null;
+}
+
+// True if `token` is this reservation's second-driver link rather than the
+// main driver's — the sign page and submit action use this to know which
+// columns to read/write into.
+export function isSecondDriverToken(reservation: Reservation, token: string): boolean {
+  return reservation.signing_token_2 === token;
 }
 
 // Consumes the token exactly once: the UPDATE only matches while the
@@ -498,6 +518,41 @@ export async function consumeSigningToken(
       AND signed_at IS NULL
       AND status != 'cancelled'
       AND (signing_token_expires_at IS NULL OR signing_token_expires_at > now())
+    RETURNING id
+  `;
+  return rows.length === 1;
+}
+
+// ---- Second driver's independent signing slot ----
+
+export async function createSigningToken2(id: number): Promise<string | null> {
+  const token = randomUUID();
+  const rows = await sql<{ signing_token_2: string }[]>`
+    UPDATE reservations
+    SET signing_token_2 = ${token},
+        signing_token_2_expires_at = now() + interval '7 days'
+    WHERE id = ${id} AND has_second_driver = true
+    RETURNING signing_token_2
+  `;
+  return rows[0]?.signing_token_2 ?? null;
+}
+
+export async function consumeSigningToken2(
+  token: string,
+  data: { signer_name: string; signer_ip: string; signature_data: string }
+): Promise<boolean> {
+  const rows = await sql<{ id: number }[]>`
+    UPDATE reservations
+    SET signer_2_name = ${data.signer_name},
+        signer_2_ip = ${data.signer_ip},
+        signature_2_data = ${data.signature_data},
+        signed_2_at = now(),
+        signing_token_2 = NULL,
+        signing_token_2_expires_at = NULL
+    WHERE signing_token_2 = ${token}
+      AND signed_2_at IS NULL
+      AND status != 'cancelled'
+      AND (signing_token_2_expires_at IS NULL OR signing_token_2_expires_at > now())
     RETURNING id
   `;
   return rows.length === 1;

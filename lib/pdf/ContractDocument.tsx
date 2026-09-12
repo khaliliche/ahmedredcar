@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+﻿import { readFileSync } from "fs";
 import { join } from "path";
 import { Document, Page, View, Text, Image, StyleSheet, Svg, Rect } from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
@@ -436,7 +436,12 @@ export function ContractDocument({
             <View style={styles.sigStripHeader}>
               <Text style={styles.sigStripHeaderText}>2ème conducteur</Text>
             </View>
-            <View style={styles.sigStripBody} />
+            <View style={styles.sigStripBody}>
+              {reservation.signature_2_data ? (
+                // eslint-disable-next-line jsx-a11y/alt-text
+                <Image src={reservation.signature_2_data} style={styles.sigImage} />
+              ) : null}
+            </View>
           </View>
         </View>
 
@@ -446,6 +451,14 @@ export function ContractDocument({
             {new Date(reservation.signed_at).toLocaleString("fr-FR")} par{" "}
             {reservation.signer_name}{" "}
             (IP: {reservation.signer_ip})
+          </Text>
+        )}
+        {reservation.signed_2_at && (
+          <Text style={styles.auditLine}>
+            2ème conducteur signé électroniquement le{" "}
+            {new Date(reservation.signed_2_at).toLocaleString("fr-FR")} par{" "}
+            {reservation.signer_2_name}{" "}
+            (IP: {reservation.signer_2_ip})
           </Text>
         )}
 

@@ -12,6 +12,7 @@ import {
   deleteReservation,
   confirmReservation,
   createSigningToken,
+  createSigningToken2,
   updateReservationHandover,
   updateReservationContract,
   getReservationById,
@@ -357,7 +358,7 @@ function normalizePhoneForWa(raw: string): string | null {
   return null;
 }
 
-export async function generateSigningLinkAction(id: number): Promise<
+export async function generateSigningLinkAction(id: number): Promise
   | { ok: true; signingUrl: string; waUrl: string | null }
   | { ok: false; error: "notFound" | "cancelled" | "alreadySigned" }
 > {
@@ -383,6 +384,32 @@ export async function generateSigningLinkAction(id: number): Promise<
   return { ok: true, signingUrl, waUrl };
 }
 
+// Same as generateSigningLinkAction but for the SECOND driver: its own
+// token, own link, sent to second_driver_phone — completely independent
+// of the main driver's signature.
+export async function generateSigningLinkAction2(id: number): Promise
+  | { ok: true; signingUrl: string; waUrl: string | null }
+  | { ok: false; error: "notFound" | "cancelled" | "alreadySigned" | "noSecondDriver" }
+> {
+  await requireAdmin();
+  const reservation = await getReservationById(id);
+  if (!reservation) return { ok: false, error: "notFound" };
+  if (!reservation.has_second_driver) return { ok: false, error: "noSecondDriver" };
+  if (reservation.status === "cancelled") return { ok: false, error: "cancelled" };
+  if (reservation.signed_2_at) return { ok: false, error: "alreadySigned" };
 
+  const token = await createSigningToken2(id);
+  if (!token) return { ok: false, error: "notFound" };
 
+  const h = await headers();
+  const origin = h.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const signingUrl = `${origin}/sign/${token}`;
 
+  const phone = normalizePhoneForWa(reservation.second_driver_phone);
+  const message = encodeURIComponent(
+    `Bonjour ${reservation.second_driver_full_name}, voici votre contrat de location (${reservation.vehicle_label}) a signer : ${signingUrl} - lien valable 7 jours.`
+  );
+  const waUrl = phone && origin ? `https://wa.me/${phone}?text=${message}` : null;
+
+  return { ok: true, signingUrl, waUrl };
+}

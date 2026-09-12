@@ -1,4 +1,4 @@
-import { getReservationBySigningToken } from "@/lib/db";
+import { getReservationBySigningToken, isSecondDriverToken } from "@/lib/db";
 import SignatureForm from "@/components/sign/SignatureForm";
 
 function formatDate(value: string | Date) {
@@ -44,17 +44,25 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
       </Shell>
     );
   }
-  if (reservation.signed_at) {
+
+  // A reservation can have two independent links: the main driver's and,
+  // if there's a second driver, theirs. Figure out which one this is so we
+  // check the right "already signed"/"expired" state and show the right name.
+  const isSecondDriver = isSecondDriverToken(reservation, token);
+  const alreadySigned = isSecondDriver ? reservation.signed_2_at : reservation.signed_at;
+  const tokenExpiresAt = isSecondDriver
+    ? reservation.signing_token_2_expires_at
+    : reservation.signing_token_expires_at;
+  const displayName = isSecondDriver ? reservation.second_driver_full_name : reservation.full_name;
+
+  if (alreadySigned) {
     return (
       <Shell>
         <Message title="Contrat deja signe" body="Ce contrat a deja ete signe. Merci !" />
       </Shell>
     );
   }
-  if (
-    reservation.signing_token_expires_at &&
-    new Date(reservation.signing_token_expires_at) < new Date()
-  ) {
+  if (tokenExpiresAt && new Date(tokenExpiresAt) < new Date()) {
     return (
       <Shell>
         <Message title="Lien expire" body="Ce lien a expire. Contactez l agence pour en recevoir un nouveau." />
@@ -69,12 +77,13 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
       </h1>
       <p className="mb-6 text-center text-sm text-black/50">
         Contrat de location - signature electronique
+        {isSecondDriver ? " (deuxieme conducteur)" : ""}
       </p>
       <SignatureForm
         token={token}
         summary={{
           vehicleLabel: reservation.vehicle_label,
-          fullName: reservation.full_name,
+          fullName: displayName,
           startDate: formatDate(reservation.start_date),
           endDate: formatDate(reservation.end_date),
           startTime: reservation.start_time,
