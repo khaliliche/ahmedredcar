@@ -19,28 +19,54 @@ import {
   type DamageEntry,
   type EquipmentChecklist,
 } from "@/lib/db";
-import { checkPassword, getExpectedSessionToken } from "@/lib/auth";
-import { checkLoginRateLimit, recordLoginFailure, resetLoginFailures } from "@/lib/db";
+import {
+  checkPassword,
+  getExpectedSessionToken,
+  getClientIp,
+  checkFailureLimit,
+  recordFailure,
+  resetFailures,
+  timingSafeEqual,
+  LOGIN_MAX_ATTEMPTS,
+  LOGIN_BAN_MS,
+} from "@/lib/auth";
 import { EQUIPMENT_ITEMS } from "@/lib/contract";
+
+// Double-check the session cookie on every admin action, even though middleware guards the path.
+async function requireAdmin() {
+  const expectedToken = await getExpectedSessionToken();
+  if (!expectedToken) throw new Error("Admin auth is not configured");
+  const store = await cookies();
+  const cookie = store.get("admin_session")?.value;
+  if (!cookie || !timingSafeEqual(cookie, expectedToken)) {
+    throw new Error("Unauthorized admin action");
+  }
+}
 
 export async function loginAction(formData: FormData) {
   const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip = getClientIp(h);
 
-  const rl = await checkLoginRateLimit(ip);
+  // Persistent, server-side ban: survives redeploys and cookie deletion.
+  const limitKey = `login:${ip}`;
+  const rl = await checkFailureLimit(limitKey);
   if (!rl.allowed) {
-    redirect("/admin/real/login?error=locked");
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    redirect("/admin/real/login");
   }
 
   const password = formData.get("password") as string;
 
   const isValid = await checkPassword(password);
   if (!isValid) {
-    await recordLoginFailure(ip);
+    await recordFailure(limitKey, {
+      maxAttempts: LOGIN_MAX_ATTEMPTS,
+      banMs: LOGIN_BAN_MS,
+    });
     await new Promise((resolve) => setTimeout(resolve, 800));
     redirect("/admin/real/login?error=1");
   }
-  await resetLoginFailures(ip);
+  await resetFailures(limitKey);
 
   const sessionToken = await getExpectedSessionToken();
   if (!sessionToken) {
@@ -117,6 +143,7 @@ function revalidateAll() {
 }
 
 export async function createVehicleAction(formData: FormData) {
+  await requireAdmin();
   const uploadedUrl = await uploadIfPresent(formData);
 
   await createVehicle({
@@ -132,6 +159,7 @@ export async function createVehicleAction(formData: FormData) {
 }
 
 export async function updateVehicleAction(id: number, formData: FormData) {
+  await requireAdmin();
   const uploadedUrl = await uploadIfPresent(formData);
   const existingUrl = (formData.get("existing_image_url") as string) ?? "";
 
@@ -148,11 +176,13 @@ export async function updateVehicleAction(id: number, formData: FormData) {
 }
 
 export async function deleteVehicleAction(id: number) {
+  await requireAdmin();
   await deleteVehicle(id);
   revalidateAll();
 }
 
 export async function updateReservationStatusAction(id: number, status: ReservationStatus) {
+  await requireAdmin();
   if (status === "confirmed") {
     const result = await confirmReservation(id);
     if (!result.ok) {
@@ -167,11 +197,13 @@ export async function updateReservationStatusAction(id: number, status: Reservat
 }
 
 export async function deleteReservationAction(id: number) {
+  await requireAdmin();
   await deleteReservation(id);
   revalidatePath("/admin/real/reservations");
 }
 
 export async function updateReservationHandoverAction(id: number, formData: FormData) {
+  await requireAdmin();
   const registrationPlate = String(formData.get("registration_plate") || "").trim();
 
   const mileageStartRaw = formData.get("mileage_start");
@@ -218,6 +250,7 @@ export async function updateReservationContractAction(
   id: number,
   formData: FormData
 ) {
+  await requireAdmin();
   const reservation = await getReservationById(id);
 
   if (!reservation) {
@@ -328,6 +361,7 @@ export async function generateSigningLinkAction(id: number): Promise<
   | { ok: true; signingUrl: string; waUrl: string | null }
   | { ok: false; error: "notFound" | "cancelled" | "alreadySigned" }
 > {
+  await requireAdmin();
   const reservation = await getReservationById(id);
   if (!reservation) return { ok: false, error: "notFound" };
   if (reservation.status === "cancelled") return { ok: false, error: "cancelled" };

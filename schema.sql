@@ -3,6 +3,7 @@
 
 DROP TABLE IF EXISTS reservations;
 DROP TABLE IF EXISTS vehicles;
+DROP TABLE IF EXISTS login_attempts;
 
 CREATE TABLE vehicles (
   id SERIAL PRIMARY KEY,
@@ -84,3 +85,10 @@ CREATE INDEX idx_reservations_vehicle_status_dates
 
 CREATE INDEX idx_reservations_signing_token
   ON reservations (signing_token);
+
+-- Persistent per-IP failure counter with a ban timestamp (survives redeploys).
+CREATE TABLE login_attempts (
+  ip TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0,
+  locked_until TIMESTAMPTZ
+);

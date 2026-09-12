@@ -470,6 +470,10 @@ export async function createSigningToken(id: number): Promise<string | null> {
 }
 
 export async function getReservationBySigningToken(token: string): Promise<Reservation | null> {
+  // Guard garbage tokens that Postgres would reject as invalid UUIDs.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)) {
+    return null;
+  }
   const rows = await sql<Reservation[]>`
     SELECT * FROM reservations WHERE signing_token = ${token} LIMIT 1
   `;
@@ -499,39 +503,76 @@ export async function consumeSigningToken(
   return rows.length === 1;
 }
 
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_MS = 15 * 60 * 1000;
+// ---- Persistent rate limiting / IP bans ----
+// One small table (login_attempts); keys: login:<ip>, sign:<ip>, res:<ip>.
 
-export async function checkLoginRateLimit(
-  ip: string
-): Promise<{ allowed: true } | { allowed: false; retryAfterSec: number }> {
-  const rows = await sql<{ locked_until: string | null }[]>`
-    SELECT locked_until FROM login_attempts WHERE ip = ${ip}
+export async function getLockExpiry(key: string): Promise<Date | null> {
+  const rows = await sql<{ locked_until: Date }[]>`
+    SELECT locked_until FROM login_attempts
+    WHERE ip = ${key} AND locked_until > now()
+    LIMIT 1
   `;
-  const lockedUntil = rows[0]?.locked_until ? new Date(rows[0].locked_until).getTime() : 0;
-  if (lockedUntil > Date.now()) {
-    return { allowed: false, retryAfterSec: Math.ceil((lockedUntil - Date.now()) / 1000) };
-  }
-  return { allowed: true };
+  return rows[0]?.locked_until ?? null;
 }
 
-export async function recordLoginFailure(ip: string): Promise<void> {
-  const rows = await sql<{ count: number }[]>`
+async function isKeyActive(key: string): Promise<boolean> {
+  const rows = await sql<{ active: boolean }[]>`
+    SELECT (locked_until IS NULL OR locked_until <= now()) AS active
+    FROM login_attempts WHERE ip = ${key}
+  `;
+  return rows[0]?.active ?? true;
+}
+
+export async function recordFailedAttempt(
+  key: string,
+  opts: { maxAttempts: number; banMs: number }
+): Promise<void> {
+  const { maxAttempts, banMs } = opts;
+  // Count failures only while the key is not already locked.
+  if (!(await isKeyActive(key))) return;
+
+  await sql`
     INSERT INTO login_attempts (ip, count)
-    VALUES (${ip}, 1)
+    VALUES (${key}, 1)
     ON CONFLICT (ip) DO UPDATE SET count = login_attempts.count + 1
+  `;
+
+  // At the threshold, ban for banMs and reset the counter.
+  await sql`
+    UPDATE login_attempts
+    SET count = 0,
+        locked_until = now() + make_interval(secs => ${Math.floor(banMs / 1000)})
+    WHERE ip = ${key} AND count >= ${maxAttempts}
+  `;
+}
+
+export async function clearFailures(key: string): Promise<void> {
+  await sql`DELETE FROM login_attempts WHERE ip = ${key}`;
+}
+
+// Fixed-window budget; returns true while the key stays within max.
+export async function consumeWindowedLimit(
+  key: string,
+  max: number,
+  windowMs: number
+): Promise<boolean> {
+  const rows = await sql<{ count: number }[]>`
+    INSERT INTO login_attempts (ip, count, locked_until)
+    VALUES (${key}, 1, now() + make_interval(secs => ${Math.floor(windowMs / 1000)}))
+    ON CONFLICT (ip) DO UPDATE SET
+      locked_until = CASE
+        WHEN login_attempts.locked_until IS NULL OR login_attempts.locked_until <= now()
+          THEN now() + make_interval(secs => ${Math.floor(windowMs / 1000)})
+        ELSE login_attempts.locked_until
+      END,
+      count = CASE
+        WHEN login_attempts.locked_until IS NULL OR login_attempts.locked_until <= now()
+          THEN 1
+        WHEN login_attempts.count > ${max}
+          THEN login_attempts.count
+        ELSE login_attempts.count + 1
+      END
     RETURNING count
   `;
-  const count = rows[0]?.count ?? 1;
-  if (count >= MAX_ATTEMPTS) {
-    await sql`
-      UPDATE login_attempts
-      SET locked_until = now() + interval '\''15 minutes'\'', count = 0
-      WHERE ip = ${ip}
-    `;
-  }
-}
-
-export async function resetLoginFailures(ip: string): Promise<void> {
-  await sql`DELETE FROM login_attempts WHERE ip = ${ip}`;
+  return rows[0] ? rows[0].count <= max : false;
 }

@@ -1,5 +1,5 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { getExpectedSessionToken, timingSafeEqual } from "@/lib/auth";
+import { getExpectedSessionToken, timingSafeEqual } from "@/lib/auth-token";
 
 export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/admin/real/login")) {

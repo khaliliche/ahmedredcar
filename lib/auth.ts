@@ -1,35 +1,64 @@
-﻿const encoder = new TextEncoder();
+﻿import {
+  timingSafeEqual,
+  getExpectedSessionToken,
+  checkPassword,
+} from "./auth-token";
+import {
+  getLockExpiry,
+  recordFailedAttempt,
+  clearFailures,
+  consumeWindowedLimit,
+} from "./db";
 
-async function sha256Hex(input: string): Promise<string> {
-  const data = encoder.encode(input);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+// Re-exported from auth-token so existing importers keep working.
+export { timingSafeEqual, getExpectedSessionToken, checkPassword };
+
+// ---- Client IP ----
+// Prefer proxy-appended headers (Vercel, nginx), then normalize IPv4-in-IPv6.
+export function getClientIp(h: Headers): string {
+  const raw =
+    h.get("x-real-ip") ??
+    h.get("x-vercel-forwarded-for") ??
+    h.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
+  return raw.replace(/^::ffff:/, "").replace(/[\[\]]/g, "");
 }
 
-export function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
+// ---- Persistent brute-force protection ----
+// DB-backed, so a ban survives redeploys and cookie clearing.
+export const LOGIN_MAX_ATTEMPTS = 4;
+export const LOGIN_BAN_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+export const SIGN_MAX_ATTEMPTS = 10;
+export const SIGN_BAN_MS = 15 * 60 * 1000; // 15 minutes
+
+export async function checkFailureLimit(
+  key: string
+): Promise<{ allowed: true } | { allowed: false; retryAfterSec: number }> {
+  const lockedUntil = await getLockExpiry(key);
+  if (!lockedUntil) return { allowed: true };
+  const untilMs = new Date(lockedUntil).getTime();
+  if (untilMs <= Date.now()) return { allowed: true };
+  return {
+    allowed: false,
+    retryAfterSec: Math.ceil((untilMs - Date.now()) / 1000),
+  };
 }
 
-// Deterministic session token derived from the password + a separate
-// secret, so the cookie never contains the raw admin password.
-export async function getExpectedSessionToken(): Promise<string | null> {
-  const password = process.env.ADMIN_PASSWORD;
-  const secret = process.env.ADMIN_SESSION_SECRET;
-
-  if (!password || !secret) return null;
-
-  return sha256Hex(`${password}:${secret}`);
+export async function recordFailure(
+  key: string,
+  opts: { maxAttempts: number; banMs: number }
+): Promise<void> {
+  await recordFailedAttempt(key, opts);
 }
 
-export async function checkPassword(submitted: string): Promise<boolean> {
-  const password = process.env.ADMIN_PASSWORD;
-  if (!password || !submitted) return false;
-  return timingSafeEqual(submitted, password);
+export async function resetFailures(key: string): Promise<void> {
+  await clearFailures(key);
+}
+
+// Public endpoints get a fixed-window budget per IP instead of a hard ban.
+export async function checkReservationLimit(
+  key: string
+): Promise<boolean> {
+  return consumeWindowedLimit(key, 5, 60 * 60 * 1000);
 }
