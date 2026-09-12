@@ -1,8 +1,8 @@
-"use server";
+﻿"use server";
 
 import { headers } from "next/headers";
 import { consumeSigningToken } from "@/lib/db";
-import { checkLoginRateLimit, recordLoginFailure, resetLoginFailures } from "@/lib/auth";
+import { checkLoginRateLimit, recordLoginFailure, resetLoginFailures } from "@/lib/db";
 
 export type SignatureActionState = { ok: boolean; error: string };
 
@@ -21,7 +21,7 @@ export async function submitSignatureAction(
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
-  const rl = checkLoginRateLimit(`sign:${ip}`);
+  const rl = await checkLoginRateLimit(`sign:${ip}`);
   if (!rl.allowed) {
     return {
       ok: false,
@@ -33,7 +33,7 @@ export async function submitSignatureAction(
   const signature = String(formData.get("signature") || "");
 
   if (signerName.length < 3 || signerName.length > 120) {
-    recordLoginFailure(`sign:${ip}`);
+    await recordLoginFailure(`sign:${ip}`);
     return { ok: false, error: "Nom incomplet." };
   }
 
@@ -41,7 +41,7 @@ export async function submitSignatureAction(
     !signature.startsWith("data:image/png;base64,") ||
     signature.length > MAX_SIGNATURE_CHARS
   ) {
-    recordLoginFailure(`sign:${ip}`);
+    await recordLoginFailure(`sign:${ip}`);
     return {
       ok: false,
       error: "Signature invalide, veuillez recommencer."
@@ -61,6 +61,7 @@ export async function submitSignatureAction(
     };
   }
 
-  resetLoginFailures(`sign:${ip}`);
+  await resetLoginFailures(`sign:${ip}`);
   return { ok: true, error: "" };
 }
+

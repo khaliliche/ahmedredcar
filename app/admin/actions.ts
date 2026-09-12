@@ -19,14 +19,15 @@ import {
   type DamageEntry,
   type EquipmentChecklist,
 } from "@/lib/db";
-import { checkPassword, getExpectedSessionToken, checkLoginRateLimit, recordLoginFailure, resetLoginFailures } from "@/lib/auth";
+import { checkPassword, getExpectedSessionToken } from "@/lib/auth";
+import { checkLoginRateLimit, recordLoginFailure, resetLoginFailures } from "@/lib/db";
 import { EQUIPMENT_ITEMS } from "@/lib/contract";
 
 export async function loginAction(formData: FormData) {
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
-  const rl = checkLoginRateLimit(ip);
+  const rl = await checkLoginRateLimit(ip);
   if (!rl.allowed) {
     redirect("/admin/login?error=locked");
   }
@@ -35,11 +36,11 @@ export async function loginAction(formData: FormData) {
 
   const isValid = await checkPassword(password);
   if (!isValid) {
-    recordLoginFailure(ip);
+    await recordLoginFailure(ip);
     await new Promise((resolve) => setTimeout(resolve, 800));
     redirect("/admin/login?error=1");
   }
-  resetLoginFailures(ip);
+  await resetLoginFailures(ip);
 
   const sessionToken = await getExpectedSessionToken();
   if (!sessionToken) {
@@ -347,3 +348,4 @@ export async function generateSigningLinkAction(id: number): Promise<
 
   return { ok: true, signingUrl, waUrl };
 }
+

@@ -1,8 +1,8 @@
-import { randomUUID } from "node:crypto";
+﻿import { randomUUID } from "node:crypto";
 import postgres from "postgres";
 import { getTieredPricing } from "./pricing";
 
-const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
+export const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
 
 export type Vehicle = {
   id: number;
@@ -172,7 +172,7 @@ export async function deleteVehicle(id: number) {
 
 // Fields the client-facing reservation form collects. Admin handover
 // fields (plate, mileage, damages, equipment, fees) are deliberately not
-// accepted here — they're only ever set via updateReservationHandover()
+// accepted here â€” they're only ever set via updateReservationHandover()
 // (see Step 4), so a client submission can never forge them.
 export type CreateReservationInput = {
   vehicle_id: number;
@@ -240,7 +240,7 @@ export async function updateReservationStatus(id: number, status: ReservationSta
   await sql`UPDATE reservations SET status = ${status} WHERE id = ${id}`;
 }
 
-// Feature 2 — availability. Only CONFIRMED reservations block a vehicle;
+// Feature 2 â€” availability. Only CONFIRMED reservations block a vehicle;
 // pending/contacted requests are just leads and don't reserve the car.
 // Uses idx_reservations_vehicle_status_dates (see migrations/002_*.sql).
 export async function isVehicleAvailable(
@@ -326,7 +326,7 @@ export async function confirmReservation(
   return { ok: true };
 }
 
-// Feature 1 — admin handover completion (plate, mileage, damages,
+// Feature 1 â€” admin handover completion (plate, mileage, damages,
 // equipment, delivery/pickup fees). Deliberately separate from the
 // client-facing createReservation() input.
 export async function updateReservationHandover(
@@ -360,7 +360,7 @@ export async function deleteReservation(id: number) {
   await sql`DELETE FROM reservations WHERE id = ${id}`;
 }
 
-// Feature 3 — full contract editing. Lets an admin correct any section of
+// Feature 3 â€” full contract editing. Lets an admin correct any section of
 // the PDF (driver, second driver, vehicle label/plate, dates, handover
 // details, and an optional manual override of the three billing totals)
 // from one form, before (re)generating the PDF. Billing overrides are
@@ -497,4 +497,41 @@ export async function consumeSigningToken(
     RETURNING id
   `;
   return rows.length === 1;
+}
+
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 15 * 60 * 1000;
+
+export async function checkLoginRateLimit(
+  ip: string
+): Promise<{ allowed: true } | { allowed: false; retryAfterSec: number }> {
+  const rows = await sql<{ locked_until: string | null }[]>`
+    SELECT locked_until FROM login_attempts WHERE ip = ${ip}
+  `;
+  const lockedUntil = rows[0]?.locked_until ? new Date(rows[0].locked_until).getTime() : 0;
+  if (lockedUntil > Date.now()) {
+    return { allowed: false, retryAfterSec: Math.ceil((lockedUntil - Date.now()) / 1000) };
+  }
+  return { allowed: true };
+}
+
+export async function recordLoginFailure(ip: string): Promise<void> {
+  const rows = await sql<{ count: number }[]>`
+    INSERT INTO login_attempts (ip, count)
+    VALUES (${ip}, 1)
+    ON CONFLICT (ip) DO UPDATE SET count = login_attempts.count + 1
+    RETURNING count
+  `;
+  const count = rows[0]?.count ?? 1;
+  if (count >= MAX_ATTEMPTS) {
+    await sql`
+      UPDATE login_attempts
+      SET locked_until = now() + interval '\''15 minutes'\'', count = 0
+      WHERE ip = ${ip}
+    `;
+  }
+}
+
+export async function resetLoginFailures(ip: string): Promise<void> {
+  await sql`DELETE FROM login_attempts WHERE ip = ${ip}`;
 }
