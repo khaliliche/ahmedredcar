@@ -1,8 +1,16 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { Document, Page, View, Text, Image, StyleSheet, Svg, Circle, Rect } from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
 import { DAMAGE_TYPES, EQUIPMENT_ITEMS, resolveBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 
 const BLACK = "#000000";
+
+// Read the real logo once per server invocation and inline it as a data URI
+// so react-pdf doesn't need to resolve a filesystem path at render time.
+const LOGO_SRC = `data:image/png;base64,${readFileSync(
+  join(process.cwd(), "public/logo.png")
+).toString("base64")}`;
 
 const styles = StyleSheet.create({
   page: {
@@ -18,19 +26,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-  logoWrap: { width: 62, height: 62, position: "relative" },
-  logoTextOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logoAR: { fontSize: 15, fontWeight: 800, letterSpacing: 0.5 },
-  logoCARS: { fontSize: 6.5, fontWeight: 700, letterSpacing: 1.5, marginTop: 1 },
-  logoTagline: { fontSize: 3.2, color: "#555", marginTop: 2, letterSpacing: 0.3 },
+  logoImage: { width: 130, height: 48, objectFit: "contain" },
   title: { flex: 1, fontSize: 21, fontWeight: 800, textAlign: "left", marginLeft: 16 },
 
   // ---- Cards ----
@@ -118,7 +114,7 @@ const styles = StyleSheet.create({
   sigStripHeaderText: { color: "#fff", fontSize: 7.5, fontWeight: 700, textAlign: "center" },
   sigStripBody: { height: 46 },
   sigImage: { width: "100%", height: "100%", objectFit: "contain" },
-  auditLine: { fontSize: 6.5, color: "#333", marginBottom: 10 },
+  auditLine: { fontSize: 6.5, color: "#333", marginBottom: 4 },
 
   // ---- Footer ----
   footer: {
@@ -173,23 +169,10 @@ function Field({
   );
 }
 
-// Placeholder circular badge standing in for the real "AR CARS" logo until
-// the actual artwork file is supplied — swap this block for an <Image />
-// once available.
+// Real "AR CARS" logo, read from /public/logo.png.
 function LogoBadge() {
-  return (
-    <View style={styles.logoWrap}>
-      <Svg width={62} height={62} viewBox="0 0 62 62">
-        <Circle cx={31} cy={31} r={29} stroke="#000" strokeWidth={2} fill="#fff" />
-        <Circle cx={31} cy={31} r={25} stroke="#000" strokeWidth={0.6} fill="none" />
-      </Svg>
-      <View style={styles.logoTextOverlay}>
-        <Text style={styles.logoAR}>AR</Text>
-        <Text style={styles.logoCARS}>CARS</Text>
-        <Text style={styles.logoTagline}>AHMED RED CAR</Text>
-      </View>
-    </View>
-  );
+  // eslint-disable-next-line jsx-a11y/alt-text
+  return <Image src={LOGO_SRC} style={styles.logoImage} />;
 }
 
 // Simplified top-down car outline used as the damage diagram. Markers use
@@ -455,15 +438,19 @@ export function ContractDocument({
             </View>
             <View style={styles.sigStripBody} />
           </View>
+        </View>
 
-          {reservation.signed_at && (
-            <Text style={styles.auditLine}>
-              Signe electroniquement le{" "}
-              {new Date(reservation.signed_at).toLocaleString("fr-FR")} par{" "}
-              {reservation.signer_name}{" "}
-              (IP: {reservation.signer_ip})
-            </Text>
-          )}
+        {reservation.signed_at && (
+          <Text style={styles.auditLine}>
+            Signé électroniquement le{" "}
+            {new Date(reservation.signed_at).toLocaleString("fr-FR")} par{" "}
+            {reservation.signer_name}{" "}
+            (IP: {reservation.signer_ip})
+          </Text>
+        )}
+
+        {/* Footer — pinned to the bottom of the page, no longer squeezed into the signature row */}
+        <View style={styles.footer}>
           <View style={styles.footerRow}>
             <View style={styles.footerItem}>
               <Text style={styles.footerText}>Tél : +212 664 883 106</Text>
