@@ -1,7 +1,12 @@
-﻿"use server";
+"use server";
 
 import { headers } from "next/headers";
-import { consumeSigningToken } from "@/lib/db";
+import {
+  consumeSigningToken,
+  consumeSigningToken2,
+  getReservationBySigningToken,
+  isSecondDriverToken,
+} from "@/lib/db";
 import {
   getClientIp,
   checkFailureLimit,
@@ -62,11 +67,31 @@ export async function submitSignatureAction(
     };
   }
 
-  const consumed = await consumeSigningToken(token, {
-    signer_name: signerName,
-    signer_ip: ip,
-    signature_data: signature,
-  });
+  // The token can belong to either driver's independent signing slot -
+  // look up the reservation first so we consume it against the right one.
+  const reservation = await getReservationBySigningToken(token);
+  if (!reservation) {
+    await recordFailure(limitKey, {
+      maxAttempts: SIGN_MAX_ATTEMPTS,
+      banMs: SIGN_BAN_MS,
+    });
+    return {
+      ok: false,
+      error: "Lien invalide, expire ou deja utilise."
+    };
+  }
+
+  const consumed = isSecondDriverToken(reservation, token)
+    ? await consumeSigningToken2(token, {
+        signer_name: signerName,
+        signer_ip: ip,
+        signature_data: signature,
+      })
+    : await consumeSigningToken(token, {
+        signer_name: signerName,
+        signer_ip: ip,
+        signature_data: signature,
+      });
 
   if (!consumed) {
     return {
@@ -78,4 +103,3 @@ export async function submitSignatureAction(
   await resetFailures(limitKey);
   return { ok: true, error: "" };
 }
-
