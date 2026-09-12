@@ -35,11 +35,11 @@ import { EQUIPMENT_ITEMS } from "@/lib/contract";
 // Double-check the session cookie on every admin action, even though middleware guards the path.
 async function requireAdmin() {
   const expectedToken = await getExpectedSessionToken();
-  if (!expectedToken) throw new Error("Admin auth is not configured");
+
   const store = await cookies();
   const cookie = store.get("admin_session")?.value;
-  if (!cookie || !timingSafeEqual(cookie, expectedToken)) {
-    throw new Error("Unauthorized admin action");
+  if (!expectedToken || !cookie || !timingSafeEqual(cookie, expectedToken)) {
+    redirect("/admin/real/login");
   }
 }
 
@@ -382,6 +382,7 @@ export async function generateSigningLinkAction(id: number): Promise<
 
   return { ok: true, signingUrl, waUrl };
 }
+
 
 
 
