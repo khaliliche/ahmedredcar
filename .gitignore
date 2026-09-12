@@ -38,6 +38,7 @@ yarn-error.log*
 .env.*.local
 .env.test
 .env.test.local
+test-results/
 .env*.local
 *.pem
 *.key

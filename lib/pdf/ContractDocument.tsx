@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { join } from "path";
-import { Document, Page, View, Text, Image, StyleSheet, Svg, Circle, Rect } from "@react-pdf/renderer";
+import { Document, Page, View, Text, Image, StyleSheet, Svg, Rect } from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
 import { DAMAGE_TYPES, EQUIPMENT_ITEMS, resolveBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 
