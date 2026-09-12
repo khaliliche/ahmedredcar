@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { cookies, headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
@@ -80,12 +80,12 @@ async function uploadIfPresent(formData: FormData): Promise<string | null> {
 
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
     throw new Error(
-      `Type de fichier non autoris�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?© : ${file.type || "inconnu"}. Formats accept�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?©s : JPEG, PNG, WEBP, GIF.`
+      `Type de fichier non autorisÃ© : ${file.type || "inconnu"}. Formats acceptÃ©s : JPEG, PNG, WEBP, GIF.`
     );
   }
 
   if (file.size > MAX_UPLOAD_BYTES) {
-    throw new Error("Le fichier d�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?©passe la taille maximale autoris�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?©e (5 Mo).");
+    throw new Error("Le fichier dÃ©passe la taille maximale autorisÃ©e (5 Mo).");
   }
 
   const safeName = file.name
@@ -102,7 +102,7 @@ const fileName = `${Date.now()}-${safeName}`;
     });
 
   if (error) {
-    throw new Error(`�?�?�?�?�?�?�?�?�?�?�?¢�?�?�?�?�?�?�?°chec de l'upload : ${error.message}`);
+    throw new Error(`Ã‰chec de l'upload : ${error.message}`);
   }
 
   const { data } = supabaseAdmin.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
@@ -210,7 +210,7 @@ export async function updateReservationHandoverAction(id: number, formData: Form
   revalidatePath("/admin/reservations");
 }
 
-// Feature 3 �?�?�?�?�?�?�?¢�?�?�?¢�?�?�?�?�?�?�?¬�?�?�?¢�?�?�?�?�?�?�? full contract editing. One form, every editable section of
+// Feature 3 â€” full contract editing. One form, every editable section of
 // the PDF, with an optional manual override for the three billing
 // totals (left blank = keep using the calculated value).
 export async function updateReservationContractAction(

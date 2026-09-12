@@ -1,4 +1,4 @@
-﻿-- Full schema for a fresh database. For an existing production DB with
+-- Full schema for a fresh database. For an existing production DB with
 -- data already in it, use migrations/*.sql instead (additive, no drops).
 
 DROP TABLE IF EXISTS reservations;
@@ -10,6 +10,9 @@ CREATE TABLE vehicles (
   brand TEXT NOT NULL,
   model TEXT NOT NULL,
   price_per_day INTEGER NOT NULL,
+  min_rental_days INTEGER NOT NULL DEFAULT 5,
+  price_extended_15 NUMERIC NOT NULL,
+  price_monthly_30 NUMERIC NOT NULL,
   description TEXT,
   image_url TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -64,9 +67,20 @@ CREATE TABLE reservations (
   contract_number TEXT UNIQUE,
   contract_generated_at TIMESTAMPTZ,
 
+  -- Remote contract signing
+  signing_token UUID UNIQUE,
+  signing_token_expires_at TIMESTAMPTZ,
+  signer_name TEXT,
+  signed_at TIMESTAMPTZ,
+  signer_ip TEXT,
+  signature_data TEXT,
+
   status TEXT NOT NULL DEFAULT 'pending',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_reservations_vehicle_status_dates
   ON reservations (vehicle_id, status, start_date, end_date);
+
+CREATE INDEX idx_reservations_signing_token
+  ON reservations (signing_token);

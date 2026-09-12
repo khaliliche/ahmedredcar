@@ -60,6 +60,8 @@ export function LanguageProvider({
       (stored === "fr" || stored === "en" || stored === "ar") &&
       stored !== initialLanguage
     ) {
+      // One-time correction from localStorage after hydration, not a render loop.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLanguageState(stored);
     }
     // Only run on mount - initialLanguage is the SSR-provided source of truth

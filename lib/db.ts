@@ -172,7 +172,7 @@ export async function deleteVehicle(id: number) {
 
 // Fields the client-facing reservation form collects. Admin handover
 // fields (plate, mileage, damages, equipment, fees) are deliberately not
-// accepted here â€” they're only ever set via updateReservationHandover()
+// accepted here — they're only ever set via updateReservationHandover()
 // (see Step 4), so a client submission can never forge them.
 export type CreateReservationInput = {
   vehicle_id: number;
@@ -240,7 +240,7 @@ export async function updateReservationStatus(id: number, status: ReservationSta
   await sql`UPDATE reservations SET status = ${status} WHERE id = ${id}`;
 }
 
-// Feature 2 â€” availability. Only CONFIRMED reservations block a vehicle;
+// Feature 2 — availability. Only CONFIRMED reservations block a vehicle;
 // pending/contacted requests are just leads and don't reserve the car.
 // Uses idx_reservations_vehicle_status_dates (see migrations/002_*.sql).
 export async function isVehicleAvailable(
@@ -326,7 +326,7 @@ export async function confirmReservation(
   return { ok: true };
 }
 
-// Feature 1 â€” admin handover completion (plate, mileage, damages,
+// Feature 1 — admin handover completion (plate, mileage, damages,
 // equipment, delivery/pickup fees). Deliberately separate from the
 // client-facing createReservation() input.
 export async function updateReservationHandover(

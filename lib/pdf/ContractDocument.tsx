@@ -443,6 +443,8 @@ export function ContractDocument({
             </View>
             <View style={styles.sigStripBody}>
               {reservation.signature_data ? (
+                // react-pdf Image, not an HTML img; this component has no alt prop.
+                // eslint-disable-next-line jsx-a11y/alt-text
                 <Image src={reservation.signature_data} style={styles.sigImage} />
               ) : null}
             </View>
