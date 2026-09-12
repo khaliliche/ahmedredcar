@@ -1,7 +1,7 @@
 ﻿import Link from "next/link";
 import { FileText, FileSearch, Pencil } from "lucide-react";
 import { getReservations } from "@/lib/db";
-import AdminSidebar from "@/components/admin/real/AdminSidebar";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "En attente",
@@ -213,5 +213,6 @@ export default async function AdminContractsPage({
     </div>
   );
 }
+
 
 
