@@ -3,6 +3,14 @@ export const siteConfig = {
   tagline: "Location de voitures au Maroc",
   phone: "+212 6 61 41 27 59",
   whatsappNumber: "212661412759",
+  // Photos shown in the auto-playing hero carousel (public/ paths).
+  // Add or reorder freely — drop new files in /public and list them here.
+  heroImages: [
+    "/hero-car-1.jpg",
+    "/hero-car-2.jpg",
+    "/hero-car-3.jpg",
+    "/hero-car-4.jpg",
+  ],
   nav: [
     { label: "Accueil", href: "/" },
     { label: "Nos vehicules", href: "/vehicules" },

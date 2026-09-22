@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import BookingBar from "@/components/home/BookingBar";
+import HeroCarousel from "@/components/home/HeroCarousel";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export default function Hero() {
@@ -31,48 +31,8 @@ export default function Hero() {
         }}
       />
 
-      {/* Grand logo en fond, côté droit */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-0 hidden w-[52%] lg:block">
-        <Image
-          src="/ahmed-redcar-logo.png"
-          alt="Ahmed Red Car"
-          fill
-          sizes="62vw"
-          className="object-contain object-center"
-          style={{
-            maskImage:
-              "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
-          }}
-          priority
-        />
-      </div>
-
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-14">
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-6">
-                  {/* Logo — mobile only, première chose vue sous la navbar */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative -mt-6 flex justify-center lg:hidden"
-        >
-          <Image
-            src="/ahmed-redcar-logo.png"
-            alt="Ahmed Red Car"
-            width={400}
-            height={220}
-            className="w-full max-w-[220px] sm:max-w-[260px]"
-            style={{
-              maskImage:
-                "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
-              WebkitMaskImage:
-                "radial-gradient(ellipse 70% 70% at center, black 40%, transparent 82%)",
-            }}
-            priority
-          />
-        </motion.div>
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-10">
           {/* Texte */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -110,8 +70,10 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* Colonne vide à droite — le grand logo est en arrière-plan */}
-          <div className="hidden lg:block" aria-hidden="true" />
+          {/* Carrousel photo — remplace l'ancien logo en arrière-plan */}
+          <div className="order-1 lg:order-none">
+            <HeroCarousel />
+          </div>
         </div>
 
         {/* Barre de réservation */}

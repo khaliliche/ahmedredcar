@@ -12,9 +12,13 @@ import { getVehicles } from "@/lib/db";
 export default async function Home() {
   const vehicles = await getVehicles();
 
+  const heroImages = vehicles
+    .map((v) => v.image_url)
+    .filter((url): url is string => Boolean(url));
+
   return (
     <main>
-      <Hero />
+      <Hero images={heroImages.length > 0 ? heroImages : ["/hero-car.jpg"]} />
       <DeliveryBanner />
       <TrustIndicators />
       <FeaturedVehiclesGrid vehicles={vehicles.slice(0, 6)} />
