@@ -5,7 +5,11 @@ import BookingBar from "@/components/home/BookingBar";
 import HeroCarousel from "@/components/home/HeroCarousel";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-export default function Hero() {
+type HeroProps = {
+  images: string[];
+};
+
+export default function Hero({ images }: HeroProps) {
   const { t } = useLanguage();
 
   return (
@@ -46,7 +50,9 @@ export default function Hero() {
 
             <h1 className="font-display text-5xl font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-7xl">
               {t("hero.titleLine1")} <br />
-              <span className="text-gradient">{t("hero.titleHighlight")}</span>
+              <span className="text-gradient">
+                {t("hero.titleHighlight")}
+              </span>
             </h1>
 
             <p className="mt-6 max-w-md font-body text-lg leading-relaxed text-white/60">
@@ -70,9 +76,9 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* Carrousel photo — remplace l'ancien logo en arrière-plan */}
+          {/* Carrousel photo */}
           <div className="order-1 lg:order-none">
-            <HeroCarousel />
+            <HeroCarousel images={images} />
           </div>
         </div>
 
