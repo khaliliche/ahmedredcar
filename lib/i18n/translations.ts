@@ -41,6 +41,16 @@ export const translations = {
       text: "Ahmed Red Car est une agence de location de voitures marocaine, basée à Rabat et Salé, pensée pour offrir une expérience simple, transparente et sans mauvaise surprise. Que ce soit pour un trajet en ville, un week-end à la plage ou vos déplacements à l'aéroport, nous mettons à votre disposition une flotte entretenue et un service réactif.",
       points: { verified: "Véhicules vérifiés et assurés", presence: "Présence à Rabat et Salé", response: "Réponse rapide, 7j/7" },
     },
+    aboutStory: {
+      eyebrow: "À propos",
+      title: "À propos de nous",
+      paragraphs: [
+        "Ahmed Red Car, c'est bien plus qu'une simple agence de location de voitures basée à Rabat et Salé.",
+        "Notre mission est simple : offrir à chaque client une expérience fluide et transparente, du premier message WhatsApp jusqu'à la restitution du véhicule.",
+        "Nous mettons à votre disposition une flotte récente et soigneusement entretenue, vérifiée avant chaque départ pour garantir sécurité et confort sur la route.",
+        "Que ce soit pour un déplacement professionnel, un voyage en famille ou un besoin ponctuel, notre équipe reste disponible 7j/7 pour vous accompagner à chaque étape de votre location.",
+      ],
+    },
     howItWorks: {
       title: "Comment ça marche",
       subtitle: "Louer une voiture avec Ahmed Red Car en quatre étapes simples.",
@@ -145,6 +155,16 @@ export const translations = {
       text: "Ahmed Red Car is a Moroccan car rental agency, based in Rabat and Salé, built to offer a simple, transparent experience with no bad surprises. Whether it's a trip around town, a weekend at the beach or an airport transfer, we provide a well-maintained fleet and responsive service.",
       points: { verified: "Verified and insured vehicles", presence: "Present in Rabat and Salé", response: "Fast response, 7 days a week" },
     },
+    aboutStory: {
+      eyebrow: "About",
+      title: "About us",
+      paragraphs: [
+        "Ahmed Red Car is much more than a simple car rental agency based in Rabat and Salé.",
+        "Our mission is simple: to give every client a smooth, transparent experience, from the first WhatsApp message to the return of the vehicle.",
+        "We provide a recent, carefully maintained fleet, checked before every departure to guarantee safety and comfort on the road.",
+        "Whether it's a business trip, a family getaway or a one-off need, our team is available 7 days a week to support you at every step of your rental.",
+      ],
+    },
     howItWorks: {
       title: "How it works",
       subtitle: "Rent a car with Ahmed Red Car in four simple steps.",
@@ -248,6 +268,16 @@ export const translations = {
       title: "من نحن - Ahmed Red Car",
       text: "Ahmed Red Car وكالة مغربية لكراء السيارات، تعمل في الرباط وسلا، صُممت لتقديم تجربة بسيطة وشفافة وبدون مفاجآت غير سارة. سواء كانت رحلة داخل المدينة أو عطلة نهاية أسبوع على الشاطئ أو نقل من وإلى المطار، نوفر لك أسطولًا مصانًا وخدمة سريعة الاستجابة.",
       points: { verified: "سيارات مفحوصة ومؤمّنة", presence: "تواجد في الرباط وسلا", response: "استجابة سريعة، طوال أيام الأسبوع" },
+    },
+    aboutStory: {
+      eyebrow: "من نحن",
+      title: "من نحن",
+      paragraphs: [
+        "Ahmed Red Car هي أكثر بكثير من مجرد وكالة لكراء السيارات مقرها الرباط وسلا.",
+        "مهمتنا بسيطة: منح كل عميل تجربة سلسة وشفافة، من أول رسالة عبر واتساب إلى غاية إرجاع السيارة.",
+        "نضع بين يديك أسطولًا حديثًا يُصان بعناية، ويُفحص قبل كل انطلاق لضمان السلامة والراحة على الطريق.",
+        "سواء تعلق الأمر بتنقل مهني أو رحلة عائلية أو حاجة عابرة، يبقى فريقنا متاحًا طوال أيام الأسبوع لمرافقتك في كل مرحلة من مراحل الكراء.",
+      ],
     },
     howItWorks: {
       title: "كيف يعمل",
