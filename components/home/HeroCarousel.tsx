@@ -29,9 +29,6 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
   };
 
   useEffect(() => {
-    // Reset index if the number of images changes
-    setIndex((prev) => (images.length > 0 ? prev % images.length : 0));
-
     startAutoplay();
 
     return () => {
@@ -51,6 +48,10 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
     return null;
   }
 
+  // Keep the index valid if the images array becomes shorter.
+  const currentIndex = index >= images.length ? 0 : index;
+  const currentImage = images[currentIndex];
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.96 }}
@@ -60,7 +61,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
     >
       <AnimatePresence mode="sync">
         <motion.div
-          key={`${images[index]}-${index}`}
+          key={`${currentImage}-${currentIndex}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -68,12 +69,12 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
           className="absolute inset-0"
         >
           <Image
-            src={images[index]}
+            src={currentImage}
             alt="Ahmed Red Car"
             fill
             sizes="(min-width: 1024px) 44vw, 90vw"
             className="object-cover"
-            priority={index === 0}
+            priority={currentIndex === 0}
           />
         </motion.div>
       </AnimatePresence>
@@ -90,7 +91,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
               onClick={() => goTo(i)}
               aria-label={`Aller à la photo ${i + 1}`}
               className={`h-2 rounded-full transition-all duration-300 ${
-                i === index
+                i === currentIndex
                   ? "w-6 bg-white"
                   : "w-2 bg-white/50 hover:bg-white/80"
               }`}
