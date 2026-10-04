@@ -96,7 +96,9 @@ export type Reservation = {
   signed_2_at: string | null;
   signer_2_ip: string | null;
   signature_2_data: string | null;
-
+  // Agency (admin) signature, drawn in the admin panel
+  admin_signature_data: string | null;
+  admin_signed_at: string | null;
   status: ReservationStatus;
   created_at: string;
 };
@@ -522,7 +524,18 @@ export async function consumeSigningToken(
   `;
   return rows.length === 1;
 }
-
+// Agency signature: set from the admin panel (pass null to remove it).
+export async function setAdminSignature(
+  id: number,
+  signatureData: string | null
+): Promise<void> {
+  await sql`
+    UPDATE reservations
+    SET admin_signature_data = ${signatureData},
+        admin_signed_at = ${signatureData ? sql`now()` : null}
+    WHERE id = ${id}
+  `;
+}
 // ---- Second driver's independent signing slot ----
 
 export async function createSigningToken2(id: number): Promise<string | null> {

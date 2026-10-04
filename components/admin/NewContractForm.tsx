@@ -99,8 +99,17 @@ export default function NewContractForm({
             Contrat {done.contractNumber} cree
           </p>
           <p className="mt-1 text-sm text-emerald-700">
-            Envoyez maintenant le lien de signature au client.
+            Signez le contrat pour l&apos;agence, puis envoyez le lien de signature au client.
           </p>
+        </div>
+
+        <div>
+          <Link
+            href={`/admin/real/reservations/${done.id}/agency-sign`}
+            className="inline-block rounded-lg bg-black px-4 py-2 text-sm font-bold text-white hover:bg-black/80"
+          >
+            Signer le contrat (agence)
+          </Link>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">

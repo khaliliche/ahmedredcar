@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { DAMAGE_ZONES, DAMAGE_TYPES, EQUIPMENT_ITEMS } from "@/lib/contract";
 import type { DamageEntry, EquipmentChecklist } from "@/lib/db";
 
 export default function HandoverForm({
   action,
   initial,
+  reservationId,
 }: {
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => void | Promise<void>;
+  reservationId: number;
   initial: {
     registration_plate: string;
     mileage_start: number | null;
@@ -20,6 +23,7 @@ export default function HandoverForm({
   };
 }) {
   const [damages, setDamages] = useState<DamageEntry[]>(initial.damages);
+  const [saved, setSaved] = useState(false);
 
   function addDamage() {
     setDamages((d) => [...d, { zone: DAMAGE_ZONES[0], type: DAMAGE_TYPES[0].value, note: "" }]);
@@ -32,7 +36,14 @@ export default function HandoverForm({
   }
 
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <form
+      action={async (formData: FormData) => {
+        setSaved(false);
+        await action(formData);
+        setSaved(true);
+      }}
+      className="flex flex-col gap-6"
+    >
       <input type="hidden" name="damages_json" value={JSON.stringify(damages)} readOnly />
 
       <label className="flex flex-col gap-1 sm:max-w-xs">
@@ -174,6 +185,20 @@ export default function HandoverForm({
       >
         Enregistrer
       </button>
+
+      {saved && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-sm font-semibold text-emerald-800">
+            Informations enregistrées.
+          </p>
+          <Link
+            href={`/admin/real/reservations/${reservationId}/agency-sign`}
+            className="rounded-lg bg-black px-4 py-2 text-sm font-bold text-white hover:bg-black/80"
+          >
+            Signer le contrat (agence)
+          </Link>
+        </div>
+      )}
     </form>
   );
 }

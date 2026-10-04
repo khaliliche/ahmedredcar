@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { cookies, headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
@@ -15,6 +15,7 @@ import {
   createSigningToken2,
   updateReservationHandover,
   updateReservationContract,
+  setAdminSignature,
   getReservationById,
   type ReservationStatus,
   type DamageEntry,
@@ -417,3 +418,23 @@ export async function generateSigningLinkAction2(id: number): Promise<
 
 
 
+
+
+export async function saveAdminSignatureAction(
+  id: number,
+  signature: string | null
+): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin();
+  if (signature !== null) {
+    if (
+      !signature.startsWith("data:image/png;base64,") ||
+      signature.length > 400_000
+    ) {
+      return { ok: false, error: "Signature invalide." };
+    }
+  }
+  await setAdminSignature(id, signature);
+  revalidatePath(`/admin/real/reservations/${id}`);
+  revalidatePath(`/admin/real/reservations/${id}/contract`);
+  return { ok: true };
+}

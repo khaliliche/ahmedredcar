@@ -75,6 +75,9 @@ CREATE TABLE reservations (
   signed_at TIMESTAMPTZ,
   signer_ip TEXT,
   signature_data TEXT,
+    -- Agency (admin) signature
+  admin_signature_data TEXT,
+  admin_signed_at TIMESTAMPTZ,
 
   status TEXT NOT NULL DEFAULT 'pending',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

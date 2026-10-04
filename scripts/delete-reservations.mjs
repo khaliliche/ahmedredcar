@@ -1,0 +1,12 @@
+﻿import { readFileSync } from "fs";
+const env = Object.fromEntries(readFileSync(".env.local","utf8").split("\n").map(l=>l.trim()).filter(l=>l&&!l.startsWith("#")).map(l=>{const i=l.indexOf("=");return [l.slice(0,i),l.slice(i+1).replace(/^"|"$/g,"")]}));
+const { default: postgres } = await import("postgres");
+const sql = postgres(env.DATABASE_URL, { ssl: "require" });
+const [{ n }] = await sql`SELECT count(*)::int AS n FROM reservations`;
+console.log("Reservations before:", n);
+await sql`DELETE FROM reservations`;
+const [{ n: after }] = await sql`SELECT count(*)::int AS n FROM reservations`;
+console.log("Reservations after:", after);
+const [{ v }] = await sql`SELECT count(*)::int AS v FROM vehicles`;
+console.log("Vehicles untouched:", v);
+await sql.end();

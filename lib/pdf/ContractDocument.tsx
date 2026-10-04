@@ -12,6 +12,11 @@ const LOGO_SRC = `data:image/png;base64,${readFileSync(
   join(process.cwd(), "public/logo.png")
 ).toString("base64")}`;
 
+// Agency stamp (cachet), always printed in the "Signature agence" box.
+const CACHET_SRC = `data:image/png;base64,${readFileSync(
+  join(process.cwd(), "public/cachet.png")
+).toString("base64")}`;
+
 const styles = StyleSheet.create({
   page: {
     padding: 26,
@@ -113,6 +118,17 @@ const styles = StyleSheet.create({
   },
   sigStripHeaderText: { color: "#fff", fontSize: 7.5, fontWeight: 700, textAlign: "center" },
   sigStripBody: { height: 46 },
+  agencySigLabel: { fontSize: 7.5, fontWeight: 700, marginTop: 8, marginBottom: 3 },
+  agencySigBox: { height: 70, border: "0.75 solid #999", borderRadius: 4, position: "relative" },
+  cachetImage: { width: "100%", height: "100%", objectFit: "contain" },
+  agencySigOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "contain",
+  },
   sigImage: { width: "100%", height: "100%", objectFit: "contain" },
   auditLine: { fontSize: 6.5, color: "#333", marginBottom: 4 },
 
@@ -353,6 +369,15 @@ export function ContractDocument({
                     : ""
                 }
               />
+              <Text style={styles.agencySigLabel}>Signature agence</Text>
+              <View style={styles.agencySigBox}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                <Image src={CACHET_SRC} style={styles.cachetImage} />
+                {reservation.admin_signature_data ? (
+                  // eslint-disable-next-line jsx-a11y/alt-text
+                  <Image src={reservation.admin_signature_data} style={styles.agencySigOverlay} />
+                ) : null}
+              </View>
             </Card>
           </View>
 

@@ -198,6 +198,95 @@ export default async function AdminReservationDetailPage({
             )}
           </div>
 
+          <section className="mt-4 rounded-2xl border border-black/10 bg-white p-5">
+            <h2 className="font-display text-sm font-bold uppercase tracking-wide text-black/50">
+              Signatures
+            </h2>
+
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {/* Agency */}
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-black/50">Agence</span>
+                {reservation.admin_signature_data ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={reservation.admin_signature_data}
+                    alt="Signature de l'agence"
+                    className="h-20 w-full rounded-lg border border-black/15 bg-white object-contain"
+                  />
+                ) : (
+                  <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-black/20 text-xs text-black/40">
+                    Pas encore signé
+                  </div>
+                )}
+                {reservation.admin_signed_at && (
+                  <span className="text-xs text-emerald-700">
+                    Signé le{" "}
+                    {new Date(reservation.admin_signed_at).toLocaleString("fr-FR")}
+                  </span>
+                )}
+                <Link
+                  href={`/admin/real/reservations/${reservation.id}/agency-sign`}
+                  className="w-fit rounded-lg bg-black px-3 py-1.5 text-xs font-bold text-white hover:bg-black/80"
+                >
+                  {reservation.admin_signature_data
+                    ? "Modifier la signature"
+                    : "Signer le contrat (agence)"}
+                </Link>
+              </div>
+
+              {/* Main driver */}
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-semibold text-black/50">Client</span>
+                {reservation.signature_data ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={reservation.signature_data}
+                    alt="Signature du client"
+                    className="h-20 w-full rounded-lg border border-black/15 bg-white object-contain"
+                  />
+                ) : (
+                  <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-black/20 text-xs text-black/40">
+                    En attente du client
+                  </div>
+                )}
+                {reservation.signed_at && (
+                  <span className="text-xs text-emerald-700">
+                    Signé le{" "}
+                    {new Date(reservation.signed_at).toLocaleString("fr-FR")}
+                  </span>
+                )}
+              </div>
+
+              {/* Second driver */}
+              {reservation.has_second_driver && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-semibold text-black/50">
+                    2e conducteur
+                  </span>
+                  {reservation.signature_2_data ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={reservation.signature_2_data}
+                      alt="Signature du 2e conducteur"
+                      className="h-20 w-full rounded-lg border border-black/15 bg-white object-contain"
+                    />
+                  ) : (
+                    <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-black/20 text-xs text-black/40">
+                      En attente du 2e conducteur
+                    </div>
+                  )}
+                  {reservation.signed_2_at && (
+                    <span className="text-xs text-emerald-700">
+                      Signé le{" "}
+                      {new Date(reservation.signed_2_at).toLocaleString("fr-FR")}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+
           <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
             <section className="rounded-2xl border border-black/10 bg-white p-5">
               <h2 className="font-display text-sm font-bold uppercase tracking-wide text-black/50">
@@ -332,6 +421,7 @@ export default async function AdminReservationDetailPage({
 
             <div className="mt-4">
               <HandoverForm
+                reservationId={reservation.id}
                 action={updateReservationHandoverAction.bind(
                   null,
                   reservation.id
