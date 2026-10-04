@@ -88,10 +88,8 @@ export async function createReservationAction(
     !fullName ||
     !cinNumber ||
     !licenseIssueDate ||
-    !driverAddress ||
     !driverPhone ||
     !driverLicenseNumber ||
-    !driverPassportNumber ||
     !startDate ||
     !endDate ||
     !startTime ||

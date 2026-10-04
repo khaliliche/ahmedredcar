@@ -1,5 +1,5 @@
-﻿import Link from "next/link";
-import { FileText, FileSearch, Pencil } from "lucide-react";
+import Link from "next/link";
+import { FileText, FileSearch, Pencil, Plus } from "lucide-react";
 import { getReservations } from "@/lib/db";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
@@ -104,6 +104,14 @@ export default async function AdminContractsPage({
               {contracts.length > 1 ? "s" : ""}
             </div>
           </div>
+
+          <Link
+            href="/admin/real/contracts/new"
+            className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-[var(--color-red-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02]"
+          >
+            <Plus className="h-4 w-4" />
+            Nouveau contrat
+          </Link>
 
           <form className="mt-6">
             <input
