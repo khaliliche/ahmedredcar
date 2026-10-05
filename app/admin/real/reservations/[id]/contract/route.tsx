@@ -7,10 +7,11 @@ import { ContractDocument } from "@/lib/pdf/ContractDocument";
 export const runtime = "nodejs";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const download = new URL(request.url).searchParams.get("download") === "1";
   const reservation = await getReservationById(Number(id));
 
   if (!reservation) {
@@ -33,7 +34,7 @@ export async function GET(
   return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="contrat-${reservation.contract_number}.pdf"`,
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="contrat-${reservation.contract_number}.pdf"`,
       "Cache-Control": "no-store",
     },
   });

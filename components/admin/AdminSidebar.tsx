@@ -1,19 +1,24 @@
-﻿import Link from "next/link";
-import { Car, CalendarClock, Users, FileText, LogOut, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { Car, CalendarClock, FilePlus, LogOut, MessageCircle } from "lucide-react";
 import { logoutAction } from "@/app/admin/real/actions";
 import { buildWhatsAppLink } from "@/lib/site-config";
 
 const NAV = [
-  { key: "vehicules", href: "/admin/real", label: "Véhicules", icon: Car },
-  { key: "reservations", href: "/admin/real/reservations", label: "Réservations", icon: CalendarClock },
-  { key: "contracts", href: "/admin/real/contracts", label: "Contrats", icon: FileText },
-  { key: "clients", href: "/admin/real/clients", label: "Clients", icon: Users },
+  { key: "vehicules", href: "/admin/real", label: "V\u00e9hicules", icon: Car },
+  {
+    key: "reservations",
+    href: "/admin/real/reservations",
+    label: "R\u00e9servations en ligne",
+    icon: CalendarClock,
+  },
+  { key: "new-contract", href: "/admin/real/contracts/new", label: "Nouveau contrat", icon: FilePlus },
 ] as const;
 
 export default function AdminSidebar({
   active,
 }: {
-  active: "vehicules" | "reservations" | "contracts" | "clients";
+  // "contracts" and "clients" are only kept until the old pages are deleted.
+  active: "vehicules" | "reservations" | "new-contract" | "contracts" | "clients";
 }) {
   const whatsappHref = buildWhatsAppLink(
     "Bonjour, j'ai besoin d'aide sur l'espace admin."
@@ -71,7 +76,7 @@ export default function AdminSidebar({
             className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/55 transition-colors hover:bg-white/5 hover:text-white"
           >
             <LogOut className="h-4 w-4" />
-            Déconnexion
+            {"D\u00e9connexion"}
           </button>
         </form>
       </aside>
@@ -104,4 +109,3 @@ export default function AdminSidebar({
     </>
   );
 }
-

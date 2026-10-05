@@ -74,7 +74,7 @@ export async function createManualContract(
          registration_plate, mileage_start, mileage_end,
          damages, equipment, delivery_fee, pickup_fee,
          fait_a, override_total_ht, override_tva, override_total_ttc,
-         status)
+         status, source)
       VALUES
         (${data.vehicle_id}, ${data.vehicle_label},
          ${data.full_name}, ${data.age}, ${data.cin_number}, ${data.license_issue_date},
@@ -86,7 +86,7 @@ export async function createManualContract(
          ${data.registration_plate}, ${data.mileage_start}, ${data.mileage_end},
          ${tx.json(data.damages)}, ${tx.json(data.equipment)}, ${data.delivery_fee}, ${data.pickup_fee},
          ${data.fait_a}, ${data.override_total_ht}, ${data.override_tva}, ${data.override_total_ttc},
-         'confirmed')
+         'confirmed', 'walk_in')
       RETURNING id
     `;
     const id = rows[0].id;

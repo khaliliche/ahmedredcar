@@ -17,6 +17,8 @@ import {
   updateReservationContract,
   setAdminSignature,
   getReservationById,
+  getBlockingReservation,
+  getVehicleById,
   type ReservationStatus,
   type DamageEntry,
   type EquipmentChecklist,
@@ -437,4 +439,180 @@ export async function saveAdminSignatureAction(
   revalidatePath(`/admin/real/reservations/${id}`);
   revalidatePath(`/admin/real/reservations/${id}/contract`);
   return { ok: true };
+}
+
+/* -------------------------------------------------------------------------- */
+/* LIVE AVAILABILITY CHECK (banner on the contract pages)                     */
+/* -------------------------------------------------------------------------- */
+
+export type AvailabilityResult =
+  | { state: "free" }
+  | { state: "reserved"; until: string }
+  | { state: "unknown" };
+
+export async function checkAvailabilityAction(
+  vehicleId: number,
+  startDate: string,
+  endDate: string,
+  excludeReservationId?: number
+): Promise<AvailabilityResult> {
+  await requireAdmin();
+
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+  if (
+    !Number.isInteger(vehicleId) ||
+    vehicleId <= 0 ||
+    !isoDate.test(startDate) ||
+    !isoDate.test(endDate) ||
+    endDate < startDate
+  ) {
+    return { state: "unknown" };
+  }
+
+  const blocking = await getBlockingReservation(
+    vehicleId,
+    startDate,
+    endDate,
+    excludeReservationId
+  );
+  if (!blocking) return { state: "free" };
+  return { state: "reserved", until: blocking.end_label };
+}
+
+/* -------------------------------------------------------------------------- */
+/* SAVE CONTRACT (unified contract form, "Enregistrer")                       */
+/* -------------------------------------------------------------------------- */
+
+export type SaveContractResult = { ok: true } | { ok: false; error: string };
+
+export async function saveContractAction(
+  id: number,
+  formData: FormData
+): Promise<SaveContractResult> {
+  await requireAdmin();
+
+  const reservation = await getReservationById(id);
+  if (!reservation) return { ok: false, error: "Reservation introuvable." };
+
+  const text = (name: string) => String(formData.get(name) ?? "").trim();
+  const numberOrNull = (name: string) => {
+    const value = text(name);
+    if (value === "") return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const startDate = text("start_date");
+  const endDate = text("end_date");
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+  if (!isoDate.test(startDate) || !isoDate.test(endDate)) {
+    return { ok: false, error: "Renseignez les dates de location." };
+  }
+  if (endDate < startDate) {
+    return { ok: false, error: "La date de fin est avant la date de debut." };
+  }
+
+  const vehicleIdRaw = Number(text("vehicle_id"));
+  const vehicle =
+    Number.isInteger(vehicleIdRaw) && vehicleIdRaw > 0
+      ? await getVehicleById(vehicleIdRaw)
+      : null;
+
+  const effectiveVehicleId = vehicle ? vehicle.id : reservation.vehicle_id;
+  if (reservation.status === "confirmed" && effectiveVehicleId) {
+    const blocking = await getBlockingReservation(
+      effectiveVehicleId,
+      startDate,
+      endDate,
+      id
+    );
+    if (blocking) {
+      return { ok: false, error: `Voiture reservee jusqu'au ${blocking.end_label}.` };
+    }
+  }
+
+  let damages: DamageEntry[] = [];
+  try {
+    const parsed = JSON.parse(text("damages_json") || "[]");
+    if (Array.isArray(parsed)) damages = parsed;
+  } catch {
+    damages = [];
+  }
+
+  const equipment: EquipmentChecklist = {};
+  for (const item of EQUIPMENT_ITEMS) {
+    equipment[item.key] = formData.get(`equipment__${item.key}`) === "on";
+  }
+
+  await updateReservationContract(id, {
+    vehicle_id: vehicle ? vehicle.id : null,
+    vehicle_label: vehicle ? `${vehicle.brand} ${vehicle.model}` : text("vehicle_label"),
+    registration_plate: text("registration_plate"),
+
+    full_name: text("full_name"),
+    age: Number(text("age")) || 0,
+    cin_number: text("cin_number"),
+    license_issue_date: text("license_issue_date"),
+    driver_address: text("driver_address"),
+    driver_phone: text("driver_phone"),
+    driver_license_number: text("driver_license_number"),
+    driver_passport_number: text("driver_passport_number"),
+
+    has_second_driver: formData.get("has_second_driver") === "on",
+    second_driver_full_name: text("second_driver_full_name"),
+    second_driver_address: text("second_driver_address"),
+    second_driver_phone: text("second_driver_phone"),
+    second_driver_cin_number: text("second_driver_cin_number"),
+    second_driver_license_number: text("second_driver_license_number"),
+    second_driver_passport_number: text("second_driver_passport_number"),
+
+    start_date: startDate,
+    end_date: endDate,
+    start_time: text("start_time") || "10:00",
+    end_time: text("end_time") || "10:00",
+
+    mileage_start: numberOrNull("mileage_start"),
+    mileage_end: numberOrNull("mileage_end"),
+    damages,
+    equipment,
+    delivery_fee: Number(text("delivery_fee")) || 0,
+    pickup_fee: Number(text("pickup_fee")) || 0,
+
+    fait_a: text("fait_a"),
+    override_total_ht: numberOrNull("override_total_ht"),
+    override_tva: numberOrNull("override_tva"),
+    override_total_ttc: numberOrNull("override_total_ttc"),
+  });
+
+  revalidatePath(`/admin/real/reservations/${id}`);
+  revalidatePath(`/admin/real/reservations/${id}/edit-contract`);
+  revalidatePath(`/admin/real/reservations/${id}/contract`);
+  revalidatePath("/admin/real/reservations");
+  revalidatePath("/admin/real/contracts");
+
+  return { ok: true };
+}
+
+/* -------------------------------------------------------------------------- */
+/* GENERER LE CONTRAT                                                         */
+/* -------------------------------------------------------------------------- */
+
+export async function generateContractAction(id: number) {
+  await requireAdmin();
+
+  const reservation = await getReservationById(id);
+  if (!reservation) notFound();
+
+  if (!reservation.contract_number) {
+    const result = await confirmReservation(id);
+    if (!result.ok) {
+      // Car got booked in the meantime: the contract page shows the red message.
+      redirect(`/admin/real/reservations/${id}`);
+    }
+  }
+
+  revalidatePath(`/admin/real/reservations/${id}`);
+  revalidatePath("/admin/real/reservations");
+  revalidatePath("/vehicules");
+  redirect(`/admin/real/reservations/${id}/pdf`);
 }

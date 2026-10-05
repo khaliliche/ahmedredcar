@@ -1,4 +1,4 @@
-﻿import { randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import postgres from "postgres";
 import { getTieredPricing } from "./pricing";
 
@@ -99,6 +99,7 @@ export type Reservation = {
   // Agency (admin) signature, drawn in the admin panel
   admin_signature_data: string | null;
   admin_signed_at: string | null;
+  source: "online" | "walk_in";
   status: ReservationStatus;
   created_at: string;
 };
@@ -377,6 +378,7 @@ export async function deleteReservation(id: number) {
 // nullable: leaving them blank keeps the normal calculated value (see
 // lib/contract.ts:resolveBilling).
 export type UpdateReservationContractInput = {
+  vehicle_id?: number | null;
   full_name: string;
   age: number;
   cin_number: string;
@@ -438,6 +440,7 @@ export async function updateReservationContract(
         second_driver_license_number = ${data.second_driver_license_number},
         second_driver_passport_number = ${data.second_driver_passport_number},
 
+        vehicle_id = COALESCE(${data.vehicle_id ?? null}, vehicle_id),
         vehicle_label = ${data.vehicle_label},
         registration_plate = ${data.registration_plate},
 
@@ -643,4 +646,27 @@ export async function consumeWindowedLimit(
     RETURNING count
   `;
   return rows[0] ? rows[0].count <= max : false;
+}
+
+
+export async function getBlockingReservation(
+  vehicleId: number,
+  startDate: string,
+  endDate: string,
+  excludeReservationId?: number
+): Promise<{ id: number; end_date: string; end_label: string } | null> {
+  const rows = await sql<{ id: number; end_date: string; end_label: string }[]>`
+    SELECT id,
+           end_date::text AS end_date,
+           to_char(end_date, 'DD/MM/YYYY') AS end_label
+    FROM reservations
+    WHERE vehicle_id = ${vehicleId}
+      AND status = 'confirmed'
+      AND id != ${excludeReservationId ?? 0}
+      AND start_date <= ${endDate}
+      AND end_date >= ${startDate}
+    ORDER BY end_date DESC
+    LIMIT 1
+  `;
+  return rows[0] ?? null;
 }

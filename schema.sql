@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS reservations (
   admin_signature_data TEXT,
   admin_signed_at TIMESTAMPTZ,
 
+  source TEXT NOT NULL DEFAULT 'online' CHECK (source IN ('online', 'walk_in')),
   status TEXT NOT NULL DEFAULT 'pending',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
