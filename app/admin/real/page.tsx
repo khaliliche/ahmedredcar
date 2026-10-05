@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { getVehicles, getReservations } from "@/lib/db";
 import { deleteVehicleAction } from "@/app/admin/real/actions";
 import { Car, CalendarClock, Wallet, Plus, Pencil, Trash2 } from "lucide-react";
@@ -92,7 +92,7 @@ export default async function AdminDashboard() {
 
                     <div className="flex shrink-0 items-center gap-1.5">
                       <Link
-                        href={`/admin/real/${vehicle.id}`}
+                        href={`/admin/real/vehicles/${vehicle.id}`}
                         className="rounded-lg border border-black/15 p-2 transition-colors hover:bg-black/5"
                         aria-label="Modifier"
                       >

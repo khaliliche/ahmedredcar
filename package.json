@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:baseline": "node scripts/migrate.mjs --baseline 008"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",

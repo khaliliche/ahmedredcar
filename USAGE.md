@@ -2,50 +2,37 @@
 
 ## 1. Environment variables
 
-Create a local `.env.local` file (never commit it). Generate the values with the commands below.
-
-    chmod 600 .env.local
+Create `.env.local` (never commit it).
 
 | Variable | How to get it |
 |---|---|
 | `DATABASE_URL` | Your Postgres connection string |
+| `DATABASE_SSL` | `false` only for a local Postgres without TLS |
 | `ADMIN_PASSWORD` | `openssl rand -hex 32` |
 | `ADMIN_SESSION_SECRET` | `openssl rand -hex 32` |
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard → Settings → API → service_role |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase Dashboard > Settings > API > service_role |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL (used in signing links) |
 
-## 2. Database
+## 2. Database (non-destructive)
 
-### Fresh database (no data)
+    npm run db:migrate
 
-    psql "$DATABASE_URL" -f schema.sql
+- **Empty database:** applies `schema.sql` and records all migrations as applied.
+- **Existing database (first time only, after a backup):** `npm run db:baseline`, then `npm run db:migrate`.
+- **Later:** `npm run db:migrate` applies only new files from `migrations/`.
 
-### Existing production database (data already present)
+Nothing in this flow drops or deletes data. Never run `schema.sql` by hand on a database with data.
 
-Run only the new migration — it adds one table without touching anything else:
-
-    psql "$DATABASE_URL" -f migrations/007_login_attempts.sql
-
-### Shortcut for both (requires Node.js 22+)
-
-    node scripts/init-db.mjs          # requires SSL (default)
-    DATABASE_SSL=false node scripts/init-db.mjs   # local Postgres without TLS
-
-## 3. Run the dev server
+## 3. Run
 
     npm install
     npm run dev        # http://localhost:3000
 
-## 4. Admin access
+## 4. Admin
 
-Navigate to `/admin/real` — you are redirected to `/admin/real/login` to enter the password stored in `ADMIN_PASSWORD`.
+Go to `/admin/real` and sign in with `ADMIN_PASSWORD`.
 
-## 5. Login ban
+## 5. Lift a login ban
 
-After **4 failed password attempts** from the same IP, that IP is banned for **24 hours**. The ban is stored in the `login_attempts` table (Postgres), so it survives server restarts and cookie clearing.
-
-A banned client sees the login page but receives no error message on submit — they are silently redirected back to the form.
-
-To manually lift a ban:
-
-    DELETE FROM login_attempts WHERE ip = 'login:<your-ip>';
+    DELETE FROM login_attempts WHERE ip = 'login:<ip-address>';

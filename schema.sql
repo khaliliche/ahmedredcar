@@ -1,11 +1,9 @@
--- Full schema for a fresh database. For an existing production DB with
--- data already in it, use migrations/*.sql instead (additive, no drops).
+-- Baseline schema for a FRESH, EMPTY database only.
+-- Never drops anything. Apply it with: npm run db:migrate
+-- (the runner detects an empty database, applies this file, and records
+-- every migration as already applied). Existing databases use migrations/.
 
-DROP TABLE IF EXISTS reservations;
-DROP TABLE IF EXISTS vehicles;
-DROP TABLE IF EXISTS login_attempts;
-
-CREATE TABLE vehicles (
+CREATE TABLE IF NOT EXISTS vehicles (
   id SERIAL PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
   brand TEXT NOT NULL,
@@ -19,7 +17,7 @@ CREATE TABLE vehicles (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TABLE reservations (
+CREATE TABLE IF NOT EXISTS reservations (
   id SERIAL PRIMARY KEY,
   vehicle_id INTEGER REFERENCES vehicles(id) ON DELETE SET NULL,
   vehicle_label TEXT NOT NULL,
@@ -68,14 +66,23 @@ CREATE TABLE reservations (
   contract_number TEXT UNIQUE,
   contract_generated_at TIMESTAMPTZ,
 
-  -- Remote contract signing
+  -- Remote signing: main driver
   signing_token UUID UNIQUE,
   signing_token_expires_at TIMESTAMPTZ,
   signer_name TEXT,
   signed_at TIMESTAMPTZ,
   signer_ip TEXT,
   signature_data TEXT,
-    -- Agency (admin) signature
+
+  -- Remote signing: second driver
+  signing_token_2 UUID UNIQUE,
+  signing_token_2_expires_at TIMESTAMPTZ,
+  signer_2_name TEXT,
+  signed_2_at TIMESTAMPTZ,
+  signer_2_ip TEXT,
+  signature_2_data TEXT,
+
+  -- Agency (admin) signature
   admin_signature_data TEXT,
   admin_signed_at TIMESTAMPTZ,
 
@@ -83,14 +90,15 @@ CREATE TABLE reservations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_reservations_vehicle_status_dates
+CREATE INDEX IF NOT EXISTS idx_reservations_vehicle_status_dates
   ON reservations (vehicle_id, status, start_date, end_date);
-
-CREATE INDEX idx_reservations_signing_token
+CREATE INDEX IF NOT EXISTS idx_reservations_signing_token
   ON reservations (signing_token);
+CREATE INDEX IF NOT EXISTS idx_reservations_signing_token_2
+  ON reservations (signing_token_2);
 
--- Persistent per-IP failure counter with a ban timestamp (survives redeploys).
-CREATE TABLE login_attempts (
+-- Persistent per-key failure counter / rate-limit window.
+CREATE TABLE IF NOT EXISTS login_attempts (
   ip TEXT PRIMARY KEY,
   count INTEGER NOT NULL DEFAULT 0,
   locked_until TIMESTAMPTZ
