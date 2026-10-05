@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import BookingBar from "@/components/home/BookingBar";
 import HeroCarousel from "@/components/home/HeroCarousel";
+import Logo from "@/components/layout/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 type HeroProps = {
@@ -48,6 +48,22 @@ export default function Hero({ images }: HeroProps) {
               {t("hero.badge")}
             </span>
 
+            {/* Logo + nom - mobile */}
+            <Logo
+              iconSize={96}
+              stacked
+              textClassName="text-2xl sm:text-4xl"
+              className="mb-6 gap-3 lg:hidden"
+            />
+
+            {/* Logo + nom - desktop */}
+            <Logo
+              iconSize={150}
+              stacked
+              textClassName="text-5xl xl:text-6xl"
+              className="mb-8 hidden gap-5 lg:flex"
+            />
+
             <h1 className="font-display text-5xl font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-7xl">
               {t("hero.titleLine1")} <br />
               <span className="text-gradient">
@@ -81,19 +97,6 @@ export default function Hero({ images }: HeroProps) {
             <HeroCarousel images={images} />
           </div>
         </div>
-
-        {/* Barre de réservation */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.8,
-            delay: 0.4,
-            ease: "easeOut",
-          }}
-        >
-          <BookingBar />
-        </motion.div>
       </div>
     </section>
   );

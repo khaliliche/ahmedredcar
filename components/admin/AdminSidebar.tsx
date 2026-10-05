@@ -17,8 +17,7 @@ const NAV = [
 export default function AdminSidebar({
   active,
 }: {
-  // "contracts" and "clients" are only kept until the old pages are deleted.
-  active: "vehicules" | "reservations" | "new-contract" | "contracts" | "clients";
+  active: "vehicules" | "reservations" | "new-contract";
 }) {
   const whatsappHref = buildWhatsAppLink(
     "Bonjour, j'ai besoin d'aide sur l'espace admin."

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -57,7 +57,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 sm:max-w-lg lg:max-w-none"
+      className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 sm:max-w-lg lg:mx-0 lg:ms-auto lg:max-w-[400px]"
     >
       <AnimatePresence mode="sync">
         <motion.div

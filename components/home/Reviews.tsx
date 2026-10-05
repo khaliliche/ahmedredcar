@@ -74,43 +74,47 @@ export default function Reviews() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-[var(--color-mist)] py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
-        <p className="font-body text-xs font-semibold uppercase tracking-[0.2em] text-[var(--color-red-primary)]">
-          {t("reviews.label")}
-        </p>
+    <section className="relative overflow-hidden bg-gradient-to-b from-[var(--color-ink)] via-[var(--color-charcoal)] to-[var(--color-ink)] py-16 sm:py-20">
+      <div className="relative mx-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#5c0a0a] via-[#8a1010] to-[#3d0707] py-14 sm:mx-6 sm:py-16 lg:mx-10 xl:mx-auto xl:max-w-6xl">
+        <div className="px-5 sm:px-8 lg:px-10">
+          <p className="font-body text-xs font-semibold uppercase tracking-[0.2em] text-[#f0c040]">
+            {t("reviews.label")}
+          </p>
 
-        <h2 className="mt-2 font-display text-2xl font-extrabold text-[var(--color-ink)] sm:text-3xl lg:text-4xl">
-          {t("reviews.title")}
-        </h2>
-      </div>
+          <h2 className="mt-2 font-display text-2xl font-extrabold text-white sm:text-3xl lg:text-4xl">
+            {t("reviews.title")}
+          </h2>
 
-      <div className="relative mt-10 sm:mt-12">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-[var(--color-mist)] to-transparent sm:w-24" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[var(--color-mist)] to-transparent sm:w-24" />
+          <span
+            className="mt-3 block h-1 w-14 rounded-full bg-[#d4a017]"
+            aria-hidden="true"
+          />
+        </div>
 
-        <div
-          ref={trackRef}
-          dir="ltr"
-          className="reviews-track flex gap-5 overflow-x-auto px-6 sm:gap-6 sm:px-10"
-          onPointerDown={pause}
-          onPointerUp={scheduleResume}
-          onPointerCancel={scheduleResume}
-          onTouchStart={pause}
-          onTouchEnd={scheduleResume}
-          onMouseEnter={pause}
-          onMouseLeave={scheduleResume}
-          onWheel={pause}
-        >
-          {loopItems.map((item, index) => (
-            <ReviewTicket
-              key={`${item.name}-${index}`}
-              name={item.name}
-              rating={item.rating}
-              text={item.text}
-              dir={dir}
-            />
-          ))}
+        <div className="relative mt-10 [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)] sm:mt-12">
+          <div
+            ref={trackRef}
+            dir="ltr"
+            className="reviews-track flex gap-5 overflow-x-auto px-6 sm:gap-6 sm:px-10"
+            onPointerDown={pause}
+            onPointerUp={scheduleResume}
+            onPointerCancel={scheduleResume}
+            onTouchStart={pause}
+            onTouchEnd={scheduleResume}
+            onMouseEnter={pause}
+            onMouseLeave={scheduleResume}
+            onWheel={pause}
+          >
+            {loopItems.map((item, index) => (
+              <ReviewTicket
+                key={`${item.name}-${index}`}
+                name={item.name}
+                rating={item.rating}
+                text={item.text}
+                dir={dir}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -131,10 +135,10 @@ function ReviewTicket({
   return (
     <div
       dir={dir}
-      className="w-[270px] shrink-0 select-none bg-white shadow-md shadow-black/5 sm:w-[320px]"
+      className="w-[270px] shrink-0 select-none overflow-hidden rounded-2xl border border-[#d4a017]/40 bg-[var(--color-cream)] shadow-lg shadow-black/30 sm:w-[320px]"
     >
-      <div className="flex items-center justify-between gap-3 bg-[var(--color-ink)] px-5 py-3">
-        <span className="truncate font-display text-sm font-bold text-white">
+      <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-[#e8b923] via-[#d4a017] to-[#b8860b] px-5 py-3">
+        <span className="truncate font-display text-sm font-bold text-[var(--color-ink)]">
           {name}
         </span>
 
@@ -145,18 +149,15 @@ function ReviewTicket({
               size={13}
               className={
                 i < rating
-                  ? "fill-[var(--color-gold)] text-[var(--color-gold)]"
-                  : "fill-transparent text-white/25"
+                  ? "fill-[#5c0a0a] text-[#5c0a0a]"
+                  : "fill-transparent text-black/30"
               }
             />
           ))}
         </div>
       </div>
 
-      <div className="relative border-t border-dashed border-black/15">
-        <span className="absolute -top-2.5 left-[-10px] h-5 w-5 rounded-full bg-[var(--color-mist)]" />
-        <span className="absolute -top-2.5 right-[-10px] h-5 w-5 rounded-full bg-[var(--color-mist)]" />
-      </div>
+      <div className="border-t border-dashed border-[#8a1010]/30" />
 
       <p className="px-5 py-4 font-body text-sm leading-relaxed text-black/70">
         {text}

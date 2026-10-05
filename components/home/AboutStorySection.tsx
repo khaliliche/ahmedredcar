@@ -19,7 +19,7 @@ export default function AboutStorySection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative mx-auto aspect-[9/12] w-full max-w-sm overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--color-ink)] via-[var(--color-charcoal)] to-[#2D1F1F] shadow-2xl"
+          className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--color-ink)] via-[var(--color-charcoal)] to-[#2D1F1F] shadow-2xl"
         >
           {/* Lueur décorative */}
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-red-primary)]/25 blur-[80px]" />
@@ -34,15 +34,13 @@ export default function AboutStorySection() {
             }}
           />
 
-          <div className="relative flex h-full w-full items-center justify-center p-10">
-            <Image
-              src="/ahmed-redcar-logo.png"
-              alt="Ahmed Red Car"
-              width={480}
-              height={480}
-              className="w-full max-w-[260px] object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.4)]"
-            />
-          </div>
+          <Image
+            src="/hero-logo.jpg"
+            alt="Ahmed Red Car"
+            fill
+            sizes="(min-width: 1024px) 384px, 90vw"
+            className="object-cover"
+          />
         </motion.div>
 
         {/* Texte */}

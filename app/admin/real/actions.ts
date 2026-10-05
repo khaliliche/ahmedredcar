@@ -341,10 +341,8 @@ export async function updateReservationContractAction(
   });
 
   revalidatePath(`/admin/real/reservations/${id}`);
-  revalidatePath(`/admin/real/reservations/${id}/edit-contract`);
   revalidatePath(`/admin/real/reservations/${id}/contract`);
   revalidatePath("/admin/real/reservations");
-  revalidatePath("/admin/real/contracts");
 
   redirect(`/admin/real/reservations/${id}`);
 }
@@ -585,10 +583,8 @@ export async function saveContractAction(
   });
 
   revalidatePath(`/admin/real/reservations/${id}`);
-  revalidatePath(`/admin/real/reservations/${id}/edit-contract`);
   revalidatePath(`/admin/real/reservations/${id}/contract`);
   revalidatePath("/admin/real/reservations");
-  revalidatePath("/admin/real/contracts");
 
   return { ok: true };
 }

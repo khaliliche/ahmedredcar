@@ -1,4 +1,4 @@
-﻿import Hero from "@/components/home/Hero";
+import Hero from "@/components/home/Hero";
 import AboutStorySection from "@/components/home/AboutStorySection";
 import DeliveryBanner from "@/components/home/DeliveryBanner";
 import TrustIndicators from "@/components/home/TrustIndicators";
@@ -19,9 +19,9 @@ export default async function Home() {
 
   return (
     <main>
-      <Hero images={heroImages.length > 0 ? heroImages : ["/hero-car.jpg"]} />
-      <AboutStorySection />
+      <Hero images={["/hero-logo.jpg", ...heroImages]} />
       <DeliveryBanner />
+      <AboutStorySection />
       <TrustIndicators />
       <FeaturedVehiclesGrid vehicles={vehicles.slice(0, 6)} />
       <TripFinder vehicles={vehicles} />

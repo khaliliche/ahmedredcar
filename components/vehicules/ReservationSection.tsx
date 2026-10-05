@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import type { Vehicle } from "@/lib/db";
 import { createReservationAction } from "@/app/vehicules/actions";
 import { buildWhatsAppLink, buildReservationWhatsAppMessage } from "@/lib/site-config";
@@ -12,6 +12,13 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
   const [error, setError] = useState<string | null>(null);
   const [hasSecondDriver, setHasSecondDriver] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Arriving from a card's "Reserver en ligne" button: open the form right away.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("reserver") === "1") {
+      queueMicrotask(() => setIsOpen(true));
+    }
+  }, []);
 
   function handleSubmit(formData: FormData) {
     setError(null);

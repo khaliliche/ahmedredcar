@@ -12,7 +12,7 @@ export const translations = {
       openMenu: "Ouvrir le menu",
       closeMenu: "Fermer le menu",
     },
-    common: { noPhoto: "Pas de photo", seeVehicle: "Voir le véhicule", dayShort: "j", close: "Fermer" },
+    common: { reserveOnline: "Réserver en ligne", reserveWhatsapp: "Réserver via WhatsApp", fromPrice: "À partir de", noPhoto: "Pas de photo", seeVehicle: "Voir le véhicule", dayShort: "j", close: "Fermer" },
     hero: {
       badge: "Location de voitures à Rabat & Salé",
       titleLine1: "Votre voyage",
@@ -126,7 +126,7 @@ export const translations = {
   },
   en: {
     nav: { home: "Home", vehicles: "Our Vehicles", howItWorks: "How It Works", about: "About", contact: "Contact", bookNow: "Book Now", openMenu: "Open menu", closeMenu: "Close menu" },
-    common: { noPhoto: "No photo", seeVehicle: "View vehicle", dayShort: "d", close: "Close" },
+    common: { reserveOnline: "Book online", reserveWhatsapp: "Book via WhatsApp", fromPrice: "From", noPhoto: "No photo", seeVehicle: "View vehicle", dayShort: "d", close: "Close" },
     hero: {
       badge: "Car rental in Rabat & Salé",
       titleLine1: "Your journey",
@@ -240,7 +240,7 @@ export const translations = {
   },
   ar: {
     nav: { home: "الرئيسية", vehicles: "سياراتنا", howItWorks: "كيف يعمل", about: "من نحن", contact: "اتصل بنا", bookNow: "احجز الآن", openMenu: "فتح القائمة", closeMenu: "إغلاق القائمة" },
-    common: { noPhoto: "لا توجد صورة", seeVehicle: "عرض السيارة", dayShort: "ي", close: "إغلاق" },
+    common: { reserveOnline: "احجز عبر الموقع", reserveWhatsapp: "احجز عبر واتساب", fromPrice: "ابتداءً من", noPhoto: "لا توجد صورة", seeVehicle: "عرض السيارة", dayShort: "ي", close: "إغلاق" },
     hero: {
       badge: "كراء السيارات في الرباط وسلا",
       titleLine1: "رحلتك",

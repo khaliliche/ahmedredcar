@@ -118,7 +118,6 @@ export async function createManualContractAction(
     return { ok: false, error: "Ce vehicule est deja reserve (contrat confirme) sur ces dates." };
   }
 
-  revalidatePath("/admin/real/contracts");
   revalidatePath("/admin/real/reservations");
   revalidatePath("/vehicules");
 
