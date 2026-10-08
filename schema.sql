@@ -141,3 +141,11 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   count INTEGER NOT NULL DEFAULT 0,
   locked_until TIMESTAMPTZ
 );
+
+-- Fixed-window rate limit for the public reservation form
+-- (see migrations/014_rate_limits.sql).
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0,
+  window_start TIMESTAMPTZ NOT NULL DEFAULT now()
+);

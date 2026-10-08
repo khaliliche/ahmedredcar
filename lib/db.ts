@@ -67,7 +67,7 @@ export type Reservation = {
   min_rental_days: number;
   override_total_ttc: number | null;
   advance: number;
-  prolongation: string | null;
+  prolongation: string;
   expected_return_date: string | null;
   expected_return_time: string | null;
 
@@ -86,12 +86,12 @@ export type Reservation = {
   signature_data: string | null;
 
   // Second driver signing
-  signing_token2: string | null;
-  signing_token2_expires_at: string | null;
-  second_driver_signed_at: string | null;
-  second_driver_signer_name: string | null;
-  second_driver_signer_ip: string | null;
-  second_driver_signature_data: string | null;
+  signing_token_2: string | null;
+  signing_token_2_expires_at: string | null;
+  signed_2_at: string | null;
+  signer_2_name: string | null;
+  signer_2_ip: string | null;
+  signature_2_data: string | null;
 
   // Admin signature
   admin_signed_at: string | null;
@@ -101,26 +101,26 @@ export type Reservation = {
   source: string | null;
 
   // Handover / contract content
-  registration_plate: string | null;
+  registration_plate: string;
   mileage_start: number | null;
   mileage_end: number | null;
   damages: DamageEntry[];
   equipment: EquipmentChecklist;
   delivery_fee: number;
   pickup_fee: number;
-  departure_place: string | null;
-  return_place: string | null;
-  fuel_level: string | null;
-  fuel_type: string | null;
+  departure_place: string;
+  return_place: string;
+  fuel_level: string;
+  fuel_type: string;
 
   // Driver extra fields
-  first_name: string | null;
-  last_name: string | null;
+  first_name: string;
+  last_name: string;
   birth_date: string | null;
   cin_issue_date: string | null;
   passport_issue_date: string | null;
-  second_driver_first_name: string | null;
-  second_driver_last_name: string | null;
+  second_driver_first_name: string;
+  second_driver_last_name: string;
   second_driver_birth_date: string | null;
   second_driver_cin_issue_date: string | null;
   second_driver_license_issue_date: string | null;
@@ -170,12 +170,12 @@ export async function createVehicle(data: {
   const rows = await sql<Vehicle[]>`
     INSERT INTO vehicles (
       slug, brand, model, price_per_day,
-      price_extended_15, price_monthly_30, min_rental_days,
+      price_extended_15, price_monthly_30,
       description, image_url
     )
     VALUES (
       ${slug}, ${data.brand}, ${data.model}, ${data.price_per_day},
-      ${pricing.price_extended_15}, ${pricing.price_monthly_30}, ${pricing.min_rental_days},
+      ${pricing.price_extended_15}, ${pricing.price_monthly_30},
       ${data.description}, ${data.image_url}
     )
     RETURNING *
@@ -210,7 +210,6 @@ export async function updateVehicle(
         price_per_day = ${data.price_per_day},
         price_extended_15 = ${pricing.price_extended_15},
         price_monthly_30 = ${pricing.price_monthly_30},
-        min_rental_days = ${pricing.min_rental_days},
         description = ${data.description},
         image_url = ${data.image_url}
     WHERE id = ${id}
@@ -223,32 +222,80 @@ export async function deleteVehicle(id: number) {
   await sql`DELETE FROM vehicles WHERE id = ${id}`;
 }
 
-export async function createReservation(data: {
+export type CreateReservationInput = {
   vehicle_id: number;
+
   full_name: string;
+  first_name: string;
+  last_name: string;
+  birth_date: string;
   age: number;
+  cin_number: string;
+  cin_issue_date: string | null;
+  license_issue_date: string;
+  driver_address: string;
   driver_phone: string;
+  driver_license_number: string;
+  driver_passport_number: string;
+  passport_issue_date: string | null;
+
+  has_second_driver: boolean;
+  second_driver_full_name: string;
+  second_driver_first_name: string;
+  second_driver_last_name: string;
+  second_driver_birth_date: string | null;
+  second_driver_address: string;
+  second_driver_phone: string;
+  second_driver_cin_number: string;
+  second_driver_cin_issue_date: string | null;
+  second_driver_license_number: string;
+  second_driver_license_issue_date: string | null;
+  second_driver_passport_number: string;
+  second_driver_passport_issue_date: string | null;
+
   start_date: string;
   end_date: string;
   start_time: string;
   end_time: string;
-  source: string;
-}): Promise<Reservation> {
+};
+
+// Public (website) reservation: always starts as 'pending' / 'online'.
+// Admin handover and billing fields are never accepted here.
+export async function createReservation(data: CreateReservationInput): Promise<Reservation> {
   const vehicle = await getVehicleById(data.vehicle_id);
   if (!vehicle) throw new Error("Vehicle not found");
+  const vehicleLabel = `${vehicle.brand} ${vehicle.model}`.trim();
 
   const rows = await sql<Reservation[]>`
     INSERT INTO reservations (
       vehicle_id, vehicle_label,
-      full_name, age, driver_phone,
+      full_name, first_name, last_name, birth_date, age,
+      cin_number, cin_issue_date, license_issue_date,
+      driver_address, driver_phone, driver_license_number,
+      driver_passport_number, passport_issue_date,
+      has_second_driver,
+      second_driver_full_name, second_driver_first_name, second_driver_last_name,
+      second_driver_birth_date, second_driver_address, second_driver_phone,
+      second_driver_cin_number, second_driver_cin_issue_date,
+      second_driver_license_number, second_driver_license_issue_date,
+      second_driver_passport_number, second_driver_passport_issue_date,
       start_date, end_date, start_time, end_time,
-      price_per_day, min_rental_days, source
+      status, source
     )
     VALUES (
-      ${vehicle.id}, ${vehicle.brand || ""} ${vehicle.model || ""},
-      ${data.full_name}, ${data.age}, ${data.driver_phone},
+      ${vehicle.id}, ${vehicleLabel},
+      ${data.full_name}, ${data.first_name}, ${data.last_name}, ${data.birth_date}, ${data.age},
+      ${data.cin_number}, ${data.cin_issue_date}, ${data.license_issue_date},
+      ${data.driver_address}, ${data.driver_phone}, ${data.driver_license_number},
+      ${data.driver_passport_number}, ${data.passport_issue_date},
+      ${data.has_second_driver},
+      ${data.second_driver_full_name}, ${data.second_driver_first_name}, ${data.second_driver_last_name},
+      ${data.second_driver_birth_date}, ${data.second_driver_address}, ${data.second_driver_phone},
+      ${data.second_driver_cin_number}, ${data.second_driver_cin_issue_date},
+      ${data.second_driver_license_number}, ${data.second_driver_license_issue_date},
+      ${data.second_driver_passport_number}, ${data.second_driver_passport_issue_date},
       ${data.start_date}, ${data.end_date}, ${data.start_time}, ${data.end_time},
-      ${vehicle.price_per_day}, ${vehicle.min_rental_days}, ${data.source}
+      'pending', 'online'
     )
     RETURNING *
   `;
@@ -301,10 +348,15 @@ export async function isVehicleAvailable(
 }
 
 export async function getAvailableVehicles(
-  startDate: string,
-  endDate: string
+  startDate?: string,
+  endDate?: string
 ): Promise<Vehicle[]> {
   const vehicles = await getVehicles();
+  // No (or malformed) dates in the URL: show the whole fleet.
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/;
+  if (!startDate || !endDate || !isoDate.test(startDate) || !isoDate.test(endDate)) {
+    return vehicles;
+  }
   const rows = await sql<{ vehicle_id: number }[]>`
     SELECT vehicle_id FROM reservations
     WHERE status = 'confirmed'
@@ -347,14 +399,14 @@ export async function confirmReservation(
         v instanceof Date ? v.toISOString().slice(0, 10) : String(v);
 
       // 2) Serialise against every other booking of this vehicle.
-      await lockVehicle(tx, vehicle_id);
+      await lockVehicle(tx as unknown as postgres.Sql, vehicle_id);
 
       const blocking = await getBlockingReservation(
         vehicle_id,
         asDate(start_date),
         asDate(end_date),
         id,
-        tx
+        tx as unknown as postgres.Sql
       );
       if (blocking) {
         return { ok: false, reason: "conflict" } as const;
@@ -424,7 +476,7 @@ export async function deleteReservation(id: number) {
 // nullable: leaving them blank keeps the normal calculated value (see
 // lib/contract.ts:resolveBilling).
 export type UpdateReservationContractInput = {
-  vehicle_id?: number;
+  vehicle_id?: number | null;
   vehicle_label: string;
   registration_plate: string;
 
@@ -535,7 +587,7 @@ export async function updateReservationContract(
         fuel_type = COALESCE(${data.fuel_type ?? null}, fuel_type),
 
         damages = ${db.json(data.damages)},
-        override_total_ttc = ${data.override_total_ttc}
+        override_total_ttc = ${data.override_total_ttc ?? null}
     WHERE id = ${id}
     RETURNING *
   `;
@@ -583,10 +635,10 @@ export async function updateReservationContractChecked(
       vehicle_id: number | null;
       status: ReservationStatus;
       signed_at: unknown;
-      second_driver_signed_at: unknown;
+      signed_2_at: unknown;
       admin_signed_at: unknown;
     }[]>`
-      SELECT vehicle_id, status, signed_at, second_driver_signed_at, admin_signed_at
+      SELECT vehicle_id, status, signed_at, signed_2_at, admin_signed_at
       FROM reservations
       WHERE id = ${id}
       FOR UPDATE
@@ -596,7 +648,7 @@ export async function updateReservationContractChecked(
     // 1b) A signature legally binds the contract content: refuse to edit.
     if (
       current[0].signed_at ||
-      current[0].second_driver_signed_at ||
+      current[0].signed_2_at ||
       current[0].admin_signed_at
     ) {
       return { ok: false, reason: "signed" };
@@ -604,7 +656,7 @@ export async function updateReservationContractChecked(
 
     // 2) Lock the vehicle the reservation will end up on.
     const vehicleId = data.vehicle_id ?? current[0].vehicle_id;
-    if (vehicleId) await lockVehicle(tx, vehicleId);
+    if (vehicleId) await lockVehicle(tx as unknown as postgres.Sql, vehicleId);
 
     // 3) Only confirmed reservations block a car, so only they are re-checked.
     if (current[0].status === "confirmed" && vehicleId) {
@@ -613,7 +665,7 @@ export async function updateReservationContractChecked(
         data.start_date,
         data.end_date,
         id,
-        tx
+        tx as unknown as postgres.Sql
       );
       if (blocking) {
         return { ok: false, reason: "conflict", endLabel: blocking.end_label };
@@ -621,7 +673,7 @@ export async function updateReservationContractChecked(
     }
 
     // 4) Same UPDATE as before, on the same transaction.
-    const reservation = await updateReservationContract(id, data, tx);
+    const reservation = await updateReservationContract(id, data, tx as unknown as postgres.Sql);
 
     // 5) Audit log of the edit, committed with the same transaction.
     await tx`
@@ -670,15 +722,15 @@ export async function getReservationBySigningToken(token: string): Promise<Reser
     SELECT *,
       to_char(end_date, 'DD Mon YYYY') AS end_label
     FROM reservations
-    WHERE signing_token = ${token} OR signing_token2 = ${token}
+    WHERE signing_token = ${token} OR signing_token_2 = ${token}
   `;
   return rows[0] ?? null;
 }
 
 export function isSecondDriverToken(reservation: Reservation, token: string): boolean {
   return (
-    !!reservation.signing_token2 &&
-    reservation.signing_token2.toLowerCase() === token.toLowerCase()
+    !!reservation.signing_token_2 &&
+    reservation.signing_token_2.toLowerCase() === token.toLowerCase()
   );
 }
 
@@ -717,14 +769,14 @@ export async function setAdminSignature(
 
 export async function createSigningToken2(id: number): Promise<string | null> {
   const token = randomUUID();
-  const rows = await sql<{ signing_token2: string }[]>`
+  const rows = await sql<{ signing_token_2: string }[]>`
     UPDATE reservations
-    SET signing_token2 = ${token},
-        signing_token2_expires_at = now() + interval '7 days'
+    SET signing_token_2 = ${token},
+        signing_token_2_expires_at = now() + interval '7 days'
     WHERE id = ${id}
-    RETURNING signing_token2
+    RETURNING signing_token_2
   `;
-  return rows[0]?.signing_token2 ?? null;
+  return rows[0]?.signing_token_2 ?? null;
 }
 
 // Same single-use, expiring semantics as consumeSigningToken, for the
@@ -735,13 +787,13 @@ export async function consumeSigningToken2(
 ): Promise<boolean> {
   const rows = await sql<{ id: number }[]>`
     UPDATE reservations
-    SET second_driver_signed_at = now(),
-        second_driver_signer_name = ${data.signer_name},
-        second_driver_signer_ip = ${data.signer_ip},
-        second_driver_signature_data = ${data.signature_data}
-    WHERE signing_token2 = ${token}
-      AND signing_token2_expires_at > now()
-      AND second_driver_signed_at IS NULL
+    SET signed_2_at = now(),
+        signer_2_name = ${data.signer_name},
+        signer_2_ip = ${data.signer_ip},
+        signature_2_data = ${data.signature_data}
+    WHERE signing_token_2 = ${token}
+      AND signing_token_2_expires_at > now()
+      AND signed_2_at IS NULL
     RETURNING id
   `;
   return rows.length === 1;
@@ -752,42 +804,39 @@ export async function consumeSigningToken2(
 // ---------------------------------------------------------------------------
 
 export async function getLockExpiry(key: string): Promise<Date | null> {
-  const rows = await sql<{ expires_at: Date }[]>`
-    SELECT expires_at FROM login_attempts
-    WHERE key = ${key}
-      AND failures >= max_attempts
-      AND expires_at > now()
+  const rows = await sql<{ locked_until: Date }[]>`
+    SELECT locked_until FROM login_attempts
+    WHERE ip = ${key}
+      AND locked_until IS NOT NULL
+      AND locked_until > now()
   `;
-  return rows[0]?.expires_at ?? null;
+  return rows[0]?.locked_until ?? null;
 }
 
+// Each failure increments the counter; when it reaches maxAttempts the key
+// is locked for banMs and the counter restarts (see BANLOGIC.md).
 export async function recordFailedAttempt(
   key: string,
-  maxAttempts: number,
-  windowMs: number,
-  banMs: number
+  opts: { maxAttempts: number; banMs: number }
 ): Promise<void> {
   await sql`
-    INSERT INTO login_attempts (key, failures, first_attempt_at, expires_at, max_attempts)
-    VALUES (${key}, 1, now(), now() + ${banMs} * interval '1 millisecond', ${maxAttempts})
-    ON CONFLICT (key) DO UPDATE SET
-      failures = login_attempts.failures + 1,
-      first_attempt_at = CASE
-        WHEN login_attempts.first_attempt_at < now() - ${windowMs} * interval '1 millisecond'
-        THEN now()
-        ELSE login_attempts.first_attempt_at
+    INSERT INTO login_attempts (ip, count, locked_until)
+    VALUES (${key}, 1, NULL)
+    ON CONFLICT (ip) DO UPDATE SET
+      count = CASE
+        WHEN login_attempts.count + 1 >= ${opts.maxAttempts}::int THEN 0
+        ELSE login_attempts.count + 1
       END,
-      expires_at = CASE
-        WHEN login_attempts.failures + 1 >= login_attempts.max_attempts
-        THEN now() + ${banMs} * interval '1 millisecond'
-        ELSE login_attempts.expires_at
-      END,
-      max_attempts = ${maxAttempts}
+      locked_until = CASE
+        WHEN login_attempts.count + 1 >= ${opts.maxAttempts}::int
+        THEN now() + ${opts.banMs}::float8 * interval '1 millisecond'
+        ELSE login_attempts.locked_until
+      END
   `;
 }
 
 export async function clearFailures(key: string): Promise<void> {
-  await sql`DELETE FROM login_attempts WHERE key = ${key}`;
+  await sql`DELETE FROM login_attempts WHERE ip = ${key}`;
 }
 
 export async function consumeWindowedLimit(
@@ -800,16 +849,16 @@ export async function consumeWindowedLimit(
     VALUES (${key}, 1, now())
     ON CONFLICT (key) DO UPDATE SET
       count = CASE
-        WHEN rate_limits.window_start < now() - ${windowMs} * interval '1 millisecond'
+        WHEN rate_limits.window_start < now() - ${windowMs}::float8 * interval '1 millisecond'
         THEN 1
         ELSE rate_limits.count + 1
       END,
       window_start = CASE
-        WHEN rate_limits.window_start < now() - ${windowMs} * interval '1 millisecond'
+        WHEN rate_limits.window_start < now() - ${windowMs}::float8 * interval '1 millisecond'
         THEN now()
         ELSE rate_limits.window_start
       END
-    RETURNING count <= ${limit}
+    RETURNING (count <= ${limit}::int) AS allowed
   `;
   return rows[0]?.allowed ?? false;
 }

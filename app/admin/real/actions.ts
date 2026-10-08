@@ -13,8 +13,6 @@ import {
   confirmReservation,
   createSigningToken,
   createSigningToken2,
-  updateReservationHandover,
-  updateReservationContract,
   updateReservationContractChecked,
   setAdminSignature,
   getReservationById,
@@ -22,7 +20,6 @@ import {
   getVehicleById,
   type ReservationStatus,
   type DamageEntry,
-  type EquipmentChecklist,
 } from "@/lib/db";
 import {
   checkPassword,
@@ -35,8 +32,8 @@ import {
   LOGIN_MAX_ATTEMPTS,
   LOGIN_BAN_MS,
 } from "@/lib/auth";
+import { isValidPngDataUrl } from "@/lib/signature";
 import {
-  EQUIPMENT_ITEMS,
   FUEL_LEVELS,
   FUEL_TYPES,
   joinName,
@@ -112,13 +109,40 @@ const ALLOWED_IMAGE_TYPES = new Set([
 
 const STORAGE_BUCKET = "vehicles";
 
+// The browser's file.type is client-controlled - verify the actual bytes.
+const MAGIC_CHECKS: Record<string, (b: Buffer) => boolean> = {
+  "image/jpeg": (b) => b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  "image/png": (b) =>
+    b.length >= 8 &&
+    b.subarray(0, 8).equals(
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+    ),
+  "image/webp": (b) =>
+    b.length >= 12 &&
+    b.toString("ascii", 0, 4) === "RIFF" &&
+    b.toString("ascii", 8, 12) === "WEBP",
+  "image/gif": (b) =>
+    b.length >= 6 &&
+    (b.toString("ascii", 0, 6) === "GIF87a" ||
+      b.toString("ascii", 0, 6) === "GIF89a"),
+};
+
+async function sniffImageType(file: File): Promise<string | null> {
+  const head = Buffer.from(await file.slice(0, 16).arrayBuffer());
+  for (const [type, matches] of Object.entries(MAGIC_CHECKS)) {
+    if (matches(head)) return type;
+  }
+  return null;
+}
+
 async function uploadIfPresent(formData: FormData): Promise<string | null> {
   const file = formData.get("image") as File | null;
   if (!file || file.size === 0) return null;
 
-  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+  const detectedType = await sniffImageType(file);
+  if (!detectedType || !ALLOWED_IMAGE_TYPES.has(detectedType)) {
     throw new Error(
-      `Type de fichier non autorisé : ${file.type || "inconnu"}. Formats acceptés : JPEG, PNG, WEBP, GIF.`
+      "Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WEBP, GIF."
     );
   }
 
@@ -127,15 +151,15 @@ async function uploadIfPresent(formData: FormData): Promise<string | null> {
   }
 
   const safeName = file.name
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/[^a-zA-Z0-9._-]/g, "-");
-const fileName = `${Date.now()}-${safeName}`;
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-");
+  const fileName = `${Date.now()}-${safeName}`;
 
   const { error } = await supabaseAdmin.storage
     .from(STORAGE_BUCKET)
     .upload(fileName, file, {
-      contentType: file.type,
+      contentType: detectedType, // verified by magic bytes, not client input
       upsert: false,
     });
 
@@ -213,146 +237,6 @@ export async function deleteReservationAction(id: number) {
   revalidatePath("/admin/real/reservations");
 }
 
-export async function updateReservationHandoverAction(id: number, formData: FormData) {
-  await requireAdmin();
-  const registrationPlate = String(formData.get("registration_plate") || "").trim();
-
-  const mileageStartRaw = formData.get("mileage_start");
-  const mileageEndRaw = formData.get("mileage_end");
-  const mileageStart =
-    mileageStartRaw && mileageStartRaw !== "" ? Number(mileageStartRaw) : null;
-  const mileageEnd = mileageEndRaw && mileageEndRaw !== "" ? Number(mileageEndRaw) : null;
-
-  const deliveryFee = Number(formData.get("delivery_fee") || 0);
-  const pickupFee = Number(formData.get("pickup_fee") || 0);
-
-  let damages: DamageEntry[] = [];
-  try {
-    const raw = String(formData.get("damages_json") || "[]");
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) damages = parsed;
-  } catch {
-    damages = [];
-  }
-
-  const equipment: EquipmentChecklist = {};
-  for (const item of EQUIPMENT_ITEMS) {
-    equipment[item.key] = formData.get(`equipment__${item.key}`) === "on";
-  }
-
-  await updateReservationHandover(id, {
-    registration_plate: registrationPlate,
-    mileage_start: mileageStart,
-    mileage_end: mileageEnd,
-    damages,
-    equipment,
-    delivery_fee: deliveryFee,
-    pickup_fee: pickupFee,
-  });
-
-  revalidatePath(`/admin/real/reservations/${id}`);
-  revalidatePath("/admin/real/reservations");
-}
-
-// Feature 3 — full contract editing. One form, every editable section of
-// the PDF, with an optional manual override for the three billing
-// totals (left blank = keep using the calculated value).
-export async function updateReservationContractAction(
-  id: number,
-  formData: FormData
-) {
-  await requireAdmin();
-  const reservation = await getReservationById(id);
-
-  if (!reservation) {
-    notFound();
-  }
-
-  const text = (name: string) =>
-    String(formData.get(name) ?? "").trim();
-
-  const numberOrNull = (name: string) => {
-    const value = String(formData.get(name) ?? "").trim();
-    if (value === "") return null;
-
-    const number = Number(value);
-    return Number.isFinite(number) ? number : null;
-  };
-
-  let damages: DamageEntry[] = [];
-
-  try {
-    const raw = String(formData.get("damages_json") ?? "[]");
-    const parsed = JSON.parse(raw);
-
-    if (Array.isArray(parsed)) {
-      damages = parsed;
-    }
-  } catch {
-    damages = [];
-  }
-
-  const equipment: EquipmentChecklist = {};
-
-  for (const item of EQUIPMENT_ITEMS) {
-    equipment[item.key] =
-      formData.get(`equipment__${item.key}`) === "on";
-  }
-
-  await updateReservationContract(id, {
-    full_name: text("full_name"),
-    age: Number(text("age")) || 0,
-    cin_number: text("cin_number"),
-    license_issue_date: text("license_issue_date"),
-    driver_address: text("driver_address"),
-    driver_phone: text("driver_phone"),
-    driver_license_number: text("driver_license_number"),
-    driver_passport_number: text("driver_passport_number"),
-
-    has_second_driver:
-      formData.get("has_second_driver") === "on",
-
-    second_driver_full_name: text("second_driver_full_name"),
-    second_driver_address: text("second_driver_address"),
-    second_driver_phone: text("second_driver_phone"),
-    second_driver_cin_number: text("second_driver_cin_number"),
-    second_driver_license_number: text(
-      "second_driver_license_number"
-    ),
-    second_driver_passport_number: text(
-      "second_driver_passport_number"
-    ),
-
-    vehicle_label: text("vehicle_label"),
-    registration_plate: text("registration_plate"),
-
-    start_date: text("start_date"),
-    end_date: text("end_date"),
-    start_time: text("start_time"),
-    end_time: text("end_time"),
-
-    mileage_start: numberOrNull("mileage_start"),
-    mileage_end: numberOrNull("mileage_end"),
-
-    damages,
-    equipment,
-
-    delivery_fee: Number(text("delivery_fee")) || 0,
-    pickup_fee: Number(text("pickup_fee")) || 0,
-
-    fait_a: text("fait_a"),
-
-    override_total_ht: numberOrNull("override_total_ht"),
-    override_tva: numberOrNull("override_tva"),
-    override_total_ttc: numberOrNull("override_total_ttc"),
-  });
-
-  revalidatePath(`/admin/real/reservations/${id}`);
-  revalidatePath(`/admin/real/reservations/${id}/contract`);
-  revalidatePath("/admin/real/reservations");
-
-  redirect(`/admin/real/reservations/${id}`);
-}
 // Builds the client's signing link and a WhatsApp click-to-chat URL that
 // pre-fills the message with the link. Phone accepts local Moroccan
 // format (0612345678) or international (+212...); if it cannot be
@@ -433,10 +317,7 @@ export async function saveAdminSignatureAction(
 ): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();
   if (signature !== null) {
-    if (
-      !signature.startsWith("data:image/png;base64,") ||
-      signature.length > 400_000
-    ) {
+    if (!isValidPngDataUrl(signature)) {
       return { ok: false, error: "Signature invalide." };
     }
   }
@@ -615,6 +496,12 @@ export async function saveContractAction(
   });
 
   if (!saved.ok) {
+    if (saved.reason === "signed") {
+      return {
+        ok: false,
+        error: "Ce contrat a déjà été signé. La modification est verrouillée.",
+      };
+    }
     return {
       ok: false,
       error:
@@ -647,22 +534,6 @@ export async function generateContractAction(id: number) {
       // Car got booked in the meantime: the contract page shows the red message.
       redirect(`/admin/real/reservations/${id}`);
     }
-      if (!saved.ok) {
-    if (saved.reason === "signed") {
-      return {
-        ok: false,
-        error:
-          "Ce contrat a déjà été signé. La modification est verrouillée.",
-      };
-    }
-    return {
-      ok: false,
-      error:
-        saved.reason === "conflict"
-          ? `Voiture reservee jusqu'au ${saved.endLabel}.`
-          : "Reservation introuvable.",
-    };
-  }
   }
 
   revalidatePath(`/admin/real/reservations/${id}`);
