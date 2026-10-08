@@ -6,6 +6,8 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import ContractForm, { type ContractInitial } from "@/components/admin/ContractForm";
 
 const EMPTY: ContractInitial = {
+  contract_number: "",
+
   vehicle_id: null,
   vehicle_label: "",
   registration_plate: "",

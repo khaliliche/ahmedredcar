@@ -22,6 +22,10 @@ function toTimeInputValue(value: string | null | undefined) {
 }
 
 export type ContractInitial = {
+  // Admin-chosen serial number for the printed contract. Blank = auto
+  // generated (ARC-YYYY-NNNNN) when the contract is generated/confirmed.
+  contract_number?: string;
+
   vehicle_id: number | null;
   vehicle_label: string;
   registration_plate: string;
@@ -208,6 +212,19 @@ export default function ContractForm({
         endDate={endDate}
         excludeReservationId={reservationId}
       />
+
+      {/* ---- Numero de serie du contrat ---- */}
+      <section className={sectionClass}>
+        <h2 className={h2Class}>Numero de serie du contrat</h2>
+        <div className={gridClass}>
+          <Field
+            label="N° de serie"
+            name="contract_number"
+            defaultValue={initial.contract_number ?? ""}
+            placeholder="Laisser vide = generation automatique (ARC-AAAA-NNNNN)"
+          />
+        </div>
+      </section>
 
       {/* ---- Vehicule, depart & retour ---- */}
       <section className={sectionClass}>

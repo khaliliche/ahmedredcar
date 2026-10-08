@@ -1,6 +1,10 @@
-import { sql, isVehicleAvailable, isOverlapError, type DamageEntry } from "@/lib/db";
+import { sql, isVehicleAvailable, isOverlapError, isUniqueViolation, type DamageEntry } from "@/lib/db";
 
 export type ManualContractInput = {
+  // Admin-chosen serial number for the printed contract. Blank/null falls
+  // back to the auto-generated ARC-YYYY-NNNNN numbering.
+  contract_number?: string | null;
+
   vehicle_id: number;
   vehicle_label: string;
   registration_plate: string;
@@ -64,6 +68,7 @@ export async function createManualContract(
 ): Promise<
   | { ok: true; id: number; contract_number: string }
   | { ok: false; reason: "conflict" }
+  | { ok: false; reason: "duplicateContractNumber" }
 > {
   const available = await isVehicleAvailable(
     data.vehicle_id,
@@ -120,7 +125,10 @@ export async function createManualContract(
     const id = rows[0].id;
     const upd = await tx<{ contract_number: string }[]>`
       UPDATE reservations
-      SET contract_number = 'ARC-' || to_char(now(), 'YYYY') || '-' || lpad(id::text, 5, '0'),
+      SET contract_number = COALESCE(
+            ${data.contract_number || null},
+            'ARC-' || to_char(now(), 'YYYY') || '-' || lpad(id::text, 5, '0')
+          ),
           contract_generated_at = now()
       WHERE id = ${id}
       RETURNING contract_number
@@ -129,6 +137,9 @@ export async function createManualContract(
     });
   } catch (err) {
     if (isOverlapError(err)) return { ok: false, reason: "conflict" };
+    if (isUniqueViolation(err, "reservations_contract_number_key")) {
+      return { ok: false, reason: "duplicateContractNumber" };
+    }
     throw err;
   }
 

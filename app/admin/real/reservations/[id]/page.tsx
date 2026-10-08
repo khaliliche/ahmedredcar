@@ -99,6 +99,8 @@ export default async function ContractPage({
                 dailyRate: billing.dailyRate,
               }}
               initial={{
+                contract_number: reservation.contract_number ?? "",
+
                 vehicle_id: reservation.vehicle_id,
                 vehicle_label: reservation.vehicle_label,
                 registration_plate: reservation.registration_plate,

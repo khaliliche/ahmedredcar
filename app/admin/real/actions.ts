@@ -445,6 +445,8 @@ export async function saveContractAction(
   if (advance < 0) return { ok: false, error: "Avance invalide." };
 
   const saved = await updateReservationContractChecked(id, {
+    contract_number: text("contract_number") || null,
+
     vehicle_id: vehicle ? vehicle.id : null,
     vehicle_label: vehicle ? `${vehicle.brand} ${vehicle.model}` : text("vehicle_label"),
     registration_plate: text("registration_plate"),
@@ -502,13 +504,16 @@ export async function saveContractAction(
         error: "Ce contrat a déjà été signé. La modification est verrouillée.",
       };
     }
-    return {
-      ok: false,
-      error:
-        saved.reason === "conflict"
-          ? `Voiture reservee jusqu'au ${saved.endLabel}.`
-          : "Reservation introuvable.",
-    };
+    if (saved.reason === "duplicateContractNumber") {
+      return {
+        ok: false,
+        error: "Ce numéro de série est déjà utilisé par un autre contrat.",
+      };
+    }
+    if (saved.reason === "conflict") {
+      return { ok: false, error: `Voiture reservee jusqu'au ${saved.endLabel}.` };
+    }
+    return { ok: false, error: "Reservation introuvable." };
   }
 
   revalidatePath(`/admin/real/reservations/${id}`);

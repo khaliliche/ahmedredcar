@@ -104,6 +104,8 @@ export async function createManualContractAction(
   if (advance < 0) return { ok: false, error: "Avance invalide." };
 
   const result = await createManualContract({
+    contract_number: text("contract_number") || null,
+
     vehicle_id: vehicle.id,
     vehicle_label: `${vehicle.brand} ${vehicle.model}`,
     registration_plate: text("registration_plate"),
@@ -159,6 +161,9 @@ export async function createManualContractAction(
   });
 
   if (!result.ok) {
+    if (result.reason === "duplicateContractNumber") {
+      return { ok: false, error: "Ce numero de serie est deja utilise par un autre contrat." };
+    }
     return { ok: false, error: "Ce vehicule est deja reserve (contrat confirme) sur ces dates." };
   }
 

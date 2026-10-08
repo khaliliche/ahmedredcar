@@ -476,6 +476,11 @@ export async function deleteReservation(id: number) {
 // nullable: leaving them blank keeps the normal calculated value (see
 // lib/contract.ts:resolveBilling).
 export type UpdateReservationContractInput = {
+  // Admin-chosen serial number for the printed contract. Blank/undefined
+  // keeps whatever is already stored (and confirmReservation() will still
+  // auto-generate one later if it's still empty at that point).
+  contract_number?: string | null;
+
   vehicle_id?: number | null;
   vehicle_label: string;
   registration_plate: string;
@@ -538,7 +543,8 @@ export async function updateReservationContract(
 
   const rows = await db<Reservation[]>`
     UPDATE reservations
-    SET full_name = ${data.full_name},
+    SET contract_number = COALESCE(${data.contract_number || null}, contract_number),
+        full_name = ${data.full_name},
         age = ${data.age},
         cin_number = ${data.cin_number},
         license_issue_date = ${data.license_issue_date},
@@ -604,6 +610,16 @@ export function isOverlapError(err: unknown): boolean {
   );
 }
 
+// True when Postgres rejected a write because of a UNIQUE constraint
+// (SQLSTATE 23505) — used to catch an admin typing in a contract serial
+// number that's already used by another reservation.
+export function isUniqueViolation(err: unknown, constraint?: string): boolean {
+  if (typeof err !== "object" || err === null) return false;
+  const e = err as { code?: string; constraint_name?: string };
+  if (e.code !== "23505") return false;
+  return constraint ? e.constraint_name === constraint : true;
+}
+
 // Serialises everything that can book a vehicle. Call it INSIDE a
 // transaction (sql.begin): the lock is released automatically on
 // commit/rollback. Lock order used everywhere: reservation row
@@ -616,7 +632,8 @@ export type ContractUpdateResult =
   | { ok: true; reservation: Reservation }
   | { ok: false; reason: "notFound" }
   | { ok: false; reason: "signed" }
-  | { ok: false; reason: "conflict"; endLabel: string };
+  | { ok: false; reason: "conflict"; endLabel: string }
+  | { ok: false; reason: "duplicateContractNumber" };
 
 // C3 - saving edits of a reservation: the availability check and the UPDATE
 // now happen in ONE transaction, under a lock on the target vehicle, so
@@ -625,6 +642,20 @@ export type ContractUpdateResult =
 // the content is legally bound and editing is refused, and every successful
 // edit is written to the contract_audit trail in the same transaction.
 export async function updateReservationContractChecked(
+  id: number,
+  data: UpdateReservationContractInput
+): Promise<ContractUpdateResult> {
+  try {
+    return await updateReservationContractCheckedTx(id, data);
+  } catch (err) {
+    if (isUniqueViolation(err, "reservations_contract_number_key")) {
+      return { ok: false, reason: "duplicateContractNumber" };
+    }
+    throw err;
+  }
+}
+
+async function updateReservationContractCheckedTx(
   id: number,
   data: UpdateReservationContractInput
 ): Promise<ContractUpdateResult> {

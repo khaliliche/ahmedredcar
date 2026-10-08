@@ -8,7 +8,6 @@ import {
   Image,
   StyleSheet,
   Svg,
-  Rect,
   Path,
   Line,
   Circle,
@@ -34,21 +33,34 @@ const CACHET_SRC = `data:image/png;base64,${readFileSync(
   join(process.cwd(), "public/cachet.png")
 ).toString("base64")}`;
 
+// Agency logo, printed in the contract header.
+const LOGO_SRC = `data:image/png;base64,${readFileSync(
+  join(process.cwd(), "public/logo.png")
+).toString("base64")}`;
+
 const styles = StyleSheet.create({
   page: { padding: 24, fontSize: 7.5, fontFamily: "Helvetica", color: BLACK },
 
   // ---- Header ----
-  header: {
+  header: { flexDirection: "column", marginBottom: 8 },
+  headerTop: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: 14,
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+  },
+  headerSerialBox: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
     border: `1.4 solid ${BLUE}`,
     borderRadius: 6,
-    paddingVertical: 5,
+    paddingVertical: 4,
     paddingHorizontal: 10,
-    marginBottom: 8,
+    marginTop: 4,
   },
-  title: { fontSize: 15, fontWeight: 700, color: BLUE },
+  logo: { width: 110, height: 66, objectFit: "contain" },
+  title: { fontSize: 22, fontWeight: 700, color: BLACK },
   serial: { fontSize: 15, fontWeight: 700, color: RED },
 
   // ---- Cards ----
@@ -213,16 +225,36 @@ function FuelGauge({ level }: { level: string }) {
   );
 }
 
-// Simplified top-down car outline used as the damage diagram.
-const ZONE_POSITIONS: Record<string, { x: number; y: number }> = {
-  Avant: { x: 55, y: 13 },
-  Arrière: { x: 55, y: 139 },
-  "Côté gauche": { x: 16, y: 76 },
-  "Côté droit": { x: 94, y: 76 },
-  Toit: { x: 55, y: 70 },
-  "Pare-brise": { x: 55, y: 30 },
-  Intérieur: { x: 55, y: 82 },
-  Jantes: { x: 30, y: 40 },
+// Four-view car sheet (rear, top, right side, left side) used as the damage
+// diagram. public/car-diagram.png is 1100x932; the zone positions below are in
+// that pixel space and the SVG overlay uses the same viewBox.
+const CAR_SRC = `data:image/png;base64,${readFileSync(
+  join(process.cwd(), "public/car-diagram.png")
+).toString("base64")}`;
+
+const CAR_W = 1100;
+const CAR_H = 932;
+const CAR_PRINT_W = 134; // pt, fits the carBox next to the fuel block
+
+// Sub-areas of the sheet: [x, y, w, h].
+const VIEWS = {
+  rear: [11, 0, 454, 279],
+  top: [476, 4, 613, 271],
+  sideR: [0, 309, 1100, 297],
+  sideL: [0, 636, 1100, 296],
+} as const;
+
+// Zone -> view + relative position (0..1) inside that view.
+// Front of the car points left in the top view and right in the right-side view.
+const ZONE_POSITIONS: Record<string, { view: keyof typeof VIEWS; rx: number; ry: number }> = {
+  Avant: { view: "top", rx: 0.08, ry: 0.5 },
+  Arrière: { view: "rear", rx: 0.5, ry: 0.45 },
+  "Côté gauche": { view: "sideL", rx: 0.5, ry: 0.45 },
+  "Côté droit": { view: "sideR", rx: 0.5, ry: 0.45 },
+  Toit: { view: "top", rx: 0.62, ry: 0.5 },
+  "Pare-brise": { view: "top", rx: 0.37, ry: 0.5 },
+  Intérieur: { view: "top", rx: 0.5, ry: 0.28 },
+  Jantes: { view: "sideR", rx: 0.79, ry: 0.73 },
 };
 
 function symbolFor(type: string) {
@@ -230,30 +262,42 @@ function symbolFor(type: string) {
 }
 
 function CarDiagram({ damages }: { damages: { zone: string; type: string }[] }) {
+  const height = (CAR_PRINT_W * CAR_H) / CAR_W;
+  const seen: Record<string, number> = {};
+  const FONT = 80;
   return (
-    <Svg width={104} height={132} viewBox="0 0 120 152">
-      <Rect x={26} y={8} width={58} height={136} rx={18} fill="#fafafa" stroke="#333" strokeWidth={1.1} />
-      <Rect x={33} y={22} width={44} height={20} rx={5} fill="#fff" stroke="#bbb" strokeWidth={0.6} />
-      <Rect x={33} y={108} width={44} height={20} rx={5} fill="#fff" stroke="#bbb" strokeWidth={0.6} />
-      <Rect x={30} y={46} width={50} height={58} rx={8} fill="none" stroke="#ccc" strokeWidth={0.6} />
-      <Rect x={20} y={32} width={7} height={16} rx={2} fill="#666" />
-      <Rect x={83} y={32} width={7} height={16} rx={2} fill="#666" />
-      <Rect x={20} y={104} width={7} height={16} rx={2} fill="#666" />
-      <Rect x={83} y={104} width={7} height={16} rx={2} fill="#666" />
-      <Rect x={22} y={50} width={5} height={7} rx={1.5} fill="#999" />
-      <Rect x={83} y={50} width={5} height={7} rx={1.5} fill="#999" />
-      <Rect x={20} y={75.5} width={6} height={1} fill="#666" />
-      <Rect x={84} y={75.5} width={6} height={1} fill="#666" />
-      {damages.map((d, i) => {
-        const pos = ZONE_POSITIONS[d.zone];
-        if (!pos) return null;
-        return (
-          <Text key={i} x={pos.x} y={pos.y} style={{ fontSize: 11, fontWeight: 700 }} textAnchor="middle">
-            {symbolFor(d.type)}
-          </Text>
-        );
-      })}
-    </Svg>
+    <View style={{ width: CAR_PRINT_W, height, position: "relative" }}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      <Image src={CAR_SRC} style={{ width: CAR_PRINT_W, height }} />
+      <Svg
+        width={CAR_PRINT_W}
+        height={height}
+        viewBox={`0 0 ${CAR_W} ${CAR_H}`}
+        style={{ position: "absolute", top: 0, left: 0 }}
+      >
+        {damages.map((d, i) => {
+          const pos = ZONE_POSITIONS[d.zone];
+          if (!pos) return null;
+          const [bx, by, bw, bh] = VIEWS[pos.view];
+          // Several marks on the same zone are spread out so they stay readable.
+          const n = (seen[d.zone] = (seen[d.zone] ?? -1) + 1);
+          const x = bx + pos.rx * bw + (n % 2 === 0 ? 1 : -1) * Math.ceil(n / 2) * 55;
+          const y = by + pos.ry * bh + FONT * 0.35;
+          return (
+            <Text
+              key={i}
+              x={x}
+              y={y}
+              fill={RED}
+              style={{ fontSize: FONT, fontFamily: "Helvetica-Bold" }}
+              textAnchor="middle"
+            >
+              {symbolFor(d.type)}
+            </Text>
+          );
+        })}
+      </Svg>
+    </View>
   );
 }
 
@@ -346,8 +390,14 @@ export function ContractDocument({
     <Document title={`Contrat ${CONTRACT_SERIAL}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.title}>CONTRAT</Text>
-          <Text style={styles.serial}>{CONTRACT_SERIAL}</Text>
+          <View style={styles.headerTop}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image src={LOGO_SRC} style={styles.logo} />
+            <Text style={styles.title}>CONTRAT DE LOCATION</Text>
+          </View>
+          <View style={styles.headerSerialBox}>
+            <Text style={styles.serial}>{CONTRACT_SERIAL}</Text>
+          </View>
         </View>
 
         {/* Premier / 2ème conducteur */}
