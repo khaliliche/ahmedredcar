@@ -647,6 +647,22 @@ export async function generateContractAction(id: number) {
       // Car got booked in the meantime: the contract page shows the red message.
       redirect(`/admin/real/reservations/${id}`);
     }
+      if (!saved.ok) {
+    if (saved.reason === "signed") {
+      return {
+        ok: false,
+        error:
+          "Ce contrat a déjà été signé. La modification est verrouillée.",
+      };
+    }
+    return {
+      ok: false,
+      error:
+        saved.reason === "conflict"
+          ? `Voiture reservee jusqu'au ${saved.endLabel}.`
+          : "Reservation introuvable.",
+    };
+  }
   }
 
   revalidatePath(`/admin/real/reservations/${id}`);

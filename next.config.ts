@@ -2,7 +2,9 @@
 
 const nextConfig: NextConfig = {
   images: {
-    dangerouslyAllowSVG: true,
+    // SVG uploads are rejected server-side by magic-byte sniffing
+    // (app/admin/real/actions.ts), so we do NOT allow the optimizer to
+    // serve raw SVG either — no CSP backstop needed.
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [

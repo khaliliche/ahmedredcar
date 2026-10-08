@@ -15,10 +15,9 @@ import {
   SIGN_MAX_ATTEMPTS,
   SIGN_BAN_MS,
 } from "@/lib/auth";
+import { isValidPngDataUrl } from "@/lib/signature";
 
 export type SignatureActionState = { ok: boolean; error: string };
-
-const MAX_SIGNATURE_CHARS = 400_000; // ~300 KB de base64, far above a real PNG
 
 export async function submitSignatureAction(
   token: string,
@@ -53,10 +52,9 @@ export async function submitSignatureAction(
     return { ok: false, error: "Nom incomplet." };
   }
 
-  if (
-    !signature.startsWith("data:image/png;base64,") ||
-    signature.length > MAX_SIGNATURE_CHARS
-  ) {
+  // The data URL must decode to a real PNG of sane size — not just carry
+  // the right prefix (see lib/signature.ts).
+  if (!isValidPngDataUrl(signature)) {
     await recordFailure(limitKey, {
       maxAttempts: SIGN_MAX_ATTEMPTS,
       banMs: SIGN_BAN_MS,
