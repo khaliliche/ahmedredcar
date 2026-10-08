@@ -66,16 +66,16 @@ export default async function ContractPage({
 
   return (
     <div className="min-h-screen bg-[var(--color-mist)]/40 lg:flex">
-      <AdminSidebar active="reservations" />
+      <AdminSidebar active={reservation.contract_number ? "contracts" : "reservations"} />
 
       <main className="flex-1 px-4 py-8 sm:px-8">
         <div className="mx-auto max-w-4xl">
           <Link
-            href="/admin/real/reservations"
+            href={reservation.contract_number ? "/admin/real/contracts" : "/admin/real/reservations"}
             className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-black/50 transition-colors hover:text-black/80"
           >
             <ArrowLeft className="h-4 w-4" />
-            {"R\u00e9servations"}
+            {reservation.contract_number ? "Tous les contrats" : "R\u00e9servations"}
           </Link>
 
           <h1 className="font-display text-2xl font-extrabold text-[var(--color-ink)]">

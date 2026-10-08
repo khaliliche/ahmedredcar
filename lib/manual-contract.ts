@@ -1,4 +1,4 @@
-import { sql, isVehicleAvailable, type DamageEntry } from "@/lib/db";
+import { sql, isVehicleAvailable, isOverlapError, type DamageEntry } from "@/lib/db";
 
 export type ManualContractInput = {
   vehicle_id: number;
@@ -72,7 +72,12 @@ export async function createManualContract(
   );
   if (!available) return { ok: false, reason: "conflict" };
 
-  const result = await sql.begin(async (tx) => {
+  // The check above is only a friendly early answer. The real protection is
+  // the database constraint (migrations/012): if another contract for the same
+  // car and dates slipped in meanwhile, the INSERT fails and we report a conflict.
+  let result: { id: number; contract_number: string };
+  try {
+    result = await sql.begin(async (tx) => {
     const rows = await tx<{ id: number }[]>`
       INSERT INTO reservations
         (vehicle_id, vehicle_label, registration_plate,
@@ -121,7 +126,11 @@ export async function createManualContract(
       RETURNING contract_number
     `;
     return { id, contract_number: upd[0].contract_number };
-  });
+    });
+  } catch (err) {
+    if (isOverlapError(err)) return { ok: false, reason: "conflict" };
+    throw err;
+  }
 
   return { ok: true, ...result };
 }

@@ -163,6 +163,8 @@ export async function createManualContractAction(
   }
 
   revalidatePath("/admin/real/reservations");
+  revalidatePath("/admin/real/contracts");
+  revalidatePath("/admin/real/contracts");
   revalidatePath("/vehicules");
 
   return {

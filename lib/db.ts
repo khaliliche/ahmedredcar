@@ -483,13 +483,14 @@ export type UpdateReservationContractInput = {
 
 export async function updateReservationContract(
   id: number,
-  data: UpdateReservationContractInput
+  data: UpdateReservationContractInput,
+  db: postgres.Sql = sql
 ): Promise<Reservation> {
   // undefined = keep the stored value, otherwise write the given value (null clears).
   const keepOr = <T>(value: T | undefined, column: string) =>
-    value === undefined ? sql(column) : value;
+    value === undefined ? db(column) : value;
 
-  const rows = await sql<Reservation[]>`
+  const rows = await db<Reservation[]>`
     UPDATE reservations
     SET full_name = ${data.full_name},
         age = ${data.age},
@@ -539,12 +540,73 @@ export async function updateReservationContract(
         fuel_level = COALESCE(${data.fuel_level ?? null}, fuel_level),
         fuel_type = COALESCE(${data.fuel_type ?? null}, fuel_type),
 
-        damages = ${sql.json(data.damages)},
+        damages = ${db.json(data.damages)},
         override_total_ttc = ${data.override_total_ttc}
     WHERE id = ${id}
     RETURNING *
   `;
   return rows[0];
+}
+
+// True when Postgres rejected a write because of an exclusion constraint
+// (SQLSTATE 23P01), i.e. two confirmed bookings overlap on the same vehicle.
+export function isOverlapError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    (err as { code?: string }).code === "23P01"
+  );
+}
+
+// Serialises everything that can book a vehicle. Call it INSIDE a
+// transaction (sql.begin): the lock is released automatically on
+// commit/rollback. Lock order used everywhere: reservation row
+// (FOR UPDATE) first, then the vehicle, so two admins can never deadlock.
+export async function lockVehicle(tx: postgres.Sql, vehicleId: number): Promise<void> {
+  await tx`SELECT pg_advisory_xact_lock(1001, ${vehicleId}::int)`;
+}
+
+export type ContractUpdateResult =
+  | { ok: true; reservation: Reservation }
+  | { ok: false; reason: "notFound" }
+  | { ok: false; reason: "conflict"; endLabel: string };
+
+// C3 - saving edits of a reservation: the availability check and the UPDATE
+// now happen in ONE transaction, under a lock on the target vehicle, so
+// another admin cannot confirm an overlapping booking in between.
+export async function updateReservationContractChecked(
+  id: number,
+  data: UpdateReservationContractInput
+): Promise<ContractUpdateResult> {
+  return sql.begin(async (tx): Promise<ContractUpdateResult> => {
+    // 1) Lock the reservation row and read its CURRENT state.
+    const current = await tx<{ vehicle_id: number | null; status: ReservationStatus }[]>`
+      SELECT vehicle_id, status FROM reservations WHERE id = ${id} FOR UPDATE
+    `;
+    if (current.length === 0) return { ok: false, reason: "notFound" };
+
+    // 2) Lock the vehicle the reservation will end up on.
+    const vehicleId = data.vehicle_id ?? current[0].vehicle_id;
+    if (vehicleId) await lockVehicle(tx, vehicleId);
+
+    // 3) Only confirmed reservations block a car, so only they are re-checked.
+    if (current[0].status === "confirmed" && vehicleId) {
+      const blocking = await getBlockingReservation(
+        vehicleId,
+        data.start_date,
+        data.end_date,
+        id,
+        tx
+      );
+      if (blocking) {
+        return { ok: false, reason: "conflict", endLabel: blocking.end_label };
+      }
+    }
+
+    // 4) Same UPDATE as before, on the same transaction.
+    const reservation = await updateReservationContract(id, data, tx);
+    return { ok: true, reservation };
+  });
 }
 
 // Feature 4 - remote signing. The admin generates a single-use, expiring
@@ -734,9 +796,11 @@ export async function getBlockingReservation(
   vehicleId: number,
   startDate: string,
   endDate: string,
-  excludeReservationId?: number
+  excludeReservationId?: number,
+  // Pass a transaction here to run the check inside it (see lockVehicle).
+  db: postgres.Sql = sql
 ): Promise<{ id: number; end_date: string; end_label: string } | null> {
-  const rows = await sql<{ id: number; end_date: string; end_label: string }[]>`
+  const rows = await db<{ id: number; end_date: string; end_label: string }[]>`
     SELECT id,
            end_date::text AS end_date,
            to_char(end_date, 'DD/MM/YYYY') AS end_label

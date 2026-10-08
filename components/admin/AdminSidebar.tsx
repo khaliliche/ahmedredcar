@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { Car, CalendarClock, FilePlus, LogOut, MessageCircle } from "lucide-react";
+﻿import Link from "next/link";
+import { Car, CalendarClock, FilePlus, FolderOpen, LogOut, MessageCircle } from "lucide-react";
 import { logoutAction } from "@/app/admin/real/actions";
 import { buildWhatsAppLink } from "@/lib/site-config";
 
@@ -11,13 +11,14 @@ const NAV = [
     label: "R\u00e9servations en ligne",
     icon: CalendarClock,
   },
+  { key: "contracts", href: "/admin/real/contracts", label: "Tous les contrats", icon: FolderOpen },
   { key: "new-contract", href: "/admin/real/contracts/new", label: "Nouveau contrat", icon: FilePlus },
 ] as const;
 
 export default function AdminSidebar({
   active,
 }: {
-  active: "vehicules" | "reservations" | "new-contract";
+  active: "vehicules" | "reservations" | "contracts" | "new-contract";
 }) {
   const whatsappHref = buildWhatsAppLink(
     "Bonjour, j'ai besoin d'aide sur l'espace admin."

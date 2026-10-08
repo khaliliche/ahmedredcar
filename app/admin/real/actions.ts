@@ -15,6 +15,7 @@ import {
   createSigningToken2,
   updateReservationHandover,
   updateReservationContract,
+  updateReservationContractChecked,
   setAdminSignature,
   getReservationById,
   getBlockingReservation,
@@ -522,19 +523,6 @@ export async function saveContractAction(
       ? await getVehicleById(vehicleIdRaw)
       : null;
 
-  const effectiveVehicleId = vehicle ? vehicle.id : reservation.vehicle_id;
-  if (reservation.status === "confirmed" && effectiveVehicleId) {
-    const blocking = await getBlockingReservation(
-      effectiveVehicleId,
-      startDate,
-      endDate,
-      id
-    );
-    if (blocking) {
-      return { ok: false, error: `Voiture reservee jusqu'au ${blocking.end_label}.` };
-    }
-  }
-
   let damages: DamageEntry[] = [];
   try {
     const parsed = JSON.parse(text("damages_json") || "[]");
@@ -575,7 +563,7 @@ export async function saveContractAction(
   const advance = Number(text("advance")) || 0;
   if (advance < 0) return { ok: false, error: "Avance invalide." };
 
-  await updateReservationContract(id, {
+  const saved = await updateReservationContractChecked(id, {
     vehicle_id: vehicle ? vehicle.id : null,
     vehicle_label: vehicle ? `${vehicle.brand} ${vehicle.model}` : text("vehicle_label"),
     registration_plate: text("registration_plate"),
@@ -625,6 +613,16 @@ export async function saveContractAction(
     fuel_type: fuelType,
     damages,
   });
+
+  if (!saved.ok) {
+    return {
+      ok: false,
+      error:
+        saved.reason === "conflict"
+          ? `Voiture reservee jusqu'au ${saved.endLabel}.`
+          : "Reservation introuvable.",
+    };
+  }
 
   revalidatePath(`/admin/real/reservations/${id}`);
   revalidatePath(`/admin/real/reservations/${id}/contract`);

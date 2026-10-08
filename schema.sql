@@ -112,6 +112,22 @@ CREATE TABLE IF NOT EXISTS reservations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- No double booking: two confirmed reservations of one vehicle can never
+-- overlap (see migrations/012_no_double_booking.sql).
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'reservations_no_overlap') THEN
+    ALTER TABLE reservations
+      ADD CONSTRAINT reservations_no_overlap
+      EXCLUDE USING gist (
+        vehicle_id WITH =,
+        daterange(start_date, end_date, '[]') WITH &&
+      )
+      WHERE (status = 'confirmed' AND vehicle_id IS NOT NULL);
+  END IF;
+END $$;
+
 CREATE INDEX IF NOT EXISTS idx_reservations_vehicle_status_dates
   ON reservations (vehicle_id, status, start_date, end_date);
 CREATE INDEX IF NOT EXISTS idx_reservations_signing_token
