@@ -530,6 +530,7 @@ export type UpdateReservationContractInput = {
   fuel_type?: string;
 
   damages: DamageEntry[];
+  equipment: EquipmentChecklist;
 };
 
 export async function updateReservationContract(
@@ -593,6 +594,7 @@ export async function updateReservationContract(
         fuel_type = COALESCE(${data.fuel_type ?? null}, fuel_type),
 
         damages = ${db.json(data.damages)},
+        equipment = ${db.json(data.equipment)},
         override_total_ttc = ${data.override_total_ttc ?? null}
     WHERE id = ${id}
     RETURNING *

@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { getVehicleById, type DamageEntry } from "@/lib/db";
 import { createManualContract } from "@/lib/manual-contract";
 import { getExpectedSessionToken, timingSafeEqual } from "@/lib/auth-token";
-import { FUEL_LEVELS, FUEL_TYPES, joinName, ageFromBirthDate } from "@/lib/contract";
+import { FUEL_LEVELS, FUEL_TYPES, joinName, ageFromBirthDate, equipmentFromForm } from "@/lib/contract";
 
 async function requireAdmin() {
   const expectedToken = await getExpectedSessionToken();
@@ -158,6 +158,7 @@ export async function createManualContractAction(
     fuel_level: fuelLevel,
     fuel_type: fuelType,
     damages,
+    equipment: equipmentFromForm(formData),
   });
 
   if (!result.ok) {

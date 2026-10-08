@@ -11,15 +11,18 @@ import {
   Path,
   Line,
   Circle,
+  Font,
 } from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
 import {
   DAMAGE_TYPES,
+  EQUIPMENT_ITEMS,
   FUEL_LEVELS,
   FUEL_TYPES,
   resolveContractBilling,
   DEFAULT_MIN_RENTAL_DAYS,
 } from "@/lib/contract";
+import { CONDITIONS_FR, CONDITIONS_AR } from "@/lib/contract-conditions";
 
 const BLUE = "#17327f";
 const RED = "#d1121f";
@@ -38,7 +41,80 @@ const LOGO_SRC = `data:image/png;base64,${readFileSync(
   join(process.cwd(), "public/logo.png")
 ).toString("base64")}`;
 
+// Arabic font (IBM Plex Sans Arabic) for the general conditions (page 2).
+Font.register({
+  family: "IBMPlexArabic",
+  fonts: [
+    { src: join(process.cwd(), "public/fonts/IBMPlexSansArabic-Regular.woff"), fontWeight: 400 },
+    { src: join(process.cwd(), "public/fonts/IBMPlexSansArabic-Bold.woff"), fontWeight: 700 },
+  ],
+});
+
+// No automatic hyphenation (it breaks Arabic words).
+Font.registerHyphenationCallback((word) => [word]);
+
 const styles = StyleSheet.create({
+  condPage: { padding: 22, fontFamily: "Helvetica", color: BLACK },
+  condHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    border: "1.2 solid " + BLUE,
+    borderRadius: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginBottom: 6,
+  },
+  condTitleFr: { fontSize: 12, fontWeight: 800, color: BLUE, width: 170 },
+  condTitleCenter: { fontSize: 15, fontWeight: 800, color: BLACK, textAlign: "center" },
+  condTitleAr: {
+    fontSize: 15,
+    fontFamily: "IBMPlexArabic",
+    fontWeight: 700,
+    color: BLUE,
+    width: 170,
+    textAlign: "right",
+  },
+  condBody: {
+    flexDirection: "row",
+    flexGrow: 1,
+    border: "1.2 solid " + BLUE,
+    borderRadius: 4,
+  },
+  condCol: { width: "50%", paddingVertical: 8, paddingHorizontal: 9 },
+  condColAr: {
+    width: "50%",
+    paddingVertical: 8,
+    paddingHorizontal: 9,
+    borderLeft: "1.2 solid " + BLUE,
+  },
+  condArticleFr: {
+    fontSize: 7.6,
+    fontFamily: "Helvetica-BoldOblique",
+    color: BLUE,
+    marginTop: 4,
+    marginBottom: 1.5,
+  },
+  condItemFr: { fontSize: 7.1, lineHeight: 1.28, marginBottom: 1.8 },
+  condArticleAr: {
+    fontSize: 7.8,
+    fontFamily: "IBMPlexArabic",
+    fontWeight: 700,
+    color: BLUE,
+    textAlign: "right",
+    marginTop: 3,
+  },
+  condRowAr: { flexDirection: "row-reverse", marginBottom: 1.2, paddingRight: 2 },
+  condDashAr: { fontSize: 6.8, width: 7, textAlign: "right" },
+  condItemAr: {
+    flex: 1,
+    fontSize: 6.8,
+    fontFamily: "IBMPlexArabic",
+    fontWeight: 400,
+    lineHeight: 1.4,
+    textAlign: "right",
+  },
+
   page: { padding: 24, fontSize: 7.5, fontFamily: "Helvetica", color: BLACK },
 
   // ---- Header ----
@@ -107,9 +183,12 @@ const styles = StyleSheet.create({
   fuelBlock: { width: 128 },
   carBox: { flex: 1, alignItems: "center", paddingVertical: 4 },
   checkboxRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 5 },
-  checkbox: { width: 8, height: 8, border: `1 solid ${BLACK}` },
+  checkbox: { width: 8, minWidth: 8, height: 8, flexShrink: 0, border: `1 solid ${BLACK}` },
   checkboxOn: { backgroundColor: BLACK },
   checkboxLabel: { fontSize: 7, fontWeight: 700 },
+  equipGrid: { flexDirection: "row" },
+  equipCol: { flex: 1 },
+  equipLabel: { fontSize: 6.3, fontWeight: 700 },
   legendRow: { flexDirection: "row", gap: 6, marginTop: 2 },
   legendText: { fontSize: 6 },
 
@@ -338,6 +417,47 @@ function DriverCard({ title, d }: { title: string; d: DriverView }) {
   );
 }
 
+function ConditionsPage() {
+  return (
+    <Page size="A4" style={styles.condPage} wrap={false}>
+      <View style={styles.condHeader}>
+        <Text style={styles.condTitleFr}>Conditions G{"\u00e9"}n{"\u00e9"}rales</Text>
+        <Text style={styles.condTitleCenter}>ST{"\u00c9"} AHMED RED CAR S.A.R.L</Text>
+        <Text style={styles.condTitleAr}>الشروط العامة</Text>
+      </View>
+
+      <View style={styles.condBody}>
+        <View style={styles.condCol}>
+          {CONDITIONS_FR.map((a) => (
+            <View key={a.title}>
+              <Text style={styles.condArticleFr}>{a.title}</Text>
+              {a.items.map((item) => (
+                <Text key={item} style={styles.condItemFr}>
+                  {a.plain ? item : "- " + item}
+                </Text>
+              ))}
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.condColAr}>
+          {CONDITIONS_AR.map((a) => (
+            <View key={a.title}>
+              <Text style={styles.condArticleAr}>{a.title}</Text>
+              {a.items.map((item) => (
+                <View key={item} style={styles.condRowAr}>
+                  <Text style={styles.condDashAr}>-</Text>
+                  <Text style={styles.condItemAr}>{"\u200F" + item}</Text>
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+      </View>
+    </Page>
+  );
+}
+
 export function ContractDocument({
   reservation,
   vehicle,
@@ -472,6 +592,33 @@ export function ContractDocument({
                 </View>
               </View>
             </View>
+
+            {/* Equipement du vehicule (cases cochees depuis l'admin) */}
+            <View style={{ marginTop: 8 }}>
+              <Card title={"ÉQUIPEMENT DU VÉHICULE"}>
+                <View style={styles.equipGrid}>
+                  {[
+                    EQUIPMENT_ITEMS.slice(0, 5),
+                    EQUIPMENT_ITEMS.slice(5, 9),
+                    EQUIPMENT_ITEMS.slice(9),
+                  ].map((items, c) => (
+                    <View key={c} style={styles.equipCol}>
+                      {items.map((item) => (
+                        <View key={item.key} style={[styles.checkboxRow, { marginTop: 0, marginBottom: 4 }]}>
+                          <View
+                            style={[
+                              styles.checkbox,
+                              ...(r.equipment?.[item.key] ? [styles.checkboxOn] : []),
+                            ]}
+                          />
+                          <Text style={styles.equipLabel}>{item.label}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              </Card>
+            </View>
           </View>
 
           <View style={styles.rightCol}>
@@ -530,6 +677,9 @@ export function ContractDocument({
           <Text style={styles.footerText}>RC 195159   Ice 003887345000050</Text>
         </View>
       </Page>
+
+      {/* Page 2: Conditions Generales */}
+      <ConditionsPage />
     </Document>
   );
 }

@@ -38,6 +38,7 @@ import {
   FUEL_TYPES,
   joinName,
   ageFromBirthDate,
+  equipmentFromForm,
 } from "@/lib/contract";
 
 // Double-check the session cookie on every admin action, even though middleware guards the path.
@@ -495,6 +496,7 @@ export async function saveContractAction(
     fuel_level: fuelLevel,
     fuel_type: fuelType,
     damages,
+    equipment: equipmentFromForm(formData),
   });
 
   if (!saved.ok) {

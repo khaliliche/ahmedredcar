@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { DAMAGE_ZONES, DAMAGE_TYPES, FUEL_LEVELS, FUEL_TYPES } from "@/lib/contract";
+import { DAMAGE_ZONES, DAMAGE_TYPES, EQUIPMENT_ITEMS, FUEL_LEVELS, FUEL_TYPES } from "@/lib/contract";
 import type { DamageEntry } from "@/lib/db";
 import AvailabilityBanner from "@/components/admin/AvailabilityBanner";
 
@@ -76,6 +76,8 @@ export type ContractInitial = {
   fuel_level: string;
   fuel_type: string;
   damages: DamageEntry[];
+  // { [EQUIPMENT_ITEMS key]: checked }
+  equipment: Record<string, boolean>;
 };
 
 export type VehicleOption = { id: number; label: string };
@@ -413,6 +415,24 @@ export default function ContractForm({
               ))}
             </select>
           </label>
+        </div>
+      </section>
+
+      {/* ---- Equipement du vehicule ---- */}
+      <section className={sectionClass}>
+        <h2 className={h2Class}>{"\u00c9quipement du v\u00e9hicule"}</h2>
+        <div className="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+          {EQUIPMENT_ITEMS.map((item) => (
+            <label key={item.key} className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                name={`equip_${item.key}`}
+                defaultChecked={Boolean(initial.equipment?.[item.key])}
+                className="h-4 w-4"
+              />
+              {item.label}
+            </label>
+          ))}
         </div>
       </section>
 

@@ -53,6 +53,7 @@ const EMPTY: ContractInitial = {
   fuel_level: "",
   fuel_type: "",
   damages: [],
+  equipment: {},
 };
 
 function formatDate(value: string | Date) {

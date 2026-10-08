@@ -22,6 +22,16 @@ export const EQUIPMENT_ITEMS = [
   { key: "extincteur", label: "Extincteur" },
 ] as const;
 
+// Reads the "Equipement du vehicule" checkboxes (inputs named equip_<key>)
+// from the admin form into { [key]: boolean } for every known item.
+export function equipmentFromForm(formData: FormData): Record<string, boolean> {
+  const out: Record<string, boolean> = {};
+  for (const item of EQUIPMENT_ITEMS) {
+    out[item.key] = formData.get(`equip_${item.key}`) === "on";
+  }
+  return out;
+}
+
 export const DAMAGE_TYPES = [
   { value: "Éraflure", symbol: "/" },
   { value: "Bosse", symbol: "X" },

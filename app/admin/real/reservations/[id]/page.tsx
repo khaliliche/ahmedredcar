@@ -149,6 +149,7 @@ export default async function ContractPage({
                 fuel_level: reservation.fuel_level,
                 fuel_type: reservation.fuel_type,
                 damages: reservation.damages,
+                equipment: reservation.equipment ?? {},
               }}
             />
           </div>

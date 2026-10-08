@@ -1,4 +1,4 @@
-import { sql, isVehicleAvailable, isOverlapError, isUniqueViolation, type DamageEntry } from "@/lib/db";
+import { sql, isVehicleAvailable, isOverlapError, isUniqueViolation, type DamageEntry, type EquipmentChecklist } from "@/lib/db";
 
 export type ManualContractInput = {
   // Admin-chosen serial number for the printed contract. Blank/null falls
@@ -58,6 +58,7 @@ export type ManualContractInput = {
   fuel_level: string;
   fuel_type: string;
   damages: DamageEntry[];
+  equipment: EquipmentChecklist;
 };
 
 // Admin-created contract: inserts the reservation already confirmed and
@@ -100,7 +101,7 @@ export async function createManualContract(
          departure_place, return_place,
          advance, override_total_ttc, prolongation,
          expected_return_date, expected_return_time,
-         fuel_level, fuel_type, damages,
+         fuel_level, fuel_type, damages, equipment,
          status, source)
       VALUES
         (${data.vehicle_id}, ${data.vehicle_label}, ${data.registration_plate},
@@ -118,7 +119,7 @@ export async function createManualContract(
          ${data.departure_place}, ${data.return_place},
          ${data.advance}, ${data.override_total_ttc}, ${data.prolongation},
          ${data.expected_return_date}, ${data.expected_return_time},
-         ${data.fuel_level}, ${data.fuel_type}, ${tx.json(data.damages)},
+         ${data.fuel_level}, ${data.fuel_type}, ${tx.json(data.damages)}, ${tx.json(data.equipment)},
          'confirmed', 'walk_in')
       RETURNING id
     `;
