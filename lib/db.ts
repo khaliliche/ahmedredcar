@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+﻿import { randomUUID } from "node:crypto";
 import postgres from "postgres";
 import { getTieredPricing } from "./pricing";
 
@@ -70,6 +70,27 @@ export type Reservation = {
   equipment: EquipmentChecklist;
   delivery_fee: number;
   pickup_fee: number;
+
+  // Contract template v2
+  first_name: string;
+  last_name: string;
+  birth_date: string | null;
+  cin_issue_date: string | null;
+  passport_issue_date: string | null;
+  second_driver_first_name: string;
+  second_driver_last_name: string;
+  second_driver_birth_date: string | null;
+  second_driver_cin_issue_date: string | null;
+  second_driver_license_issue_date: string | null;
+  second_driver_passport_issue_date: string | null;
+  departure_place: string;
+  return_place: string;
+  advance: number;
+  prolongation: string;
+  expected_return_date: string | null;
+  expected_return_time: string | null;
+  fuel_level: string;
+  fuel_type: string;
 
   // Admin contract editing
   fait_a: string;
@@ -189,6 +210,19 @@ export type CreateReservationInput = {
   vehicle_id: number;
   vehicle_label: string;
 
+  // Template v2 fields (full_name/age are still filled by the caller)
+  first_name?: string;
+  last_name?: string;
+  birth_date?: string | null;
+  cin_issue_date?: string | null;
+  passport_issue_date?: string | null;
+  second_driver_first_name?: string;
+  second_driver_last_name?: string;
+  second_driver_birth_date?: string | null;
+  second_driver_cin_issue_date?: string | null;
+  second_driver_license_issue_date?: string | null;
+  second_driver_passport_issue_date?: string | null;
+
   full_name: string;
   age: number;
   cin_number: string;
@@ -220,17 +254,23 @@ export async function createReservation(
       (vehicle_id, vehicle_label,
        full_name, age, cin_number, license_issue_date,
        driver_address, driver_phone, driver_license_number, driver_passport_number,
+       first_name, last_name, birth_date, cin_issue_date, passport_issue_date,
        has_second_driver,
        second_driver_full_name, second_driver_address, second_driver_phone,
        second_driver_cin_number, second_driver_license_number, second_driver_passport_number,
+       second_driver_first_name, second_driver_last_name, second_driver_birth_date,
+       second_driver_cin_issue_date, second_driver_license_issue_date, second_driver_passport_issue_date,
        start_date, end_date, start_time, end_time)
     VALUES
       (${data.vehicle_id}, ${data.vehicle_label},
        ${data.full_name}, ${data.age}, ${data.cin_number}, ${data.license_issue_date},
        ${data.driver_address}, ${data.driver_phone}, ${data.driver_license_number}, ${data.driver_passport_number},
+       ${data.first_name ?? ""}, ${data.last_name ?? ""}, ${data.birth_date ?? null}, ${data.cin_issue_date ?? null}, ${data.passport_issue_date ?? null},
        ${data.has_second_driver},
        ${data.second_driver_full_name ?? ""}, ${data.second_driver_address ?? ""}, ${data.second_driver_phone ?? ""},
        ${data.second_driver_cin_number ?? ""}, ${data.second_driver_license_number ?? ""}, ${data.second_driver_passport_number ?? ""},
+       ${data.second_driver_first_name ?? ""}, ${data.second_driver_last_name ?? ""}, ${data.second_driver_birth_date ?? null},
+       ${data.second_driver_cin_issue_date ?? null}, ${data.second_driver_license_issue_date ?? null}, ${data.second_driver_passport_issue_date ?? null},
        ${data.start_date}, ${data.end_date}, ${data.start_time}, ${data.end_time})
     RETURNING *
   `;
@@ -404,23 +444,51 @@ export type UpdateReservationContractInput = {
   start_time: string;
   end_time: string;
 
-  mileage_start: number | null;
-  mileage_end: number | null;
   damages: DamageEntry[];
-  equipment: EquipmentChecklist;
-  delivery_fee: number;
-  pickup_fee: number;
-
-  fait_a: string;
-  override_total_ht: number | null;
-  override_tva: number | null;
   override_total_ttc: number | null;
+
+  // Contract template v2. Text/number fields left undefined are kept as they
+  // are; date/time fields left undefined are kept, while null clears them.
+  first_name?: string;
+  last_name?: string;
+  birth_date?: string | null;
+  cin_issue_date?: string | null;
+  passport_issue_date?: string | null;
+  second_driver_first_name?: string;
+  second_driver_last_name?: string;
+  second_driver_birth_date?: string | null;
+  second_driver_cin_issue_date?: string | null;
+  second_driver_license_issue_date?: string | null;
+  second_driver_passport_issue_date?: string | null;
+  departure_place?: string;
+  return_place?: string;
+  advance?: number;
+  prolongation?: string;
+  expected_return_date?: string | null;
+  expected_return_time?: string | null;
+  fuel_level?: string;
+  fuel_type?: string;
+
+  // No longer edited by the contract form (the columns stay in the DB and are
+  // left untouched). Optional so older callers still compile.
+  mileage_start?: number | null;
+  mileage_end?: number | null;
+  equipment?: EquipmentChecklist;
+  delivery_fee?: number;
+  pickup_fee?: number;
+  fait_a?: string;
+  override_total_ht?: number | null;
+  override_tva?: number | null;
 };
 
 export async function updateReservationContract(
   id: number,
   data: UpdateReservationContractInput
 ): Promise<Reservation> {
+  // undefined = keep the stored value, otherwise write the given value (null clears).
+  const keepOr = <T>(value: T | undefined, column: string) =>
+    value === undefined ? sql(column) : value;
+
   const rows = await sql<Reservation[]>`
     UPDATE reservations
     SET full_name = ${data.full_name},
@@ -432,6 +500,12 @@ export async function updateReservationContract(
         driver_license_number = ${data.driver_license_number},
         driver_passport_number = ${data.driver_passport_number},
 
+        first_name = COALESCE(${data.first_name ?? null}, first_name),
+        last_name = COALESCE(${data.last_name ?? null}, last_name),
+        birth_date = ${keepOr(data.birth_date, "birth_date")},
+        cin_issue_date = ${keepOr(data.cin_issue_date, "cin_issue_date")},
+        passport_issue_date = ${keepOr(data.passport_issue_date, "passport_issue_date")},
+
         has_second_driver = ${data.has_second_driver},
         second_driver_full_name = ${data.second_driver_full_name},
         second_driver_address = ${data.second_driver_address},
@@ -439,6 +513,13 @@ export async function updateReservationContract(
         second_driver_cin_number = ${data.second_driver_cin_number},
         second_driver_license_number = ${data.second_driver_license_number},
         second_driver_passport_number = ${data.second_driver_passport_number},
+
+        second_driver_first_name = COALESCE(${data.second_driver_first_name ?? null}, second_driver_first_name),
+        second_driver_last_name = COALESCE(${data.second_driver_last_name ?? null}, second_driver_last_name),
+        second_driver_birth_date = ${keepOr(data.second_driver_birth_date, "second_driver_birth_date")},
+        second_driver_cin_issue_date = ${keepOr(data.second_driver_cin_issue_date, "second_driver_cin_issue_date")},
+        second_driver_license_issue_date = ${keepOr(data.second_driver_license_issue_date, "second_driver_license_issue_date")},
+        second_driver_passport_issue_date = ${keepOr(data.second_driver_passport_issue_date, "second_driver_passport_issue_date")},
 
         vehicle_id = COALESCE(${data.vehicle_id ?? null}, vehicle_id),
         vehicle_label = ${data.vehicle_label},
@@ -449,16 +530,16 @@ export async function updateReservationContract(
         start_time = ${data.start_time},
         end_time = ${data.end_time},
 
-        mileage_start = ${data.mileage_start},
-        mileage_end = ${data.mileage_end},
-        damages = ${sql.json(data.damages)},
-        equipment = ${sql.json(data.equipment)},
-        delivery_fee = ${data.delivery_fee},
-        pickup_fee = ${data.pickup_fee},
+        departure_place = COALESCE(${data.departure_place ?? null}, departure_place),
+        return_place = COALESCE(${data.return_place ?? null}, return_place),
+        advance = COALESCE(${data.advance ?? null}, advance),
+        prolongation = COALESCE(${data.prolongation ?? null}, prolongation),
+        expected_return_date = ${keepOr(data.expected_return_date, "expected_return_date")},
+        expected_return_time = ${keepOr(data.expected_return_time, "expected_return_time")},
+        fuel_level = COALESCE(${data.fuel_level ?? null}, fuel_level),
+        fuel_type = COALESCE(${data.fuel_type ?? null}, fuel_type),
 
-        fait_a = ${data.fait_a},
-        override_total_ht = ${data.override_total_ht},
-        override_tva = ${data.override_tva},
+        damages = ${sql.json(data.damages)},
         override_total_ttc = ${data.override_total_ttc}
     WHERE id = ${id}
     RETURNING *

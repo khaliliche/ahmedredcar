@@ -56,6 +56,27 @@ CREATE TABLE IF NOT EXISTS reservations (
   delivery_fee NUMERIC(10,2) NOT NULL DEFAULT 0,
   pickup_fee NUMERIC(10,2) NOT NULL DEFAULT 0,
 
+  -- Contract template v2 (see migrations/011)
+  first_name TEXT NOT NULL DEFAULT '',
+  last_name TEXT NOT NULL DEFAULT '',
+  birth_date DATE,
+  cin_issue_date DATE,
+  passport_issue_date DATE,
+  second_driver_first_name TEXT NOT NULL DEFAULT '',
+  second_driver_last_name TEXT NOT NULL DEFAULT '',
+  second_driver_birth_date DATE,
+  second_driver_cin_issue_date DATE,
+  second_driver_license_issue_date DATE,
+  second_driver_passport_issue_date DATE,
+  departure_place TEXT NOT NULL DEFAULT '',
+  return_place TEXT NOT NULL DEFAULT '',
+  advance NUMERIC(10,2) NOT NULL DEFAULT 0,
+  prolongation TEXT NOT NULL DEFAULT '',
+  expected_return_date DATE,
+  expected_return_time TIME,
+  fuel_level TEXT NOT NULL DEFAULT '',
+  fuel_type TEXT NOT NULL DEFAULT '',
+
   -- Admin contract editing
   fait_a TEXT NOT NULL DEFAULT '',
   override_total_ht NUMERIC(10,2),

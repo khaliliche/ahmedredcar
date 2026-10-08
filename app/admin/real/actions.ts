@@ -34,7 +34,13 @@ import {
   LOGIN_MAX_ATTEMPTS,
   LOGIN_BAN_MS,
 } from "@/lib/auth";
-import { EQUIPMENT_ITEMS } from "@/lib/contract";
+import {
+  EQUIPMENT_ITEMS,
+  FUEL_LEVELS,
+  FUEL_TYPES,
+  joinName,
+  ageFromBirthDate,
+} from "@/lib/contract";
 
 // Double-check the session cookie on every admin action, even though middleware guards the path.
 async function requireAdmin() {
@@ -537,49 +543,87 @@ export async function saveContractAction(
     damages = [];
   }
 
-  const equipment: EquipmentChecklist = {};
-  for (const item of EQUIPMENT_ITEMS) {
-    equipment[item.key] = formData.get(`equipment__${item.key}`) === "on";
+  const dateOrNull = (name: string) => text(name) || null;
+  // DATE columns come back from postgres.js as Date objects.
+  const keepDate = (v: unknown) =>
+    v instanceof Date ? v.toISOString().slice(0, 10) : String(v ?? "");
+
+  const firstName = text("first_name");
+  const lastName = text("last_name");
+  const secondFirst = text("second_driver_first_name");
+  const secondLast = text("second_driver_last_name");
+
+  const birthDate = text("birth_date");
+  let age = reservation.age;
+  if (birthDate) {
+    const birth = new Date(birthDate);
+    if (Number.isNaN(birth.getTime()) || birth > new Date()) {
+      return { ok: false, error: "Date de naissance invalide." };
+    }
+    age = ageFromBirthDate(birthDate);
   }
+
+  const fuelLevel = text("fuel_level");
+  if (fuelLevel && !(FUEL_LEVELS as readonly string[]).includes(fuelLevel)) {
+    return { ok: false, error: "Niveau de carburant invalide." };
+  }
+  const fuelType = text("fuel_type");
+  if (fuelType && !FUEL_TYPES.some((t) => t.value === fuelType)) {
+    return { ok: false, error: "Type de carburant invalide." };
+  }
+
+  const advance = Number(text("advance")) || 0;
+  if (advance < 0) return { ok: false, error: "Avance invalide." };
 
   await updateReservationContract(id, {
     vehicle_id: vehicle ? vehicle.id : null,
     vehicle_label: vehicle ? `${vehicle.brand} ${vehicle.model}` : text("vehicle_label"),
     registration_plate: text("registration_plate"),
 
-    full_name: text("full_name"),
-    age: Number(text("age")) || 0,
+    full_name: joinName(firstName, lastName) || reservation.full_name,
+    first_name: firstName,
+    last_name: lastName,
+    birth_date: dateOrNull("birth_date"),
+    age,
     cin_number: text("cin_number"),
-    license_issue_date: text("license_issue_date"),
+    cin_issue_date: dateOrNull("cin_issue_date"),
+    license_issue_date: text("license_issue_date") || keepDate(reservation.license_issue_date),
     driver_address: text("driver_address"),
     driver_phone: text("driver_phone"),
     driver_license_number: text("driver_license_number"),
     driver_passport_number: text("driver_passport_number"),
+    passport_issue_date: dateOrNull("passport_issue_date"),
 
     has_second_driver: formData.get("has_second_driver") === "on",
-    second_driver_full_name: text("second_driver_full_name"),
+    second_driver_full_name: joinName(secondFirst, secondLast),
+    second_driver_first_name: secondFirst,
+    second_driver_last_name: secondLast,
+    second_driver_birth_date: dateOrNull("second_driver_birth_date"),
     second_driver_address: text("second_driver_address"),
     second_driver_phone: text("second_driver_phone"),
     second_driver_cin_number: text("second_driver_cin_number"),
+    second_driver_cin_issue_date: dateOrNull("second_driver_cin_issue_date"),
     second_driver_license_number: text("second_driver_license_number"),
+    second_driver_license_issue_date: dateOrNull("second_driver_license_issue_date"),
     second_driver_passport_number: text("second_driver_passport_number"),
+    second_driver_passport_issue_date: dateOrNull("second_driver_passport_issue_date"),
 
     start_date: startDate,
     end_date: endDate,
     start_time: text("start_time") || "10:00",
     end_time: text("end_time") || "10:00",
+    departure_place: text("departure_place"),
+    return_place: text("return_place"),
 
-    mileage_start: numberOrNull("mileage_start"),
-    mileage_end: numberOrNull("mileage_end"),
-    damages,
-    equipment,
-    delivery_fee: Number(text("delivery_fee")) || 0,
-    pickup_fee: Number(text("pickup_fee")) || 0,
-
-    fait_a: text("fait_a"),
-    override_total_ht: numberOrNull("override_total_ht"),
-    override_tva: numberOrNull("override_tva"),
+    advance,
     override_total_ttc: numberOrNull("override_total_ttc"),
+    prolongation: text("prolongation"),
+    expected_return_date: dateOrNull("expected_return_date"),
+    expected_return_time: dateOrNull("expected_return_time"),
+
+    fuel_level: fuelLevel,
+    fuel_type: fuelType,
+    damages,
   });
 
   revalidatePath(`/admin/real/reservations/${id}`);

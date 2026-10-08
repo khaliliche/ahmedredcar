@@ -2,17 +2,23 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { DAMAGE_ZONES, DAMAGE_TYPES, EQUIPMENT_ITEMS } from "@/lib/contract";
-import type { DamageEntry, EquipmentChecklist } from "@/lib/db";
+import { DAMAGE_ZONES, DAMAGE_TYPES, FUEL_LEVELS, FUEL_TYPES } from "@/lib/contract";
+import type { DamageEntry } from "@/lib/db";
 import AvailabilityBanner from "@/components/admin/AvailabilityBanner";
 
 // postgres.js returns DATE columns as JS Date objects, so values coming
 // from the DB can be either a string or a Date.
-function toDateInputValue(value: string | Date | null | undefined) {
+type DateLike = string | Date | null | undefined;
+
+function toDateInputValue(value: DateLike) {
   if (!value) return "";
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);
+}
+
+function toTimeInputValue(value: string | null | undefined) {
+  return value ? String(value).slice(0, 5) : "";
 }
 
 export type ContractInitial = {
@@ -20,44 +26,57 @@ export type ContractInitial = {
   vehicle_label: string;
   registration_plate: string;
 
-  full_name: string;
-  age: number;
+  // Premier conducteur
+  first_name: string;
+  last_name: string;
+  birth_date: DateLike;
   cin_number: string;
-  license_issue_date: string | Date;
+  cin_issue_date: DateLike;
+  license_issue_date: DateLike;
   driver_address: string;
   driver_phone: string;
   driver_license_number: string;
   driver_passport_number: string;
+  passport_issue_date: DateLike;
 
+  // 2eme conducteur
   has_second_driver: boolean;
-  second_driver_full_name: string;
+  second_driver_first_name: string;
+  second_driver_last_name: string;
+  second_driver_birth_date: DateLike;
   second_driver_address: string;
   second_driver_phone: string;
   second_driver_cin_number: string;
+  second_driver_cin_issue_date: DateLike;
   second_driver_license_number: string;
+  second_driver_license_issue_date: DateLike;
   second_driver_passport_number: string;
+  second_driver_passport_issue_date: DateLike;
 
-  start_date: string | Date;
-  end_date: string | Date;
+  // Depart / retour
+  start_date: DateLike;
+  end_date: DateLike;
   start_time: string;
   end_time: string;
+  departure_place: string;
+  return_place: string;
 
-  mileage_start: number | null;
-  mileage_end: number | null;
-  damages: DamageEntry[];
-  equipment: EquipmentChecklist;
-  delivery_fee: number;
-  pickup_fee: number;
-
-  fait_a: string;
-  override_total_ht: number | null;
-  override_tva: number | null;
+  // Facturation, prolongation, retour prevu
+  advance: number;
   override_total_ttc: number | null;
+  prolongation: string;
+  expected_return_date: DateLike;
+  expected_return_time: string | null;
+
+  // Carburant & dommages
+  fuel_level: string;
+  fuel_type: string;
+  damages: DamageEntry[];
 };
 
 export type VehicleOption = { id: number; label: string };
 
-type Calculated = { totalHT: number; tva: number; totalTTC: number };
+type Calculated = { totalTTC: number; days: number; dailyRate: number };
 
 type SubmitResult = { ok: true; id?: number } | { ok: false; error: string };
 
@@ -66,6 +85,7 @@ const labelClass = "flex flex-col gap-1";
 const spanClass = "text-sm font-semibold";
 const sectionClass = "rounded-2xl border border-black/10 bg-white p-5";
 const h2Class = "font-display text-sm font-bold uppercase tracking-wide text-black/50";
+const gridClass = "mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2";
 
 function Field({
   label,
@@ -130,8 +150,20 @@ export default function ContractForm({
   const [vehicleId, setVehicleId] = useState<number | null>(initial.vehicle_id);
   const [startDate, setStartDate] = useState(toDateInputValue(initial.start_date));
   const [endDate, setEndDate] = useState(toDateInputValue(initial.end_date));
+  const [advance, setAdvance] = useState(initial.advance ? String(initial.advance) : "");
+  const [overrideTTC, setOverrideTTC] = useState(
+    initial.override_total_ttc != null ? String(initial.override_total_ttc) : ""
+  );
 
   const isCreate = mode === "create";
+
+  // Live "Reste a payer" (edit mode only: the calculated total needs a saved vehicle).
+  const totalTTC =
+    overrideTTC !== "" && Number.isFinite(Number(overrideTTC))
+      ? Number(overrideTTC)
+      : calculated?.totalTTC;
+  const remaining =
+    totalTTC !== undefined ? Math.max(totalTTC - (Number(advance) || 0), 0) : undefined;
 
   function addDamage() {
     setDamages((d) => [...d, { zone: DAMAGE_ZONES[0], type: DAMAGE_TYPES[0].value, note: "" }]);
@@ -161,9 +193,6 @@ export default function ContractForm({
     });
   }
 
-  const calcLabel = (label: string, value?: number) =>
-    value === undefined ? label : `${label} (calcule : ${value.toFixed(2)} DH)`;
-
   return (
     <form onSubmit={handleSubmit} onChange={() => setSaved(false)} className="flex flex-col gap-6">
       <input type="hidden" name="damages_json" value={JSON.stringify(damages)} readOnly />
@@ -180,13 +209,13 @@ export default function ContractForm({
         excludeReservationId={reservationId}
       />
 
-      {/* ---- Vehicule & periode ---- */}
+      {/* ---- Vehicule, depart & retour ---- */}
       <section className={sectionClass}>
-        <h2 className={h2Class}>Vehicule &amp; periode</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <h2 className={h2Class}>Vehicule, depart &amp; retour</h2>
+        <div className={gridClass}>
           <label className={labelClass}>
             <span className={spanClass}>
-              Vehicule
+              Type de vehicule
               {isCreate && <span className="text-red-600"> *</span>}
             </span>
             <select
@@ -204,10 +233,11 @@ export default function ContractForm({
               ))}
             </select>
           </label>
-          <Field label="Immatriculation" name="registration_plate" defaultValue={initial.registration_plate} />
+          <Field label="Matricule" name="registration_plate" defaultValue={initial.registration_plate} />
+
           <label className={labelClass}>
             <span className={spanClass}>
-              Date depart<span className="text-red-600"> *</span>
+              Depart : le<span className="text-red-600"> *</span>
             </span>
             <input
               type="date"
@@ -218,10 +248,13 @@ export default function ContractForm({
               className={inputClass}
             />
           </label>
-          <Field label="Heure depart" name="start_time" type="time" defaultValue={initial.start_time || "10:00"} />
+          <Field label="Depart : heure" name="start_time" type="time" defaultValue={initial.start_time || "10:00"} />
+          <Field label="Depart : lieu de livraison" name="departure_place" defaultValue={initial.departure_place} />
+          <div className="hidden sm:block" />
+
           <label className={labelClass}>
             <span className={spanClass}>
-              Date retour<span className="text-red-600"> *</span>
+              Retour : le<span className="text-red-600"> *</span>
             </span>
             <input
               type="date"
@@ -232,31 +265,33 @@ export default function ContractForm({
               className={inputClass}
             />
           </label>
-          <Field label="Heure retour" name="end_time" type="time" defaultValue={initial.end_time || "10:00"} />
-          <Field label="Km depart" name="mileage_start" type="number" defaultValue={initial.mileage_start ?? ""} />
-          <Field label="Km retour" name="mileage_end" type="number" defaultValue={initial.mileage_end ?? ""} />
+          <Field label="Retour : heure" name="end_time" type="time" defaultValue={initial.end_time || "10:00"} />
+          <Field label="Retour : lieu de livraison" name="return_place" defaultValue={initial.return_place} />
         </div>
       </section>
 
-      {/* ---- Conducteur ---- */}
+      {/* ---- Premier conducteur ---- */}
       <section className={sectionClass}>
-        <h2 className={h2Class}>Conducteur</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Nom & Prenom" name="full_name" required={isCreate} defaultValue={initial.full_name} />
-          <Field label="Age" name="age" type="number" min={1} required={isCreate} defaultValue={initial.age || ""} />
-          <Field label="N&deg; C.I.N" name="cin_number" required={isCreate} defaultValue={initial.cin_number} />
-          <Field label="Telephone" name="driver_phone" type="tel" required={isCreate} defaultValue={initial.driver_phone} />
-          <Field label="Permis obtenu le" name="license_issue_date" type="date" required={isCreate} defaultValue={toDateInputValue(initial.license_issue_date)} />
-          <Field label="N&deg; permis" name="driver_license_number" defaultValue={initial.driver_license_number} />
-          <Field label="N&deg; passeport" name="driver_passport_number" defaultValue={initial.driver_passport_number} />
-          <Field label="Adresse" name="driver_address" defaultValue={initial.driver_address} />
+        <h2 className={h2Class}>Premier conducteur</h2>
+        <div className={gridClass}>
+          <Field label="Prenom" name="first_name" required={isCreate} defaultValue={initial.first_name} />
+          <Field label="Nom" name="last_name" required={isCreate} defaultValue={initial.last_name} />
+          <Field label="N° C.I.N" name="cin_number" required={isCreate} defaultValue={initial.cin_number} />
+          <Field label="C.I.N delivree le" name="cin_issue_date" type="date" defaultValue={toDateInputValue(initial.cin_issue_date)} />
+          <Field label="Date de naissance" name="birth_date" type="date" required={isCreate} defaultValue={toDateInputValue(initial.birth_date)} />
+          <Field label="N° permis de conduire" name="driver_license_number" defaultValue={initial.driver_license_number} />
+          <Field label="Permis delivre le" name="license_issue_date" type="date" required={isCreate} defaultValue={toDateInputValue(initial.license_issue_date)} />
+          <Field label="Adresse au Maroc" name="driver_address" defaultValue={initial.driver_address} />
+          <Field label="Tel" name="driver_phone" type="tel" required={isCreate} defaultValue={initial.driver_phone} />
+          <Field label="N° passeport" name="driver_passport_number" defaultValue={initial.driver_passport_number} />
+          <Field label="Passeport delivre le" name="passport_issue_date" type="date" defaultValue={toDateInputValue(initial.passport_issue_date)} />
         </div>
       </section>
 
-      {/* ---- Autre conducteur ---- */}
+      {/* ---- 2eme conducteur ---- */}
       <section className={sectionClass}>
         <div className="flex items-center justify-between">
-          <h2 className={h2Class}>Autre conducteur</h2>
+          <h2 className={h2Class}>2eme conducteur</h2>
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input
               type="checkbox"
@@ -269,13 +304,18 @@ export default function ContractForm({
           </label>
         </div>
         {hasSecondDriver && (
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field label="Nom & Prenom" name="second_driver_full_name" required={isCreate} defaultValue={initial.second_driver_full_name} />
-            <Field label="N&deg; C.I.N" name="second_driver_cin_number" defaultValue={initial.second_driver_cin_number} />
-            <Field label="N&deg; permis" name="second_driver_license_number" defaultValue={initial.second_driver_license_number} />
-            <Field label="N&deg; passeport" name="second_driver_passport_number" defaultValue={initial.second_driver_passport_number} />
-            <Field label="Adresse" name="second_driver_address" defaultValue={initial.second_driver_address} />
-            <Field label="Telephone" name="second_driver_phone" type="tel" defaultValue={initial.second_driver_phone} />
+          <div className={gridClass}>
+            <Field label="Prenom" name="second_driver_first_name" required={isCreate} defaultValue={initial.second_driver_first_name} />
+            <Field label="Nom" name="second_driver_last_name" required={isCreate} defaultValue={initial.second_driver_last_name} />
+            <Field label="N° C.I.N" name="second_driver_cin_number" defaultValue={initial.second_driver_cin_number} />
+            <Field label="C.I.N delivree le" name="second_driver_cin_issue_date" type="date" defaultValue={toDateInputValue(initial.second_driver_cin_issue_date)} />
+            <Field label="Date de naissance" name="second_driver_birth_date" type="date" defaultValue={toDateInputValue(initial.second_driver_birth_date)} />
+            <Field label="N° permis de conduire" name="second_driver_license_number" defaultValue={initial.second_driver_license_number} />
+            <Field label="Permis delivre le" name="second_driver_license_issue_date" type="date" defaultValue={toDateInputValue(initial.second_driver_license_issue_date)} />
+            <Field label="Adresse au Maroc" name="second_driver_address" defaultValue={initial.second_driver_address} />
+            <Field label="Tel" name="second_driver_phone" type="tel" defaultValue={initial.second_driver_phone} />
+            <Field label="N° passeport" name="second_driver_passport_number" defaultValue={initial.second_driver_passport_number} />
+            <Field label="Passeport delivre le" name="second_driver_passport_issue_date" type="date" defaultValue={toDateInputValue(initial.second_driver_passport_issue_date)} />
           </div>
         )}
       </section>
@@ -283,38 +323,79 @@ export default function ContractForm({
       {/* ---- Facturation ---- */}
       <section className={sectionClass}>
         <h2 className={h2Class}>Facturation</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Frais de livraison (DH)" name="delivery_fee" type="number" step="0.01" defaultValue={initial.delivery_fee} />
-          <Field label="Frais de reprise (DH)" name="pickup_fee" type="number" step="0.01" defaultValue={initial.pickup_fee} />
+        {calculated && (
+          <p className="mt-3 text-sm text-black/60">
+            {calculated.days} jour(s) x {calculated.dailyRate.toFixed(2)} DH/jour : total TTC
+            calcule {calculated.totalTTC.toFixed(2)} DH
+          </p>
+        )}
+        <div className={gridClass}>
+          <label className={labelClass}>
+            <span className={spanClass}>Total TTC (laisser vide = calcul automatique)</span>
+            <input
+              type="number"
+              name="override_total_ttc"
+              step="0.01"
+              min={0}
+              value={overrideTTC}
+              onChange={(e) => setOverrideTTC(e.target.value)}
+              placeholder={calculated ? calculated.totalTTC.toFixed(2) : "auto"}
+              className={inputClass}
+            />
+          </label>
+          <label className={labelClass}>
+            <span className={spanClass}>Avance (DH)</span>
+            <input
+              type="number"
+              name="advance"
+              step="0.01"
+              min={0}
+              value={advance}
+              onChange={(e) => setAdvance(e.target.value)}
+              className={inputClass}
+            />
+          </label>
         </div>
-        <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-black/40">
-          Override manuel (laisser vide = calcul automatique)
-        </p>
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field
-            label={calcLabel("Total HT", calculated?.totalHT)}
-            name="override_total_ht"
-            type="number"
-            step="0.01"
-            defaultValue={initial.override_total_ht ?? ""}
-            placeholder={calculated ? calculated.totalHT.toFixed(2) : "auto"}
-          />
-          <Field
-            label={calcLabel("TVA 20%", calculated?.tva)}
-            name="override_tva"
-            type="number"
-            step="0.01"
-            defaultValue={initial.override_tva ?? ""}
-            placeholder={calculated ? calculated.tva.toFixed(2) : "auto"}
-          />
-          <Field
-            label={calcLabel("Total TTC", calculated?.totalTTC)}
-            name="override_total_ttc"
-            type="number"
-            step="0.01"
-            defaultValue={initial.override_total_ttc ?? ""}
-            placeholder={calculated ? calculated.totalTTC.toFixed(2) : "auto"}
-          />
+        {remaining !== undefined && (
+          <p className="mt-3 text-sm font-semibold">
+            Reste a payer : {remaining.toFixed(2)} DH
+          </p>
+        )}
+        <div className={gridClass}>
+          <Field label="Prolongation" name="prolongation" defaultValue={initial.prolongation} />
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Retour prevu le" name="expected_return_date" type="date" defaultValue={toDateInputValue(initial.expected_return_date)} />
+            <Field label="a (heure)" name="expected_return_time" type="time" defaultValue={toTimeInputValue(initial.expected_return_time)} />
+          </div>
+        </div>
+      </section>
+
+      {/* ---- Carburant ---- */}
+      <section className={sectionClass}>
+        <h2 className={h2Class}>Carburant</h2>
+        <div className={gridClass}>
+          <label className={labelClass}>
+            <span className={spanClass}>Niveau de carburant</span>
+            <select name="fuel_level" defaultValue={initial.fuel_level} className={inputClass}>
+              <option value="">Non renseigne</option>
+              {FUEL_LEVELS.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className={labelClass}>
+            <span className={spanClass}>Type de carburant</span>
+            <select name="fuel_type" defaultValue={initial.fuel_type} className={inputClass}>
+              <option value="">Non renseigne</option>
+              {FUEL_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </section>
 
@@ -346,32 +427,6 @@ export default function ContractForm({
               </button>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ---- Equipement ---- */}
-      <section className={sectionClass}>
-        <h2 className={h2Class}>Equipement du vehicule</h2>
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {EQUIPMENT_ITEMS.map((item) => (
-            <label key={item.key} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name={`equipment__${item.key}`}
-                defaultChecked={Boolean(initial.equipment[item.key])}
-                className="h-4 w-4 rounded border-black/25"
-              />
-              {item.label}
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* ---- Validation ---- */}
-      <section className={sectionClass}>
-        <h2 className={h2Class}>Validation du contrat</h2>
-        <div className="mt-4 sm:max-w-xs">
-          <Field label="Fait a" name="fait_a" defaultValue={initial.fait_a} />
         </div>
       </section>
 

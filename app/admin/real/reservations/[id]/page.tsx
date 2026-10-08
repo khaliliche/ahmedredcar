@@ -8,7 +8,7 @@ import {
   getBlockingReservation,
 } from "@/lib/db";
 import { saveContractAction, generateContractAction } from "@/app/admin/real/actions";
-import { resolveBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
+import { resolveContractBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import ContractForm from "@/components/admin/ContractForm";
 import SendSigningLinkButton from "@/components/admin/SendSigningLinkButton";
@@ -55,7 +55,7 @@ export default async function ContractPage({
     price_monthly_30: vehicle?.price_monthly_30 ?? vehicle?.price_per_day ?? 0,
     min_rental_days: vehicle?.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS,
   };
-  const billing = resolveBilling(vehiclePricing, reservation);
+  const billing = resolveContractBilling(vehiclePricing, reservation);
 
   const showSteps =
     saved === "1" ||
@@ -94,48 +94,59 @@ export default async function ContractPage({
               vehicles={vehicles.map((v) => ({ id: v.id, label: `${v.brand} ${v.model}` }))}
               submit={saveContractAction.bind(null, reservation.id)}
               calculated={{
-                totalHT: billing.calculatedTotalHT,
-                tva: billing.calculatedTVA,
                 totalTTC: billing.calculatedTotalTTC,
+                days: billing.days,
+                dailyRate: billing.dailyRate,
               }}
               initial={{
                 vehicle_id: reservation.vehicle_id,
                 vehicle_label: reservation.vehicle_label,
                 registration_plate: reservation.registration_plate,
 
-                full_name: reservation.full_name,
-                age: reservation.age,
+                first_name: reservation.first_name,
+                last_name: reservation.last_name,
+                birth_date: reservation.birth_date,
                 cin_number: reservation.cin_number,
+                cin_issue_date: reservation.cin_issue_date,
                 license_issue_date: reservation.license_issue_date,
                 driver_address: reservation.driver_address,
                 driver_phone: reservation.driver_phone,
                 driver_license_number: reservation.driver_license_number,
                 driver_passport_number: reservation.driver_passport_number,
+                passport_issue_date: reservation.passport_issue_date,
 
                 has_second_driver: reservation.has_second_driver,
-                second_driver_full_name: reservation.second_driver_full_name,
+                second_driver_first_name: reservation.second_driver_first_name,
+                second_driver_last_name: reservation.second_driver_last_name,
+                second_driver_birth_date: reservation.second_driver_birth_date,
                 second_driver_address: reservation.second_driver_address,
                 second_driver_phone: reservation.second_driver_phone,
                 second_driver_cin_number: reservation.second_driver_cin_number,
+                second_driver_cin_issue_date: reservation.second_driver_cin_issue_date,
                 second_driver_license_number: reservation.second_driver_license_number,
+                second_driver_license_issue_date: reservation.second_driver_license_issue_date,
                 second_driver_passport_number: reservation.second_driver_passport_number,
+                second_driver_passport_issue_date: reservation.second_driver_passport_issue_date,
 
                 start_date: reservation.start_date,
                 end_date: reservation.end_date,
                 start_time: reservation.start_time,
                 end_time: reservation.end_time,
+                departure_place: reservation.departure_place,
+                return_place: reservation.return_place,
 
-                mileage_start: reservation.mileage_start,
-                mileage_end: reservation.mileage_end,
+                advance: Number(reservation.advance),
+                override_total_ttc:
+                  reservation.override_total_ttc != null
+                    ? Number(reservation.override_total_ttc)
+                    : null,
+                prolongation: reservation.prolongation,
+                expected_return_date: reservation.expected_return_date,
+                expected_return_time: reservation.expected_return_time,
+
+                fuel_level: reservation.fuel_level,
+                fuel_type: reservation.fuel_type,
                 damages: reservation.damages,
-                equipment: reservation.equipment,
-                delivery_fee: Number(reservation.delivery_fee),
-                pickup_fee: Number(reservation.pickup_fee),
-
-                fait_a: reservation.fait_a,
-                override_total_ht: reservation.override_total_ht,
-                override_tva: reservation.override_tva,
-                override_total_ttc: reservation.override_total_ttc,
               }}
             />
           </div>

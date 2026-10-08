@@ -1,48 +1,59 @@
-import {
-  sql,
-  isVehicleAvailable,
-  type DamageEntry,
-  type EquipmentChecklist,
-} from "@/lib/db";
+import { sql, isVehicleAvailable, type DamageEntry } from "@/lib/db";
 
 export type ManualContractInput = {
   vehicle_id: number;
   vehicle_label: string;
+  registration_plate: string;
 
+  // Premier conducteur (full_name and age are derived by the caller)
   full_name: string;
+  first_name: string;
+  last_name: string;
+  birth_date: string;
   age: number;
   cin_number: string;
+  cin_issue_date: string | null;
   license_issue_date: string;
   driver_address: string;
   driver_phone: string;
   driver_license_number: string;
   driver_passport_number: string;
+  passport_issue_date: string | null;
 
+  // 2eme conducteur
   has_second_driver: boolean;
   second_driver_full_name: string;
+  second_driver_first_name: string;
+  second_driver_last_name: string;
+  second_driver_birth_date: string | null;
   second_driver_address: string;
   second_driver_phone: string;
   second_driver_cin_number: string;
+  second_driver_cin_issue_date: string | null;
   second_driver_license_number: string;
+  second_driver_license_issue_date: string | null;
   second_driver_passport_number: string;
+  second_driver_passport_issue_date: string | null;
 
+  // Depart / retour
   start_date: string;
   end_date: string;
   start_time: string;
   end_time: string;
+  departure_place: string;
+  return_place: string;
 
-  registration_plate: string;
-  mileage_start: number | null;
-  mileage_end: number | null;
-  damages: DamageEntry[];
-  equipment: EquipmentChecklist;
-  delivery_fee: number;
-  pickup_fee: number;
-
-  fait_a: string;
-  override_total_ht: number | null;
-  override_tva: number | null;
+  // Facturation, prolongation, retour prevu
+  advance: number;
   override_total_ttc: number | null;
+  prolongation: string;
+  expected_return_date: string | null;
+  expected_return_time: string | null;
+
+  // Carburant & dommages
+  fuel_level: string;
+  fuel_type: string;
+  damages: DamageEntry[];
 };
 
 // Admin-created contract: inserts the reservation already confirmed and
@@ -64,28 +75,40 @@ export async function createManualContract(
   const result = await sql.begin(async (tx) => {
     const rows = await tx<{ id: number }[]>`
       INSERT INTO reservations
-        (vehicle_id, vehicle_label,
-         full_name, age, cin_number, license_issue_date,
-         driver_address, driver_phone, driver_license_number, driver_passport_number,
+        (vehicle_id, vehicle_label, registration_plate,
+         full_name, first_name, last_name, birth_date, age,
+         cin_number, cin_issue_date, license_issue_date,
+         driver_address, driver_phone, driver_license_number,
+         driver_passport_number, passport_issue_date,
          has_second_driver,
-         second_driver_full_name, second_driver_address, second_driver_phone,
-         second_driver_cin_number, second_driver_license_number, second_driver_passport_number,
+         second_driver_full_name, second_driver_first_name, second_driver_last_name,
+         second_driver_birth_date, second_driver_address, second_driver_phone,
+         second_driver_cin_number, second_driver_cin_issue_date,
+         second_driver_license_number, second_driver_license_issue_date,
+         second_driver_passport_number, second_driver_passport_issue_date,
          start_date, end_date, start_time, end_time,
-         registration_plate, mileage_start, mileage_end,
-         damages, equipment, delivery_fee, pickup_fee,
-         fait_a, override_total_ht, override_tva, override_total_ttc,
+         departure_place, return_place,
+         advance, override_total_ttc, prolongation,
+         expected_return_date, expected_return_time,
+         fuel_level, fuel_type, damages,
          status, source)
       VALUES
-        (${data.vehicle_id}, ${data.vehicle_label},
-         ${data.full_name}, ${data.age}, ${data.cin_number}, ${data.license_issue_date},
-         ${data.driver_address}, ${data.driver_phone}, ${data.driver_license_number}, ${data.driver_passport_number},
+        (${data.vehicle_id}, ${data.vehicle_label}, ${data.registration_plate},
+         ${data.full_name}, ${data.first_name}, ${data.last_name}, ${data.birth_date}, ${data.age},
+         ${data.cin_number}, ${data.cin_issue_date}, ${data.license_issue_date},
+         ${data.driver_address}, ${data.driver_phone}, ${data.driver_license_number},
+         ${data.driver_passport_number}, ${data.passport_issue_date},
          ${data.has_second_driver},
-         ${data.second_driver_full_name}, ${data.second_driver_address}, ${data.second_driver_phone},
-         ${data.second_driver_cin_number}, ${data.second_driver_license_number}, ${data.second_driver_passport_number},
+         ${data.second_driver_full_name}, ${data.second_driver_first_name}, ${data.second_driver_last_name},
+         ${data.second_driver_birth_date}, ${data.second_driver_address}, ${data.second_driver_phone},
+         ${data.second_driver_cin_number}, ${data.second_driver_cin_issue_date},
+         ${data.second_driver_license_number}, ${data.second_driver_license_issue_date},
+         ${data.second_driver_passport_number}, ${data.second_driver_passport_issue_date},
          ${data.start_date}, ${data.end_date}, ${data.start_time}, ${data.end_time},
-         ${data.registration_plate}, ${data.mileage_start}, ${data.mileage_end},
-         ${tx.json(data.damages)}, ${tx.json(data.equipment)}, ${data.delivery_fee}, ${data.pickup_fee},
-         ${data.fait_a}, ${data.override_total_ht}, ${data.override_tva}, ${data.override_total_ttc},
+         ${data.departure_place}, ${data.return_place},
+         ${data.advance}, ${data.override_total_ttc}, ${data.prolongation},
+         ${data.expected_return_date}, ${data.expected_return_time},
+         ${data.fuel_level}, ${data.fuel_type}, ${tx.json(data.damages)},
          'confirmed', 'walk_in')
       RETURNING id
     `;

@@ -1,65 +1,79 @@
 ﻿import { readFileSync } from "fs";
 import { join } from "path";
-import { Document, Page, View, Text, Image, StyleSheet, Svg, Rect } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Svg,
+  Rect,
+  Path,
+  Line,
+  Circle,
+} from "@react-pdf/renderer";
 import type { Reservation, Vehicle } from "@/lib/db";
-import { DAMAGE_TYPES, EQUIPMENT_ITEMS, resolveBilling, DEFAULT_MIN_RENTAL_DAYS } from "@/lib/contract";
+import {
+  DAMAGE_TYPES,
+  FUEL_LEVELS,
+  FUEL_TYPES,
+  resolveContractBilling,
+  DEFAULT_MIN_RENTAL_DAYS,
+} from "@/lib/contract";
 
+const BLUE = "#17327f";
+const RED = "#d1121f";
 const BLACK = "#000000";
 
-// Read the real logo once per server invocation and inline it as a data URI
-// so react-pdf doesn't need to resolve a filesystem path at render time.
-const LOGO_SRC = `data:image/png;base64,${readFileSync(
-  join(process.cwd(), "public/logo.png")
-).toString("base64")}`;
+// Serial number is fixed to "00" for now (decision: real numbering later).
+const CONTRACT_SERIAL = "00";
 
-// Agency stamp (cachet), always printed in the "Signature agence" box.
+// Agency stamp (cachet), printed inside the "Visa Direction" box.
 const CACHET_SRC = `data:image/png;base64,${readFileSync(
   join(process.cwd(), "public/cachet.png")
 ).toString("base64")}`;
 
 const styles = StyleSheet.create({
-  page: {
-    padding: 26,
-    fontSize: 8,
-    fontFamily: "Helvetica",
-    color: BLACK,
-  },
+  page: { padding: 24, fontSize: 7.5, fontFamily: "Helvetica", color: BLACK },
 
   // ---- Header ----
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    justifyContent: "space-between",
+    border: `1.4 solid ${BLUE}`,
+    borderRadius: 6,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginBottom: 8,
   },
-  logoImage: { width: 130, height: 48, objectFit: "contain" },
-  title: { flex: 1, fontSize: 21, fontWeight: 800, textAlign: "left", marginLeft: 16 },
+  title: { fontSize: 15, fontWeight: 700, color: BLUE },
+  serial: { fontSize: 15, fontWeight: 700, color: RED },
 
   // ---- Cards ----
-  twoColRow: { flexDirection: "row", gap: 10, marginBottom: 10 },
-  halfCol: { flex: 1 },
-  card: { border: "1.4 solid #000", borderRadius: 8 },
+  row: { flexDirection: "row", gap: 8, marginBottom: 8 },
+  col: { flex: 1 },
+  card: { border: `1.4 solid ${BLUE}`, borderRadius: 6 },
   cardHeader: {
-    backgroundColor: BLACK,
-    paddingVertical: 3.5,
-    borderTopLeftRadius: 7,
-    borderTopRightRadius: 7,
+    backgroundColor: BLUE,
+    paddingVertical: 3,
+    borderTopLeftRadius: 4.5,
+    borderTopRightRadius: 4.5,
   },
-  cardHeaderText: {
-    color: "#fff",
-    fontSize: 8.5,
-    fontWeight: 700,
-    textAlign: "center",
-  },
-  cardBody: { padding: 8 },
+  cardHeaderText: { color: "#fff", fontSize: 8, fontWeight: 700, textAlign: "center" },
+  cardBody: { padding: 7 },
+  box: { border: `1.4 solid ${BLUE}`, borderRadius: 6, padding: 7 },
+  boxTitle: { fontSize: 7.5, fontWeight: 700, color: BLUE },
 
   fieldRow: { flexDirection: "row", alignItems: "flex-end", marginBottom: 6.5 },
-  fieldLabel: { fontSize: 7.5, fontWeight: 700, marginRight: 4 },
+  fieldLabel: { fontSize: 7, fontWeight: 700, marginRight: 4 },
   fieldValue: {
     flex: 1,
     fontSize: 7.5,
     borderBottomWidth: 0.75,
     borderBottomStyle: "dotted",
-    borderBottomColor: "#000",
+    borderBottomColor: BLACK,
     paddingBottom: 1,
   },
   fieldValueStrong: {
@@ -68,60 +82,28 @@ const styles = StyleSheet.create({
     fontWeight: 700,
     borderBottomWidth: 0.75,
     borderBottomStyle: "dotted",
-    borderBottomColor: "#000",
+    borderBottomColor: BLACK,
     paddingBottom: 1,
   },
 
-  // ---- Row 3: validation + damages ----
-  row3: { flexDirection: "row", gap: 10, marginBottom: 10 },
-  validationCol: { width: "34%" },
-  damagesCol: { flex: 1 },
-  damagesBody: { flexDirection: "row", gap: 10 },
-  legendCol: { width: 78 },
-  legendItem: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
-  legendSymbol: { width: 12, fontSize: 9, fontWeight: 700, textAlign: "center" },
-  legendLabel: { fontSize: 7 },
-  legendCount: { fontSize: 6.5, color: "#555", marginTop: 6 },
-  carWrap: { flex: 1, alignItems: "center" },
-  fuelRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
-  fuelLabel: { fontSize: 6.5, marginRight: 2 },
-  checkboxRow: { flexDirection: "row", alignItems: "center", gap: 3 },
-  checkbox: { width: 7, height: 7, border: "1 solid #000" },
-  checkboxLabel: { fontSize: 7 },
+  sigBox: { height: 62 },
+  sigImage: { width: "100%", height: 40, objectFit: "contain", marginTop: 2 },
 
-  // ---- Row 4: equipment + signatures ----
-  row4: { flexDirection: "row", gap: 10, marginBottom: 10 },
-  equipCol: { flex: 1 },
-  equipGrid: { flexDirection: "row", flexWrap: "wrap" },
-  equipItem: {
-    width: "50%",
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 5,
-  },
-  equipCheckbox: { width: 7, height: 7, border: "1 solid #000", marginRight: 4 },
-  equipCheckboxChecked: { backgroundColor: BLACK },
-  equipLabel: { fontSize: 7 },
+  // ---- Bottom area ----
+  leftCol: { width: "52%" },
+  rightCol: { flex: 1 },
+  fuelBlock: { width: 128 },
+  carBox: { flex: 1, alignItems: "center", paddingVertical: 4 },
+  checkboxRow: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 5 },
+  checkbox: { width: 8, height: 8, border: `1 solid ${BLACK}` },
+  checkboxOn: { backgroundColor: BLACK },
+  checkboxLabel: { fontSize: 7, fontWeight: 700 },
+  legendRow: { flexDirection: "row", gap: 6, marginTop: 2 },
+  legendText: { fontSize: 6 },
 
-  sigCol: { width: "40%" },
-  nbText: { fontSize: 6.5, lineHeight: 1.4, color: "#222" },
-  nbLabel: { fontSize: 7.5, fontWeight: 700, marginBottom: 3 },
-
-  // ---- Signature strip ----
-  sigStripRow: { flexDirection: "row", gap: 10, marginBottom: 12 },
-  sigStripCol: { flex: 1, border: "1.4 solid #000", borderRadius: 8 },
-  sigStripHeader: {
-    backgroundColor: BLACK,
-    paddingVertical: 3,
-    borderTopLeftRadius: 7,
-    borderTopRightRadius: 7,
-  },
-  sigStripHeaderText: { color: "#fff", fontSize: 7.5, fontWeight: 700, textAlign: "center" },
-  sigStripBody: { height: 46 },
-  agencySigLabel: { fontSize: 7.5, fontWeight: 700, marginTop: 8, marginBottom: 3 },
-  agencySigBox: { height: 70, border: "0.75 solid #999", borderRadius: 4, position: "relative" },
-  cachetImage: { width: "100%", height: "100%", objectFit: "contain" },
-  agencySigOverlay: {
+  visaBox: { height: 78 },
+  visaImages: { position: "relative", flex: 1, marginTop: 2 },
+  visaImg: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -129,32 +111,31 @@ const styles = StyleSheet.create({
     height: "100%",
     objectFit: "contain",
   },
-  sigImage: { width: "100%", height: "100%", objectFit: "contain" },
-  auditLine: { fontSize: 6.5, color: "#333", marginBottom: 4 },
+
+  auditLine: { fontSize: 6.5, color: "#333", marginTop: 3 },
 
   // ---- Footer ----
   footer: {
     position: "absolute",
-    bottom: 18,
-    left: 26,
-    right: 26,
-    borderTop: "0.75 solid #999",
-    paddingTop: 6,
+    bottom: 16,
+    left: 24,
+    right: 24,
+    borderTop: `0.75 solid ${BLUE}`,
+    paddingTop: 5,
+    alignItems: "center",
   },
-  footerRow: { flexDirection: "row", justifyContent: "center", gap: 18, marginBottom: 2 },
-  footerItem: { flexDirection: "row", alignItems: "center", gap: 3 },
-  footerText: { fontSize: 7, fontWeight: 600 },
-  footerAddressRow: { flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 3, marginBottom: 2 },
-  footerAddressText: { fontSize: 6.5, color: "#333" },
-  footerRcText: { fontSize: 6.5, color: "#333", textAlign: "center" },
+  footerText: { fontSize: 6.5, color: BLUE, fontWeight: 700, textAlign: "center" },
 });
 
-function formatDate(value: string | Date) {
-  return new Date(value).toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+function formatDate(value?: string | Date | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function formatTime(value?: string | null) {
+  return value ? String(value).slice(0, 5) : "";
 }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -168,15 +149,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-function Field({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value?: string;
-  strong?: boolean;
-}) {
+function Field({ label, value, strong }: { label: string; value?: string; strong?: boolean }) {
   return (
     <View style={styles.fieldRow}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -185,15 +158,62 @@ function Field({
   );
 }
 
-// Real "AR CARS" logo, read from /public/logo.png.
-function LogoBadge() {
-  // eslint-disable-next-line jsx-a11y/alt-text
-  return <Image src={LOGO_SRC} style={styles.logoImage} />;
+// Fuel gauge: 0 (left) ... 1/2 (top) ... 1 (right). The needle is only drawn
+// when a level was selected by the admin.
+function FuelGauge({ level }: { level: string }) {
+  const cx = 55;
+  const cy = 52;
+  const r = 34;
+  const pt = (f: number, radius: number) => {
+    const t = Math.PI * (1 - f);
+    return { x: cx + radius * Math.cos(t), y: cy - radius * Math.sin(t) };
+  };
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+  const labels: { f: number; text: string; dx: number; dy: number }[] = [
+    { f: 0, text: "0", dx: -4, dy: 8 },
+    { f: 0.25, text: "1/4", dx: -6, dy: 0 },
+    { f: 0.5, text: "1/2", dx: 0, dy: -3 },
+    { f: 0.75, text: "3/4", dx: 6, dy: 0 },
+    { f: 1, text: "1", dx: 4, dy: 8 },
+  ];
+  const idx = (FUEL_LEVELS as readonly string[]).indexOf(level);
+  const needle = idx >= 0 ? pt(idx / 4, r - 6) : null;
+  return (
+    <Svg width={110} height={64} viewBox="0 0 110 64">
+      <Path
+        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+        stroke={BLACK}
+        strokeWidth={1}
+        fill="none"
+      />
+      {ticks.map((f) => {
+        const a = pt(f, r - 4);
+        const b = pt(f, r + 3);
+        return <Line key={f} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={BLACK} strokeWidth={1} />;
+      })}
+      {labels.map((l) => {
+        const p = pt(l.f, r + 9);
+        return (
+          <Text
+            key={l.text}
+            x={p.x + l.dx}
+            y={p.y + l.dy}
+            style={{ fontSize: 7, fontWeight: 700 }}
+            textAnchor="middle"
+          >
+            {l.text}
+          </Text>
+        );
+      })}
+      {needle ? (
+        <Line x1={cx} y1={cy} x2={needle.x} y2={needle.y} stroke={RED} strokeWidth={1.4} />
+      ) : null}
+      <Circle cx={cx} cy={cy} r={2.5} fill={BLACK} />
+    </Svg>
+  );
 }
 
-// Simplified top-down car outline used as the damage diagram. Markers use
-// the same symbols as the printed legend (/ Éraflure, X Bosse, O Manque)
-// placed at the approximate zone reported by the admin.
+// Simplified top-down car outline used as the damage diagram.
 const ZONE_POSITIONS: Record<string, { x: number; y: number }> = {
   Avant: { x: 55, y: 13 },
   Arrière: { x: 55, y: 139 },
@@ -211,41 +231,66 @@ function symbolFor(type: string) {
 
 function CarDiagram({ damages }: { damages: { zone: string; type: string }[] }) {
   return (
-    <Svg width={120} height={152} viewBox="0 0 120 152">
-      {/* body */}
+    <Svg width={104} height={132} viewBox="0 0 120 152">
       <Rect x={26} y={8} width={58} height={136} rx={18} fill="#fafafa" stroke="#333" strokeWidth={1.1} />
-      {/* windshield / rear window */}
       <Rect x={33} y={22} width={44} height={20} rx={5} fill="#fff" stroke="#bbb" strokeWidth={0.6} />
       <Rect x={33} y={108} width={44} height={20} rx={5} fill="#fff" stroke="#bbb" strokeWidth={0.6} />
-      {/* roof line */}
       <Rect x={30} y={46} width={50} height={58} rx={8} fill="none" stroke="#ccc" strokeWidth={0.6} />
-      {/* wheels */}
       <Rect x={20} y={32} width={7} height={16} rx={2} fill="#666" />
       <Rect x={83} y={32} width={7} height={16} rx={2} fill="#666" />
       <Rect x={20} y={104} width={7} height={16} rx={2} fill="#666" />
       <Rect x={83} y={104} width={7} height={16} rx={2} fill="#666" />
-      {/* side mirrors */}
       <Rect x={22} y={50} width={5} height={7} rx={1.5} fill="#999" />
       <Rect x={83} y={50} width={5} height={7} rx={1.5} fill="#999" />
-      {/* tick marks connecting side-zone labels to the body */}
       <Rect x={20} y={75.5} width={6} height={1} fill="#666" />
       <Rect x={84} y={75.5} width={6} height={1} fill="#666" />
       {damages.map((d, i) => {
         const pos = ZONE_POSITIONS[d.zone];
         if (!pos) return null;
         return (
-          <Text
-            key={i}
-            x={pos.x}
-            y={pos.y}
-            style={{ fontSize: 11, fontWeight: 700 }}
-            textAnchor="middle"
-          >
+          <Text key={i} x={pos.x} y={pos.y} style={{ fontSize: 11, fontWeight: 700 }} textAnchor="middle">
             {symbolFor(d.type)}
           </Text>
         );
       })}
     </Svg>
+  );
+}
+
+function splitName(full: string) {
+  const parts = (full ?? "").trim().split(/\s+/).filter(Boolean);
+  return { first: parts[0] ?? "", last: parts.slice(1).join(" ") };
+}
+
+type DriverView = {
+  first: string;
+  last: string;
+  cin: string;
+  cinIssue: string;
+  birth: string;
+  license: string;
+  licenseIssue: string;
+  address: string;
+  phone: string;
+  passport: string;
+  passportIssue: string;
+};
+
+function DriverCard({ title, d }: { title: string; d: DriverView }) {
+  return (
+    <Card title={title}>
+      <Field label="PRÉNOM :" value={d.first} />
+      <Field label="NOM :" value={d.last} />
+      <Field label="C.I.N. :" value={d.cin} />
+      <Field label="Délivré le :" value={d.cinIssue} />
+      <Field label="Date de Naissance :" value={d.birth} />
+      <Field label="Permis de conduire N° :" value={d.license} />
+      <Field label="Délivré le :" value={d.licenseIssue} />
+      <Field label="ADRESSE AU MAROC :" value={d.address} />
+      <Field label="TEL :" value={d.phone} />
+      <Field label="Passeport N° :" value={d.passport} />
+      <Field label="Délivré le :" value={d.passportIssue} />
+    </Card>
   );
 }
 
@@ -262,247 +307,177 @@ export function ContractDocument({
     price_monthly_30: vehicle?.price_monthly_30 ?? vehicle?.price_per_day ?? 0,
     min_rental_days: vehicle?.min_rental_days ?? DEFAULT_MIN_RENTAL_DAYS,
   };
-  const billing = resolveBilling(vehiclePricing, reservation);
-  const contractNumber = reservation.contract_number ?? "—";
+  const billing = resolveContractBilling(vehiclePricing, reservation);
+  const r = reservation;
+
+  const main = splitName(r.full_name);
+  const second = splitName(r.second_driver_full_name);
+  const d1: DriverView = {
+    first: r.first_name || main.first,
+    last: r.last_name || main.last,
+    cin: r.cin_number,
+    cinIssue: formatDate(r.cin_issue_date),
+    birth: formatDate(r.birth_date),
+    license: r.driver_license_number,
+    licenseIssue: formatDate(r.license_issue_date),
+    address: r.driver_address,
+    phone: r.driver_phone,
+    passport: r.driver_passport_number,
+    passportIssue: formatDate(r.passport_issue_date),
+  };
+  const has2 = r.has_second_driver;
+  const d2: DriverView = {
+    first: has2 ? r.second_driver_first_name || second.first : "",
+    last: has2 ? r.second_driver_last_name || second.last : "",
+    cin: has2 ? r.second_driver_cin_number : "",
+    cinIssue: has2 ? formatDate(r.second_driver_cin_issue_date) : "",
+    birth: has2 ? formatDate(r.second_driver_birth_date) : "",
+    license: has2 ? r.second_driver_license_number : "",
+    licenseIssue: has2 ? formatDate(r.second_driver_license_issue_date) : "",
+    address: has2 ? r.second_driver_address : "",
+    phone: has2 ? r.second_driver_phone : "",
+    passport: has2 ? r.second_driver_passport_number : "",
+    passportIssue: has2 ? formatDate(r.second_driver_passport_issue_date) : "",
+  };
+
+  const money = (n: number) => `${n.toFixed(2)} DH`;
 
   return (
-    <Document title={`Contrat de location ${contractNumber}`}>
+    <Document title={`Contrat ${CONTRACT_SERIAL}`}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <LogoBadge />
-          <Text style={styles.title}>CONTRAT DE LOCATION</Text>
+          <Text style={styles.title}>CONTRAT</Text>
+          <Text style={styles.serial}>{CONTRACT_SERIAL}</Text>
         </View>
 
-        {/* Row 1 — Conducteur / Autre conducteur */}
-        <View style={styles.twoColRow}>
-          <View style={styles.halfCol}>
-            <Card title="Conducteur">
-              <Field label="Nom & Prénom" value={reservation.full_name} />
-              <Field label="Adresse" value={reservation.driver_address} />
-              <Field label="Téléphone" value={reservation.driver_phone} />
-              <Field label="N° C.I.N" value={reservation.cin_number} />
-              <Field label="N° permis" value={reservation.driver_license_number} />
-              <Field label="N° passeport" value={reservation.driver_passport_number} />
-            </Card>
+        {/* Premier / 2ème conducteur */}
+        <View style={styles.row}>
+          <View style={styles.col}>
+            <DriverCard title="Premier Conducteur" d={d1} />
           </View>
-          <View style={styles.halfCol}>
-            <Card title="Autre conducteur">
-              <Field
-                label="Nom & Prénom"
-                value={reservation.has_second_driver ? reservation.second_driver_full_name : ""}
-              />
-              <Field
-                label="Adresse"
-                value={reservation.has_second_driver ? reservation.second_driver_address : ""}
-              />
-              <Field
-                label="Téléphone"
-                value={reservation.has_second_driver ? reservation.second_driver_phone : ""}
-              />
-              <Field
-                label="N° C.I.N"
-                value={reservation.has_second_driver ? reservation.second_driver_cin_number : ""}
-              />
-              <Field
-                label="N° permis"
-                value={
-                  reservation.has_second_driver ? reservation.second_driver_license_number : ""
-                }
-              />
-              <Field
-                label="N° passeport"
-                value={
-                  reservation.has_second_driver ? reservation.second_driver_passport_number : ""
-                }
-              />
-            </Card>
+          <View style={styles.col}>
+            <DriverCard title="2ème Conducteur" d={d2} />
           </View>
         </View>
 
-        {/* Row 2 — Véhicule / Facturation */}
-        <View style={styles.twoColRow}>
-          <View style={styles.halfCol}>
-            <Card title="Véhicule">
-              <Field label="Marque" value={vehicle ? `${vehicle.brand} ${vehicle.model}` : reservation.vehicle_label} />
-              <Field label="Immatriculation" value={reservation.registration_plate} />
-              <Field
-                label="Départ (jour et heure)"
-                value={`${formatDate(reservation.start_date)} à ${reservation.start_time}`}
-              />
-              <Field
-                label="Retour (jour et heure)"
-                value={`${formatDate(reservation.end_date)} à ${reservation.end_time}`}
-              />
-              <Field label="Retour Finale" />
-              <Field
-                label="Km"
-                value={
-                  reservation.mileage_start != null || reservation.mileage_end != null
-                    ? `${reservation.mileage_start ?? "—"} - ${reservation.mileage_end ?? "—"}`
-                    : ""
-                }
-              />
-            </Card>
+        {/* Signatures */}
+        <View style={styles.row}>
+          <View style={[styles.col, styles.box, styles.sigBox]}>
+            <Text style={styles.boxTitle}>Signature 1</Text>
+            <Text style={styles.boxTitle}>Conducteur</Text>
+            {r.signature_data ? (
+              // eslint-disable-next-line jsx-a11y/alt-text
+              <Image src={r.signature_data} style={styles.sigImage} />
+            ) : null}
           </View>
-          <View style={styles.halfCol}>
-            <Card title="Facturation">
-              <Field label="Nombre de jours" value={`${billing.days}`} />
-              <Field label="Frais de livraison" value={`${Number(reservation.delivery_fee).toFixed(2)} DH`} />
-              <Field label="Frais de reprise" value={`${Number(reservation.pickup_fee).toFixed(2)} DH`} />
-              <Field label="Total Hors Taxes" value={`${billing.totalHT.toFixed(2)} DH`} />
-              <Field label="T.V.A 20%" value={`${billing.tva.toFixed(2)} DH`} />
-              <Field label="Total à payer" value={`${billing.totalTTC.toFixed(2)} DH`} strong />
-            </Card>
+          <View style={[styles.col, styles.box, styles.sigBox]}>
+            <Text style={styles.boxTitle}>Signature 2</Text>
+            <Text style={styles.boxTitle}>Conducteur</Text>
+            {r.signature_2_data ? (
+              // eslint-disable-next-line jsx-a11y/alt-text
+              <Image src={r.signature_2_data} style={styles.sigImage} />
+            ) : null}
           </View>
         </View>
 
-        {/* Row 3 — Validation du contrat / Dommages */}
-        <View style={styles.row3}>
-          <View style={styles.validationCol}>
-            <Card title="Validation du contrat">
-              <Field label="Fait à" value={reservation.fait_a} />
-              <Field
-                label="Date"
-                value={
-                  reservation.contract_generated_at
-                    ? formatDate(reservation.contract_generated_at)
-                    : ""
-                }
-              />
-              <Text style={styles.agencySigLabel}>Signature agence</Text>
-              <View style={styles.agencySigBox}>
+        {/* Départ / Retour / Facturation / Carburant / Dommages / Visa */}
+        <View style={styles.row}>
+          <View style={styles.leftCol}>
+            <View style={[styles.row, { marginBottom: 8 }]}>
+              <View style={styles.col}>
+                <Card title="DEPART">
+                  <Field label="Le :" value={formatDate(r.start_date)} />
+                  <Field label="H :" value={formatTime(r.start_time)} />
+                  <Field label="Lieu de livraison :" value={r.departure_place} />
+                </Card>
+              </View>
+              <View style={styles.col}>
+                <Card title="RETOUR">
+                  <Field label="Le :" value={formatDate(r.end_date)} />
+                  <Field label="H :" value={formatTime(r.end_time)} />
+                  <Field label="Lieu de livraison :" value={r.return_place} />
+                </Card>
+              </View>
+            </View>
+
+            <View style={[styles.row, { marginBottom: 0 }]}>
+              <View style={styles.fuelBlock}>
+                <FuelGauge level={r.fuel_level} />
+                <Text style={[styles.checkboxLabel, { marginTop: 4 }]}>CARBURANT :</Text>
+                {FUEL_TYPES.map((t) => (
+                  <View key={t.value} style={styles.checkboxRow}>
+                    <View style={[styles.checkbox, ...(r.fuel_type === t.value ? [styles.checkboxOn] : [])]} />
+                    <Text style={styles.checkboxLabel}>{t.label}</Text>
+                  </View>
+                ))}
+              </View>
+              <View style={[styles.box, styles.carBox]}>
+                <CarDiagram damages={r.damages} />
+                <View style={styles.legendRow}>
+                  {DAMAGE_TYPES.map((t) => (
+                    <Text key={t.value} style={styles.legendText}>
+                      {t.symbol} {t.value}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.rightCol}>
+            <View style={[styles.box, { marginBottom: 8 }]}>
+              <Field label="Type de véhicule :" value={vehicle ? `${vehicle.brand} ${vehicle.model}` : r.vehicle_label} />
+              <Field label="Matricule :" value={r.registration_plate} />
+              <Field label="Nombre de jours :" value={`${billing.days}`} />
+              <Field label="Prix par jours :" value={money(billing.dailyRate)} />
+              <Field label="Total TTC :" value={money(billing.totalTTC)} strong />
+              <Field label="Avance :" value={money(billing.advance)} />
+              <Field label="Reste à payer :" value={money(billing.remaining)} strong />
+            </View>
+            <View style={[styles.box, { marginBottom: 8 }]}>
+              <Field label="Prolongation :" value={r.prolongation} />
+            </View>
+            <View style={[styles.box, { marginBottom: 8 }]}>
+              <View style={[styles.fieldRow, { marginBottom: 0 }]}>
+                <Text style={styles.fieldLabel}>Retour Prévu le :</Text>
+                <Text style={[styles.fieldValue, { flex: 2 }]}>{formatDate(r.expected_return_date) || " "}</Text>
+                <Text style={[styles.fieldLabel, { marginLeft: 4 }]}>à :</Text>
+                <Text style={styles.fieldValue}>{formatTime(r.expected_return_time) || " "}</Text>
+              </View>
+            </View>
+            <View style={[styles.box, styles.visaBox]}>
+              <Text style={styles.boxTitle}>Visa Direction :</Text>
+              <View style={styles.visaImages}>
                 {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                <Image src={CACHET_SRC} style={styles.cachetImage} />
-                {reservation.admin_signature_data ? (
+                <Image src={CACHET_SRC} style={styles.visaImg} />
+                {r.admin_signature_data ? (
                   // eslint-disable-next-line jsx-a11y/alt-text
-                  <Image src={reservation.admin_signature_data} style={styles.agencySigOverlay} />
+                  <Image src={r.admin_signature_data} style={styles.visaImg} />
                 ) : null}
               </View>
-            </Card>
-          </View>
-
-          <View style={styles.damagesCol}>
-            <Card title="Dommages">
-              <View style={styles.damagesBody}>
-                <View style={styles.legendCol}>
-                  {DAMAGE_TYPES.map((t) => (
-                    <View key={t.value} style={styles.legendItem}>
-                      <Text style={styles.legendSymbol}>{t.symbol}</Text>
-                      <Text style={styles.legendLabel}>{t.value}</Text>
-                    </View>
-                  ))}
-                  <Text style={styles.legendCount}>
-                    Nombre : {reservation.damages.length}
-                  </Text>
-                  <View style={styles.fuelRow}>
-                    <View style={styles.checkboxRow}>
-                      <View style={styles.checkbox} />
-                      <Text style={styles.checkboxLabel}>Diesel</Text>
-                    </View>
-                    <View style={styles.checkboxRow}>
-                      <View style={styles.checkbox} />
-                      <Text style={styles.checkboxLabel}>Essence</Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.carWrap}>
-                  <CarDiagram damages={reservation.damages} />
-                </View>
-              </View>
-            </Card>
-          </View>
-        </View>
-
-        {/* Row 4 — Équipement du véhicule / Signatures */}
-        <View style={styles.row4}>
-          <View style={styles.equipCol}>
-            <Card title="Équipement du véhicule">
-              <View style={styles.equipGrid}>
-                {EQUIPMENT_ITEMS.map((item) => {
-                  const checked = Boolean(reservation.equipment[item.key]);
-                  return (
-                    <View key={item.key} style={styles.equipItem}>
-                      <View style={[styles.equipCheckbox, ...(checked ? [styles.equipCheckboxChecked] : [])]} />
-                      <Text style={styles.equipLabel}>{item.label}</Text>
-                    </View>
-                  );
-                })}
-              </View>
-            </Card>
-          </View>
-
-          <View style={styles.sigCol}>
-            <Card title="Signatures">
-              <Text style={styles.nbLabel}>NB :</Text>
-              <Text style={styles.nbText}>
-                Ce contrat ne vaut en aucun cas comme facture. Je déclare avoir pris connaissance
-                de toutes les conditions stipulées au verso de ce contrat, et les approuver et
-                être seul responsable à la législation relative à la circulation routière.
-              </Text>
-            </Card>
-          </View>
-        </View>
-
-        {/* Signature strip */}
-        <View style={styles.sigStripRow}>
-          <View style={styles.sigStripCol}>
-            <View style={styles.sigStripHeader}>
-              <Text style={styles.sigStripHeaderText}>1er conducteur</Text>
-            </View>
-            <View style={styles.sigStripBody}>
-              {reservation.signature_data ? (
-                // react-pdf Image, not an HTML img; this component has no alt prop.
-                // eslint-disable-next-line jsx-a11y/alt-text
-                <Image src={reservation.signature_data} style={styles.sigImage} />
-              ) : null}
-            </View>
-          </View>
-          <View style={styles.sigStripCol}>
-            <View style={styles.sigStripHeader}>
-              <Text style={styles.sigStripHeaderText}>2ème conducteur</Text>
-            </View>
-            <View style={styles.sigStripBody}>
-              {reservation.signature_2_data ? (
-                // eslint-disable-next-line jsx-a11y/alt-text
-                <Image src={reservation.signature_2_data} style={styles.sigImage} />
-              ) : null}
             </View>
           </View>
         </View>
 
-        {reservation.signed_at && (
+        {r.signed_at && (
           <Text style={styles.auditLine}>
-            Signé électroniquement le{" "}
-            {new Date(reservation.signed_at).toLocaleString("fr-FR")} par{" "}
-            {reservation.signer_name}{" "}
-            (IP: {reservation.signer_ip})
+            Signé électroniquement le {new Date(r.signed_at).toLocaleString("fr-FR")} par{" "}
+            {r.signer_name} (IP: {r.signer_ip})
           </Text>
         )}
-        {reservation.signed_2_at && (
+        {r.signed_2_at && (
           <Text style={styles.auditLine}>
             2ème conducteur signé électroniquement le{" "}
-            {new Date(reservation.signed_2_at).toLocaleString("fr-FR")} par{" "}
-            {reservation.signer_2_name}{" "}
-            (IP: {reservation.signer_2_ip})
+            {new Date(r.signed_2_at).toLocaleString("fr-FR")} par {r.signer_2_name} (IP:{" "}
+            {r.signer_2_ip})
           </Text>
         )}
 
-        {/* Footer — pinned to the bottom of the page, no longer squeezed into the signature row */}
         <View style={styles.footer}>
-          <View style={styles.footerRow}>
-            <View style={styles.footerItem}>
-              <Text style={styles.footerText}>Tél : +212 664 883 106</Text>
-            </View>
-            <View style={styles.footerItem}>
-              <Text style={styles.footerText}>+212 661 412 759</Text>
-            </View>
-          </View>
-          <View style={styles.footerAddressRow}>
-            <Text style={styles.footerAddressText}>
-              20, Rue Ghana App N°2 1er étage Diour Jamaa Rabat
-            </Text>
-          </View>
-          <Text style={styles.footerRcText}>RC 195159   Ice 003887345000050</Text>
+          <Text style={styles.footerText}>
+            20, Rue Ghana App N°2 1er étage Diour Jamaa Rabat — Tél : +212 664 883 106 / +212 661 412 759
+          </Text>
+          <Text style={styles.footerText}>RC 195159   Ice 003887345000050</Text>
         </View>
       </Page>
     </Document>

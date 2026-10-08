@@ -133,3 +133,55 @@ export function resolveBilling(
     isOverridden: overrideHT != null || overrideTVA != null || overrideTTC != null,
   };
 }
+
+// ---- Contract template v2 ----------------------------------------------
+
+export const FUEL_LEVELS = ["0", "1/4", "1/2", "3/4", "1"] as const;
+
+export const FUEL_TYPES = [
+  { value: "super", label: "SUPER SANS PLOMB" },
+  { value: "gasoil", label: "GASOIL" },
+] as const;
+
+export function joinName(first?: string | null, last?: string | null): string {
+  return [first, last].map((s) => (s ?? "").trim()).filter(Boolean).join(" ");
+}
+
+export function ageFromBirthDate(birthDate: string): number {
+  const b = new Date(birthDate);
+  const now = new Date();
+  let age = now.getFullYear() - b.getFullYear();
+  const m = now.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < b.getDate())) age--;
+  return age;
+}
+
+// Figures printed on the new contract: prix/jour, nombre de jours, Total TTC,
+// Avance, Reste à payer. Only Total TTC can be overridden by the admin.
+export function resolveContractBilling(
+  vehicle: VehiclePricing,
+  input: {
+    start_date: string;
+    end_date: string;
+    advance?: number | string | null;
+    override_total_ttc?: number | string | null;
+  }
+) {
+  const rental = calculateBilling(vehicle, input.start_date, input.end_date);
+  const calculatedTotalTTC = rental.total;
+  const override =
+    input.override_total_ttc != null && input.override_total_ttc !== ""
+      ? Number(input.override_total_ttc)
+      : null;
+  const totalTTC = override ?? calculatedTotalTTC;
+  const advance = Number(input.advance) || 0;
+  return {
+    days: rental.days,
+    dailyRate: rental.dailyRate,
+    calculatedTotalTTC,
+    totalTTC,
+    advance,
+    remaining: Math.max(totalTTC - advance, 0),
+    isOverridden: override != null,
+  };
+}
