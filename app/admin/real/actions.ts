@@ -213,7 +213,22 @@ export async function updateVehicleAction(id: number, formData: FormData) {
 
 export async function deleteVehicleAction(id: number) {
   await requireAdmin();
-  await deleteVehicle(id);
+
+  try {
+    await deleteVehicle(id);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("utilisé par une ou plusieurs réservations")
+    ) {
+      throw new Error(
+        "Ce véhicule ne peut pas être supprimé car il est utilisé par une réservation."
+      );
+    }
+
+    throw error;
+  }
+
   revalidateAll();
 }
 

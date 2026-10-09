@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
 
 CREATE TABLE IF NOT EXISTS reservations (
   id SERIAL PRIMARY KEY,
-  vehicle_id INTEGER REFERENCES vehicles(id) ON DELETE SET NULL,
+  vehicle_id INTEGER REFERENCES vehicles(id) ON DELETE RESTRICT,
   vehicle_label TEXT NOT NULL,
 
   -- Driver (main)
@@ -149,3 +149,16 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   count INTEGER NOT NULL DEFAULT 0,
   window_start TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Contract audit trail
+CREATE TABLE IF NOT EXISTS contract_audit (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  reservation_id bigint NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
+  actor TEXT NOT NULL DEFAULT 'admin',
+  action TEXT NOT NULL,
+  details JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS contract_audit_reservation_idx
+  ON contract_audit (reservation_id, created_at);
+  

@@ -219,7 +219,22 @@ export async function updateVehicle(
 }
 
 export async function deleteVehicle(id: number) {
-  await sql`DELETE FROM vehicles WHERE id = ${id}`;
+  const referenced = await sql<{ count: string }[]>`
+    SELECT COUNT(*)::text AS count
+    FROM reservations
+    WHERE vehicle_id = ${id}
+  `;
+
+  if (Number(referenced[0]?.count ?? 0) > 0) {
+    throw new Error(
+      "Impossible de supprimer ce véhicule : il est utilisé par une ou plusieurs réservations."
+    );
+  }
+
+  await sql`
+    DELETE FROM vehicles
+    WHERE id = ${id}
+  `;
 }
 
 export type CreateReservationInput = {

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getVehicles, getReservations } from "@/lib/db";
 import { deleteVehicleAction } from "@/app/admin/real/actions";
-import { Car, CalendarClock, Wallet, Plus, Pencil, Trash2 } from "lucide-react";
+import { Car, CalendarClock, Wallet, Plus, Pencil } from "lucide-react";
+import DeleteVehicleButton from "@/components/admin/DeleteVehicleButton";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export default async function AdminDashboard() {
@@ -98,15 +99,11 @@ export default async function AdminDashboard() {
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Link>
-                      <form action={deleteVehicleAction.bind(null, vehicle.id)}>
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-red-200 p-2 text-red-600 transition-colors hover:bg-red-50"
-                          aria-label="Supprimer"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </form>
+                      <form>
+  <DeleteVehicleButton
+    action={deleteVehicleAction.bind(null, vehicle.id)}
+  />
+</form>
                     </div>
                   </div>
                 </div>
