@@ -151,6 +151,42 @@ export async function getVehicleById(id: number): Promise<Vehicle | null> {
   return rows[0] ?? null;
 }
 
+function vehicleSlugBase(brand: string, model: string): string {
+  return `${brand}-${model}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+async function getUniqueVehicleSlug(
+  base: string,
+  excludeId?: number
+): Promise<string> {
+  const exact = await sql<{ slug: string }[]>`
+    SELECT slug
+    FROM vehicles
+    WHERE slug = ${base}
+      ${excludeId ? sql`AND id <> ${excludeId}` : sql``}
+    LIMIT 1
+  `;
+
+  if (exact.length === 0) return base;
+
+  const existing = await sql<{ slug: string }[]>`
+    SELECT slug
+    FROM vehicles
+    WHERE slug LIKE ${`${base}-%`}
+      ${excludeId ? sql`AND id <> ${excludeId}` : sql``}
+  `;
+
+  const used = new Set(existing.map((row) => row.slug));
+  let n = 2;
+  while (used.has(`${base}-${n}`)) n += 1;
+  return `${base}-${n}`;
+}
+
 export async function createVehicle(data: {
   brand: string;
   model: string;
@@ -158,29 +194,44 @@ export async function createVehicle(data: {
   description: string;
   image_url: string;
 }): Promise<Vehicle> {
-  const slug = `${data.brand}-${data.model}`
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
+  const baseSlug = vehicleSlugBase(data.brand, data.model);
+  let slug = await getUniqueVehicleSlug(baseSlug);
   const pricing = getTieredPricing(data.price_per_day);
 
-  const rows = await sql<Vehicle[]>`
-    INSERT INTO vehicles (
-      slug, brand, model, price_per_day,
-      price_extended_15, price_monthly_30,
-      description, image_url
-    )
-    VALUES (
-      ${slug}, ${data.brand}, ${data.model}, ${data.price_per_day},
-      ${pricing.price_extended_15}, ${pricing.price_monthly_30},
-      ${data.description}, ${data.image_url}
-    )
-    RETURNING *
-  `;
-  return rows[0];
+  try {
+    const rows = await sql<Vehicle[]>`
+      INSERT INTO vehicles (
+        slug, brand, model, price_per_day,
+        price_extended_15, price_monthly_30,
+        description, image_url
+      )
+      VALUES (
+        ${slug}, ${data.brand}, ${data.model}, ${data.price_per_day},
+        ${pricing.price_extended_15}, ${pricing.price_monthly_30},
+        ${data.description}, ${data.image_url}
+      )
+      RETURNING *
+    `;
+    return rows[0];
+  } catch (err) {
+    if (!isUniqueViolation(err, "vehicles_slug_key")) throw err;
+
+    slug = `${baseSlug}-${randomUUID().slice(0, 8)}`;
+    const rows = await sql<Vehicle[]>`
+      INSERT INTO vehicles (
+        slug, brand, model, price_per_day,
+        price_extended_15, price_monthly_30,
+        description, image_url
+      )
+      VALUES (
+        ${slug}, ${data.brand}, ${data.model}, ${data.price_per_day},
+        ${pricing.price_extended_15}, ${pricing.price_monthly_30},
+        ${data.description}, ${data.image_url}
+      )
+      RETURNING *
+    `;
+    return rows[0];
+  }
 }
 
 export async function updateVehicle(
@@ -193,29 +244,44 @@ export async function updateVehicle(
     image_url: string;
   }
 ): Promise<Vehicle> {
-  const slug = `${data.brand}-${data.model}`
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-
+  const baseSlug = vehicleSlugBase(data.brand, data.model);
+  const slug = await getUniqueVehicleSlug(baseSlug, id);
   const pricing = getTieredPricing(data.price_per_day);
 
-  const rows = await sql<Vehicle[]>`
-    UPDATE vehicles
-    SET slug = ${slug},
-        brand = ${data.brand},
-        model = ${data.model},
-        price_per_day = ${data.price_per_day},
-        price_extended_15 = ${pricing.price_extended_15},
-        price_monthly_30 = ${pricing.price_monthly_30},
-        description = ${data.description},
-        image_url = ${data.image_url}
-    WHERE id = ${id}
-    RETURNING *
-  `;
-  return rows[0];
+  try {
+    const rows = await sql<Vehicle[]>`
+      UPDATE vehicles
+      SET slug = ${slug},
+          brand = ${data.brand},
+          model = ${data.model},
+          price_per_day = ${data.price_per_day},
+          price_extended_15 = ${pricing.price_extended_15},
+          price_monthly_30 = ${pricing.price_monthly_30},
+          description = ${data.description},
+          image_url = ${data.image_url}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    return rows[0];
+  } catch (err) {
+    if (!isUniqueViolation(err, "vehicles_slug_key")) throw err;
+
+    const fallbackSlug = `${baseSlug}-${randomUUID().slice(0, 8)}`;
+    const rows = await sql<Vehicle[]>`
+      UPDATE vehicles
+      SET slug = ${fallbackSlug},
+          brand = ${data.brand},
+          model = ${data.model},
+          price_per_day = ${data.price_per_day},
+          price_extended_15 = ${pricing.price_extended_15},
+          price_monthly_30 = ${pricing.price_monthly_30},
+          description = ${data.description},
+          image_url = ${data.image_url}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    return rows[0];
+  }
 }
 
 export async function deleteVehicle(id: number) {

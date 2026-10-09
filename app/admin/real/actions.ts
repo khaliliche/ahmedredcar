@@ -553,8 +553,11 @@ export async function generateContractAction(id: number) {
   if (!reservation.contract_number) {
     const result = await confirmReservation(id);
     if (!result.ok) {
-      // Car got booked in the meantime: the contract page shows the red message.
-      redirect(`/admin/real/reservations/${id}`);
+      if (result.reason === "conflict") {
+        redirect(`/admin/real/reservations/${id}?error=conflict`);
+      }
+
+      redirect(`/admin/real/reservations/${id}?error=notFound`);
     }
   }
 

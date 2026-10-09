@@ -26,10 +26,10 @@ export default async function ContractPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
   const { id } = await params;
-  const { saved } = await searchParams;
+  const { saved, error } = await searchParams;
   const reservation = await getReservationById(Number(id));
 
   if (!reservation) {
@@ -79,8 +79,27 @@ export default async function ContractPage({
           </Link>
 
           <h1 className="font-display text-2xl font-extrabold text-[var(--color-ink)]">
-            {"R\u00e9servation"} #{reservation.id} - {reservation.full_name}
+            {"Réservation"} #{reservation.id} - {reservation.full_name}
           </h1>
+
+          {error === "conflict" && (
+            <div
+              role="alert"
+              className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+            >
+              Impossible de confirmer cette réservation : cette voiture est déjà
+              réservée pour ces dates. Aucun contrat n&apos;a été généré.
+            </div>
+          )}
+
+          {error === "notFound" && (
+            <div
+              role="alert"
+              className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"
+            >
+              Cette réservation n&apos;existe plus.
+            </div>
+          )}
           {reservation.contract_number && (
             <p className="mt-1 text-xs font-semibold text-black/40">
               Contrat {reservation.contract_number}
