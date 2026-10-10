@@ -12,7 +12,20 @@ export default function AboutStorySection() {
 
   return (
     <section className="relative overflow-hidden bg-[var(--color-cream)] py-20">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:px-10">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 px-6 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:px-10">
+        {/* Titre - phone uniquement, au-dessus de l'image */}
+        <div className="sm:hidden">
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-red-primary)]">
+            {t("aboutStory.eyebrow")}
+          </span>
+
+          <h2 className="mt-3 font-display text-3xl font-extrabold text-[var(--color-ink)]">
+            {t("aboutStory.title")}
+          </h2>
+
+          <span className="mt-4 block h-1 w-16 rounded-full bg-[var(--color-red-primary)]" />
+        </div>
+
         {/* Carte logo (remplace la vidéo) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -50,17 +63,19 @@ export default function AboutStorySection() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7, ease: "easeOut", delay: 0.15 }}
         >
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-red-primary)]">
-            {t("aboutStory.eyebrow")}
-          </span>
+          <div className="hidden sm:block">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--color-red-primary)]">
+              {t("aboutStory.eyebrow")}
+            </span>
 
-          <h2 className="mt-3 font-display text-3xl font-extrabold text-[var(--color-ink)] sm:text-4xl">
-            {t("aboutStory.title")}
-          </h2>
+            <h2 className="mt-3 font-display text-3xl font-extrabold text-[var(--color-ink)] sm:text-4xl">
+              {t("aboutStory.title")}
+            </h2>
 
-          <span className="mt-4 block h-1 w-16 rounded-full bg-[var(--color-red-primary)]" />
+            <span className="mt-4 block h-1 w-16 rounded-full bg-[var(--color-red-primary)]" />
+          </div>
 
-          <div className="mt-6 flex flex-col gap-4">
+          <div className="sm:mt-6 flex flex-col gap-4">
             {paragraphs.map((paragraph, index) => (
               <p key={index} className="font-body leading-relaxed text-black/70">
                 {paragraph}

@@ -57,7 +57,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 sm:max-w-lg lg:mx-0 lg:ms-auto lg:max-w-[400px]"
+      className="relative mx-auto aspect-[4/3] w-full max-w-md sm:aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 sm:max-w-lg lg:mx-0 lg:ms-auto lg:max-w-[400px]"
     >
       <AnimatePresence mode="sync">
         <motion.div
@@ -83,25 +83,19 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
 
       {images.length > 1 && (
-        <div className="absolute inset-x-0 bottom-2 flex items-center justify-center">
+        <div className="absolute inset-x-0 bottom-5 flex items-center justify-center gap-2">
           {images.map((image, i) => (
-            // The button is a 44px-tall tap target (global mobile rule);
-            // the visible dot is the small span inside it.
             <button
               key={`${image}-${i}`}
               type="button"
               onClick={() => goTo(i)}
               aria-label={`Aller à la photo ${i + 1}`}
-              className="group flex h-11 min-w-6 items-center justify-center px-1"
-            >
-              <span
-                className={`block h-2 rounded-full transition-all duration-300 ${
-                  i === currentIndex
-                    ? "w-6 bg-white"
-                    : "w-2 bg-white/50 group-hover:bg-white/80"
-                }`}
-              />
-            </button>
+              className={`!min-h-0 h-2 rounded-full transition-all duration-300 ${
+                i === currentIndex
+                  ? "w-6 bg-white"
+                  : "w-2 bg-white/50 hover:bg-white/80"
+              }`}
+            />
           ))}
         </div>
       )}

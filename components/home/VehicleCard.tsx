@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -27,9 +27,9 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   );
 
   return (
-    <article className="group flex flex-col overflow-hidden border border-black/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:rounded-none">
       <Link href={`/vehicules/${vehicle.slug}`} className="block flex-1">
-        <div className="relative aspect-[16/10] overflow-hidden bg-[var(--color-mist)]">
+        <div className="relative aspect-[4/3] sm:aspect-[16/10] overflow-hidden bg-[var(--color-mist)]">
           {vehicle.image_url ? (
             <Image
               src={vehicle.image_url}
@@ -45,9 +45,9 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           )}
         </div>
 
-        <div className="p-5 pb-4">
+        <div className="p-4 pb-3 sm:p-5 sm:pb-4">
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <p className="font-body text-xs font-semibold uppercase tracking-wider text-[var(--color-red-primary)]">
                 {vehicle.brand}
               </p>
@@ -57,7 +57,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
               </h3>
             </div>
 
-            <div className="shrink-0 text-right">
+            <div className="shrink-0 whitespace-nowrap rounded-xl bg-[var(--color-mist)] px-3 py-1.5 text-right sm:bg-transparent sm:p-0">
               <span className="block font-body text-[11px] font-medium uppercase tracking-wide text-black/45">
                 {t("common.fromPrice")}
               </span>
@@ -88,10 +88,10 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         </div>
       </Link>
 
-      <div className="flex flex-col gap-2.5 px-5 pb-5">
+      <div className="flex flex-col gap-2.5 px-4 pb-4 sm:px-5 sm:pb-5">
         <Link
           href={`/vehicules/${vehicle.slug}?reserver=1`}
-          className="flex w-full items-center justify-center gap-2 bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-charcoal)] to-[var(--color-red-primary)] px-4 py-2.5 font-body text-sm font-bold text-white transition-all hover:brightness-125"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-ink)] via-[var(--color-charcoal)] to-[var(--color-red-primary)] px-4 py-3 font-body text-sm font-bold text-white transition-all hover:brightness-125 sm:rounded-none sm:py-2.5"
         >
           <CalendarCheck size={16} />
           {t("common.reserveOnline")}
@@ -101,7 +101,7 @@ export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           href={whatsappHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex w-full items-center justify-center gap-2 bg-[#25D366] px-4 py-2.5 font-body text-sm font-bold text-white transition-colors hover:bg-[#1ebe5b]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-3 sm:rounded-none sm:py-2.5 font-body text-sm font-bold text-white transition-colors hover:bg-[#1ebe5b]"
         >
           <WhatsAppIcon className="h-5 w-5" />
           {t("common.reserveWhatsapp")}

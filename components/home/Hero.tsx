@@ -13,7 +13,7 @@ export default function Hero({ images }: HeroProps) {
   const { t } = useLanguage();
 
   return (
-    <section className="relative flex min-h-[100dvh] flex-col justify-center overflow-hidden px-6 pb-16 pt-28 sm:pt-32 lg:px-10">
+    <section className="relative flex flex-col justify-start overflow-hidden px-5 pb-10 pt-6 sm:min-h-[100dvh] sm:justify-center sm:px-6 sm:pb-16 sm:pt-32 lg:px-10">
       {/* Background gradient animé */}
       <div className="absolute inset-0 animate-gradient bg-gradient-to-br from-[var(--color-ink)] via-[var(--color-charcoal)] to-[#2D1F1F]" />
 
@@ -35,25 +35,36 @@ export default function Hero({ images }: HeroProps) {
         }}
       />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-14">
-        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-0">
+      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 sm:gap-14">
+        <div className="grid grid-cols-1 items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-10">
           {/* Texte */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="order-1 max-w-xl lg:order-none lg:col-start-1 lg:row-start-1 lg:self-end"
+            className="order-1 max-w-xl text-center sm:text-left lg:order-none"
           >
-            <span className="mb-6 inline-block rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-[var(--color-red-primary)]">
+            {/* Logo + nom - phone uniquement, centré */}
+            <div className="relative mb-5 flex justify-center sm:hidden">
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-red-primary)]/30 blur-[50px]" />
+              <Logo
+                iconSize={72}
+                stacked
+                textClassName="text-2xl items-center"
+                className="relative flex-col gap-3"
+              />
+            </div>
+
+            <span className="mb-5 inline-block rounded-full sm:mb-6 border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-[var(--color-red-primary)]">
               {t("hero.badge")}
             </span>
 
-            {/* Logo + nom - mobile */}
+            {/* Logo + nom - tablette */}
             <Logo
               iconSize={96}
               stacked
               textClassName="text-2xl sm:text-4xl"
-              className="mb-6 gap-3 lg:hidden"
+              className="mb-6 hidden gap-3 sm:flex lg:hidden"
             />
 
             {/* Logo + nom - desktop */}
@@ -64,26 +75,18 @@ export default function Hero({ images }: HeroProps) {
               className="mb-8 hidden gap-5 lg:flex"
             />
 
-            <h1 className="font-display text-5xl font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-7xl">
+            <h1 className="font-display text-[2.5rem] font-extrabold leading-[1.1] text-white sm:text-6xl lg:text-7xl">
               {t("hero.titleLine1")} <br />
               <span className="text-gradient">
                 {t("hero.titleHighlight")}
               </span>
             </h1>
-          </motion.div>
 
-          {/* Sous-titre + boutons (sous le carrousel sur mobile) */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
-            className="order-3 max-w-xl lg:order-none lg:col-start-1 lg:row-start-2 lg:self-start"
-          >
-            <p className="max-w-md font-body text-lg leading-relaxed text-white/60 lg:mt-6">
+            <p className="mx-auto mt-4 max-w-md font-body text-base leading-relaxed text-white/60 sm:mx-0 sm:mt-6 sm:text-lg">
               {t("hero.subtitle")}
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-8 hidden flex-wrap gap-4 sm:flex">
               <a
                 href="#vehicules"
                 className="btn-shine rounded-full bg-[var(--color-red-primary)] px-8 py-3.5 text-sm font-bold text-white shadow-xl shadow-red-primary/30 transition-all hover:-translate-y-1 hover:bg-[var(--color-red-dark)]"
@@ -101,8 +104,25 @@ export default function Hero({ images }: HeroProps) {
           </motion.div>
 
           {/* Carrousel photo */}
-          <div className="order-2 lg:order-none lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <div className="order-2 lg:order-none">
             <HeroCarousel images={images} />
+
+            {/* Boutons - mobile uniquement, sous le carrousel */}
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:hidden">
+              <a
+                href="#vehicules"
+                className="btn-shine rounded-full bg-[var(--color-red-primary)] px-4 py-3.5 text-center text-sm font-bold text-white shadow-xl shadow-red-primary/30 transition-all hover:bg-[var(--color-red-dark)]"
+              >
+                {t("hero.ctaVehicles")}
+              </a>
+
+              <a
+                href="#contact"
+                className="rounded-full border border-white/20 bg-white/5 px-4 py-3.5 text-center text-sm font-bold text-white backdrop-blur-sm transition-all hover:bg-white/10"
+              >
+                {t("hero.ctaContact")}
+              </a>
+            </div>
           </div>
         </div>
       </div>

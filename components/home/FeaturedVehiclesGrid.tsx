@@ -14,8 +14,8 @@ export default function FeaturedVehiclesGrid({
   const { t } = useLanguage();
 
   return (
-    <section id="vehicules" className="mx-auto max-w-6xl py-20 lg:px-10">
-      <div className="flex flex-col gap-6 px-6 sm:flex-row sm:items-end sm:justify-between lg:px-0">
+    <section id="vehicules" className="mx-auto max-w-6xl py-14 sm:py-20 lg:px-10">
+      <div className="flex flex-col gap-6 px-5 sm:px-6 sm:flex-row sm:items-end sm:justify-between lg:px-0">
         <div className="max-w-lg">
           <h2 className="font-display text-3xl font-extrabold text-[var(--color-ink)] sm:text-4xl">
             {t("featured.title")}
@@ -41,7 +41,7 @@ export default function FeaturedVehiclesGrid({
         </p>
       ) : (
         <>
-          <div className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 pl-6 pr-6 sm:hidden [&>article]:w-[85%] [&>article]:shrink-0 [&>article]:snap-start">
+          <div className="mt-8 flex snap-x snap-mandatory scroll-pl-5 gap-3 overflow-x-auto pb-4 pl-5 pr-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:hidden [&>article]:w-[84%] [&>article]:shrink-0 [&>article]:snap-start">
             {vehicles.map((vehicle) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
@@ -57,4 +57,3 @@ export default function FeaturedVehiclesGrid({
     </section>
   );
 }
-
