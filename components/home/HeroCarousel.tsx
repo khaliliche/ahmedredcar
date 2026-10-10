@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -83,19 +83,25 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
 
       {images.length > 1 && (
-        <div className="absolute inset-x-0 bottom-5 flex items-center justify-center gap-2">
+        <div className="absolute inset-x-0 bottom-2 flex items-center justify-center">
           {images.map((image, i) => (
+            // The button is a 44px-tall tap target (global mobile rule);
+            // the visible dot is the small span inside it.
             <button
               key={`${image}-${i}`}
               type="button"
               onClick={() => goTo(i)}
               aria-label={`Aller à la photo ${i + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === currentIndex
-                  ? "w-6 bg-white"
-                  : "w-2 bg-white/50 hover:bg-white/80"
-              }`}
-            />
+              className="group flex h-11 min-w-6 items-center justify-center px-1"
+            >
+              <span
+                className={`block h-2 rounded-full transition-all duration-300 ${
+                  i === currentIndex
+                    ? "w-6 bg-white"
+                    : "w-2 bg-white/50 group-hover:bg-white/80"
+                }`}
+              />
+            </button>
           ))}
         </div>
       )}

@@ -36,13 +36,13 @@ export default function Hero({ images }: HeroProps) {
       />
 
       <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-14">
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-10">
+        <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-0">
           {/* Texte */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="order-2 max-w-xl lg:order-none"
+            className="order-1 max-w-xl lg:order-none lg:col-start-1 lg:row-start-1 lg:self-end"
           >
             <span className="mb-6 inline-block rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-[var(--color-red-primary)]">
               {t("hero.badge")}
@@ -70,8 +70,16 @@ export default function Hero({ images }: HeroProps) {
                 {t("hero.titleHighlight")}
               </span>
             </h1>
+          </motion.div>
 
-            <p className="mt-6 max-w-md font-body text-lg leading-relaxed text-white/60">
+          {/* Sous-titre + boutons (sous le carrousel sur mobile) */}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
+            className="order-3 max-w-xl lg:order-none lg:col-start-1 lg:row-start-2 lg:self-start"
+          >
+            <p className="max-w-md font-body text-lg leading-relaxed text-white/60 lg:mt-6">
               {t("hero.subtitle")}
             </p>
 
@@ -93,7 +101,7 @@ export default function Hero({ images }: HeroProps) {
           </motion.div>
 
           {/* Carrousel photo */}
-          <div className="order-1 lg:order-none">
+          <div className="order-2 lg:order-none lg:col-start-2 lg:row-span-2 lg:row-start-1">
             <HeroCarousel images={images} />
           </div>
         </div>
