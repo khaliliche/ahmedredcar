@@ -46,9 +46,9 @@ export default function Hero({ images }: HeroProps) {
           >
             {/* Logo + nom - phone uniquement, centré */}
             <div className="relative mb-5 flex justify-center sm:hidden">
-              <div className="pointer-events-none absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-red-primary)]/30 blur-[50px]" />
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-red-primary)]/30 blur-[50px]" />
               <Logo
-                iconSize={72}
+                iconSize={96}
                 stacked
                 textClassName="text-2xl items-center"
                 className="relative flex-col gap-3"
@@ -82,7 +82,7 @@ export default function Hero({ images }: HeroProps) {
               </span>
             </h1>
 
-            <p className="mx-auto mt-4 max-w-md font-body text-base leading-relaxed text-white/60 sm:mx-0 sm:mt-6 sm:text-lg">
+            <p className="mt-6 hidden max-w-md font-body text-lg leading-relaxed text-white/60 sm:block">
               {t("hero.subtitle")}
             </p>
 
@@ -107,8 +107,13 @@ export default function Hero({ images }: HeroProps) {
           <div className="order-2 lg:order-none">
             <HeroCarousel images={images} />
 
+            {/* Sous-titre - phone uniquement, entre le carrousel et les boutons */}
+            <p className="mx-auto mt-6 max-w-md text-center font-body text-base leading-relaxed text-white/60 sm:hidden">
+              {t("hero.subtitle")}
+            </p>
+
             {/* Boutons - mobile uniquement, sous le carrousel */}
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:hidden">
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:hidden">
               <a
                 href="#vehicules"
                 className="btn-shine rounded-full bg-[var(--color-red-primary)] px-4 py-3.5 text-center text-sm font-bold text-white shadow-xl shadow-red-primary/30 transition-all hover:bg-[var(--color-red-dark)]"

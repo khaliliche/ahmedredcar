@@ -71,13 +71,13 @@ export default function Footer() {
         {/* Logo + liens */}
         <div className="mt-8 flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="relative">
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-red-primary)]/25 blur-[40px]" />
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-red-primary)]/25 blur-[40px]" />
             <Image
               src="/ahmed-redcar-logo.png"
               alt="Ahmed Red Car"
               width={150}
               height={50}
-              className="relative h-16 w-auto object-contain"
+              className="relative h-20 w-auto object-contain"
             />
           </div>
 
