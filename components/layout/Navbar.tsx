@@ -63,7 +63,7 @@ export default function Navbar() {
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reduceMotion ? 0 : 0.6, ease, delay: 0.05 }}
-          className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-10"
+          className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-10"
         >
           {/* Logo */}
           <Link href="/" className="group flex items-center">
@@ -147,15 +147,19 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Bouton menu mobile */}
-          <button
-            type="button"
-            className="flex h-11 w-11 items-center justify-center text-white lg:hidden"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Ouvrir le menu"
-          >
-            <Menu size={24} />
-          </button>
+          {/* Langue + bouton menu mobile */}
+          <div className="flex items-center gap-1 lg:hidden">
+            <LanguageToggle variant="compact" />
+
+            <button
+              type="button"
+              className="flex h-11 w-11 items-center justify-center text-white"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Ouvrir le menu"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </motion.nav>
       </motion.header>
 

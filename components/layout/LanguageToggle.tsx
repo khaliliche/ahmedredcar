@@ -8,16 +8,20 @@ const options: Language[] = ["fr", "en", "ar"];
 export default function LanguageToggle({
   variant = "desktop",
 }: {
-  variant?: "desktop" | "mobile";
+  variant?: "desktop" | "mobile" | "compact";
 }) {
   const { language, setLanguage, t } = useLanguage();
 
   const baseButton =
-    "rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors";
+    variant === "compact"
+      ? "!min-h-0 rounded-full px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors"
+      : "rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors";
 
   const wrapperClass =
     variant === "desktop"
       ? "flex items-center gap-1 rounded-full border border-white/20 bg-white/5 p-1"
+      : variant === "compact"
+      ? "flex items-center gap-0.5 rounded-full border border-white/25 bg-white/10 p-0.5"
       : "flex items-center gap-1 rounded-full border border-white/20 bg-white/5 p-1 self-start";
 
   return (

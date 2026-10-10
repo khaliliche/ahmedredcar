@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { translations } from "@/lib/i18n/translations";
 
 const SPEED_PX_PER_SEC = 36;
+const SPEED_PX_PER_SEC_PHONE = 22;
 const RESUME_DELAY_MS = 1200;
 
 type ReviewItem = {
@@ -49,7 +50,9 @@ export default function Reviews() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
 
-    let next = track.scrollLeft + (SPEED_PX_PER_SEC * delta) / 1000;
+    const speed =
+      window.innerWidth < 640 ? SPEED_PX_PER_SEC_PHONE : SPEED_PX_PER_SEC;
+    let next = track.scrollLeft + (speed * delta) / 1000;
     if (next >= half) next -= half;
     track.scrollLeft = next;
   });
@@ -74,8 +77,8 @@ export default function Reviews() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[var(--color-ink)] via-[var(--color-charcoal)] to-[var(--color-ink)] py-16 sm:py-20">
-      <div className="relative mx-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#5c0a0a] via-[#8a1010] to-[#3d0707] py-14 sm:mx-6 sm:py-16 lg:mx-10 xl:mx-auto xl:max-w-6xl">
+    <section className="relative overflow-hidden bg-gradient-to-b from-[var(--color-ink)] via-[var(--color-charcoal)] to-[var(--color-ink)] py-0 sm:py-20">
+      <div className="relative overflow-hidden rounded-none bg-gradient-to-br from-[#5c0a0a] via-[#8a1010] to-[#3d0707] py-12 sm:mx-6 sm:rounded-3xl sm:py-16 lg:mx-10 xl:mx-auto xl:max-w-6xl">
         <div className="px-5 sm:px-8 lg:px-10">
           <p className="font-body text-xs font-semibold uppercase tracking-[0.2em] text-[#f0c040]">
             {t("reviews.label")}
@@ -91,11 +94,11 @@ export default function Reviews() {
           />
         </div>
 
-        <div className="relative mt-10 [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)] sm:mt-12">
+        <div className="relative mt-7 [mask-image:linear-gradient(to_right,transparent,black_2%,black_98%,transparent)] sm:mt-12 sm:[mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
           <div
             ref={trackRef}
             dir="ltr"
-            className="reviews-track flex gap-5 overflow-x-auto px-6 sm:gap-6 sm:px-10"
+            className="reviews-track flex gap-3 overflow-x-auto px-4 sm:gap-6 sm:px-10"
             onPointerDown={pause}
             onPointerUp={scheduleResume}
             onPointerCancel={scheduleResume}
@@ -135,9 +138,9 @@ function ReviewTicket({
   return (
     <div
       dir={dir}
-      className="w-[270px] shrink-0 select-none overflow-hidden rounded-2xl border border-[#d4a017]/40 bg-[var(--color-cream)] shadow-lg shadow-black/30 sm:w-[320px]"
+      className="w-[78vw] max-w-[300px] shrink-0 select-none overflow-hidden rounded-2xl border border-[#d4a017]/40 bg-[var(--color-cream)] shadow-lg shadow-black/30 sm:w-[320px] sm:max-w-none"
     >
-      <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-[#e8b923] via-[#d4a017] to-[#b8860b] px-5 py-3">
+      <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-[#e8b923] via-[#d4a017] to-[#b8860b] px-4 py-3 sm:px-5">
         <span className="truncate font-display text-sm font-bold text-[var(--color-ink)]">
           {name}
         </span>
@@ -159,7 +162,7 @@ function ReviewTicket({
 
       <div className="border-t border-dashed border-[#8a1010]/30" />
 
-      <p className="px-5 py-4 font-body text-sm leading-relaxed text-black/70">
+      <p className="px-4 py-4 font-body text-[15px] leading-relaxed text-black/75 sm:px-5 sm:text-sm sm:text-black/70">
         {text}
       </p>
     </div>
