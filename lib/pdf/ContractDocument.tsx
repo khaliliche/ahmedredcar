@@ -5,6 +5,7 @@ import {
   Page,
   View,
   Text,
+  TextInput,
   Image,
   StyleSheet,
   Svg,
@@ -28,8 +29,8 @@ const BLUE = "#17327f";
 const RED = "#d1121f";
 const BLACK = "#000000";
 
-// Serial number is fixed to "00" for now (decision: real numbering later).
-const CONTRACT_SERIAL = "00";
+// Fallback shown only when the reservation has no contract number yet.
+const DEFAULT_CONTRACT_SERIAL = "00";
 
 // Agency stamp (cachet), printed inside the "Visa Direction" box.
 const CACHET_SRC = `data:image/png;base64,${readFileSync(
@@ -240,11 +241,46 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-function Field({ label, value, strong }: { label: string; value?: string; strong?: boolean }) {
+// Blank "fillable" mode: every field becomes an editable PDF form input.
+// The counter gives each input a unique name (render order is deterministic).
+type Fill = { next: () => number };
+
+function FillInput({ fill, flex = 1, strong }: { fill: Fill; flex?: number; strong?: boolean }) {
+  return (
+    <TextInput
+      name={`champ_${fill.next()}`}
+      style={{
+        flex,
+        height: 11,
+        fontSize: strong ? 8.5 : 7.5,
+        fontWeight: strong ? 700 : 400,
+        borderBottomWidth: 0.75,
+        borderBottomStyle: "dotted",
+        borderBottomColor: BLACK,
+      }}
+    />
+  );
+}
+
+function Field({
+  label,
+  value,
+  strong,
+  fill,
+}: {
+  label: string;
+  value?: string;
+  strong?: boolean;
+  fill?: Fill;
+}) {
   return (
     <View style={styles.fieldRow}>
       <Text style={styles.fieldLabel}>{label}</Text>
-      <Text style={strong ? styles.fieldValueStrong : styles.fieldValue}>{value || " "}</Text>
+      {fill ? (
+        <FillInput fill={fill} strong={strong} />
+      ) : (
+        <Text style={strong ? styles.fieldValueStrong : styles.fieldValue}>{value || " "}</Text>
+      )}
     </View>
   );
 }
@@ -399,20 +435,20 @@ type DriverView = {
   passportIssue: string;
 };
 
-function DriverCard({ title, d }: { title: string; d: DriverView }) {
+function DriverCard({ title, d, fill }: { title: string; d: DriverView; fill?: Fill }) {
   return (
     <Card title={title}>
-      <Field label="PRÉNOM :" value={d.first} />
-      <Field label="NOM :" value={d.last} />
-      <Field label="C.I.N. :" value={d.cin} />
-      <Field label="Délivré le :" value={d.cinIssue} />
-      <Field label="Date de Naissance :" value={d.birth} />
-      <Field label="Permis de conduire N° :" value={d.license} />
-      <Field label="Délivré le :" value={d.licenseIssue} />
-      <Field label="ADRESSE AU MAROC :" value={d.address} />
-      <Field label="TEL :" value={d.phone} />
-      <Field label="Passeport N° :" value={d.passport} />
-      <Field label="Délivré le :" value={d.passportIssue} />
+      <Field label="PRÉNOM :" value={d.first} fill={fill} />
+      <Field label="NOM :" value={d.last} fill={fill} />
+      <Field label="C.I.N. :" value={d.cin} fill={fill} />
+      <Field label="Délivré le :" value={d.cinIssue} fill={fill} />
+      <Field label="Date de Naissance :" value={d.birth} fill={fill} />
+      <Field label="Permis de conduire N° :" value={d.license} fill={fill} />
+      <Field label="Délivré le :" value={d.licenseIssue} fill={fill} />
+      <Field label="ADRESSE AU MAROC :" value={d.address} fill={fill} />
+      <Field label="TEL :" value={d.phone} fill={fill} />
+      <Field label="Passeport N° :" value={d.passport} fill={fill} />
+      <Field label="Délivré le :" value={d.passportIssue} fill={fill} />
     </Card>
   );
 }
@@ -461,9 +497,11 @@ function ConditionsPage() {
 export function ContractDocument({
   reservation,
   vehicle,
+  fillable = false,
 }: {
   reservation: Reservation;
   vehicle: Vehicle | null;
+  fillable?: boolean;
 }) {
   const vehiclePricing = {
     price_per_day: vehicle?.price_per_day ?? 0,
@@ -505,6 +543,9 @@ export function ContractDocument({
   };
 
   const money = (n: number) => `${n.toFixed(2)} DH`;
+  let fillN = 0;
+  const fill: Fill | undefined = fillable ? { next: () => ++fillN } : undefined;
+  const CONTRACT_SERIAL = r.contract_number?.trim() || DEFAULT_CONTRACT_SERIAL;
 
   return (
     <Document title={`Contrat ${CONTRACT_SERIAL}`}>
@@ -523,10 +564,10 @@ export function ContractDocument({
         {/* Premier / 2ème conducteur */}
         <View style={styles.row}>
           <View style={styles.col}>
-            <DriverCard title="Premier Conducteur" d={d1} />
+            <DriverCard title="Premier Conducteur" d={d1} fill={fill} />
           </View>
           <View style={styles.col}>
-            <DriverCard title="2ème Conducteur" d={d2} />
+            <DriverCard title="2ème Conducteur" d={d2} fill={fill} />
           </View>
         </View>
 
@@ -556,16 +597,16 @@ export function ContractDocument({
             <View style={[styles.row, { marginBottom: 8 }]}>
               <View style={styles.col}>
                 <Card title="DEPART">
-                  <Field label="Le :" value={formatDate(r.start_date)} />
-                  <Field label="H :" value={formatTime(r.start_time)} />
-                  <Field label="Lieu de livraison :" value={r.departure_place} />
+                  <Field label="Le :" value={formatDate(r.start_date)} fill={fill} />
+                  <Field label="H :" value={formatTime(r.start_time)} fill={fill} />
+                  <Field label="Lieu de livraison :" value={r.departure_place} fill={fill} />
                 </Card>
               </View>
               <View style={styles.col}>
                 <Card title="RETOUR">
-                  <Field label="Le :" value={formatDate(r.end_date)} />
-                  <Field label="H :" value={formatTime(r.end_time)} />
-                  <Field label="Lieu de livraison :" value={r.return_place} />
+                  <Field label="Le :" value={formatDate(r.end_date)} fill={fill} />
+                  <Field label="H :" value={formatTime(r.end_time)} fill={fill} />
+                  <Field label="Lieu de livraison :" value={r.return_place} fill={fill} />
                 </Card>
               </View>
             </View>
@@ -623,23 +664,31 @@ export function ContractDocument({
 
           <View style={styles.rightCol}>
             <View style={[styles.box, { marginBottom: 8 }]}>
-              <Field label="Type de véhicule :" value={vehicle ? `${vehicle.brand} ${vehicle.model}` : r.vehicle_label} />
-              <Field label="Matricule :" value={r.registration_plate} />
-              <Field label="Nombre de jours :" value={`${billing.days}`} />
-              <Field label="Prix par jours :" value={money(billing.dailyRate)} />
-              <Field label="Total TTC :" value={money(billing.totalTTC)} strong />
-              <Field label="Avance :" value={money(billing.advance)} />
-              <Field label="Reste à payer :" value={money(billing.remaining)} strong />
+              <Field label="Type de véhicule :" value={vehicle ? `${vehicle.brand} ${vehicle.model}` : r.vehicle_label} fill={fill} />
+              <Field label="Matricule :" value={r.registration_plate} fill={fill} />
+              <Field label="Nombre de jours :" value={`${billing.days}`} fill={fill} />
+              <Field label="Prix par jours :" value={money(billing.dailyRate)} fill={fill} />
+              <Field label="Total TTC :" value={money(billing.totalTTC)} strong fill={fill} />
+              <Field label="Avance :" value={money(billing.advance)} fill={fill} />
+              <Field label="Reste à payer :" value={money(billing.remaining)} strong fill={fill} />
             </View>
             <View style={[styles.box, { marginBottom: 8 }]}>
-              <Field label="Prolongation :" value={r.prolongation} />
+              <Field label="Prolongation :" value={r.prolongation} fill={fill} />
             </View>
             <View style={[styles.box, { marginBottom: 8 }]}>
               <View style={[styles.fieldRow, { marginBottom: 0 }]}>
                 <Text style={styles.fieldLabel}>Retour Prévu le :</Text>
-                <Text style={[styles.fieldValue, { flex: 2 }]}>{formatDate(r.expected_return_date) || " "}</Text>
+                {fillable ? (
+                  <FillInput fill={fill!} flex={2} />
+                ) : (
+                  <Text style={[styles.fieldValue, { flex: 2 }]}>{formatDate(r.expected_return_date) || " "}</Text>
+                )}
                 <Text style={[styles.fieldLabel, { marginLeft: 4 }]}>à :</Text>
-                <Text style={styles.fieldValue}>{formatTime(r.expected_return_time) || " "}</Text>
+                {fillable ? (
+                  <FillInput fill={fill!} />
+                ) : (
+                  <Text style={styles.fieldValue}>{formatTime(r.expected_return_time) || " "}</Text>
+                )}
               </View>
             </View>
             <View style={[styles.box, styles.visaBox]}>

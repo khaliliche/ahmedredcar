@@ -84,7 +84,9 @@ export type VehicleOption = { id: number; label: string };
 
 type Calculated = { totalTTC: number; days: number; dailyRate: number };
 
-type SubmitResult = { ok: true; id?: number } | { ok: false; error: string };
+type SubmitResult =
+  | { ok: true; id?: number }
+  | { ok: false; error: string; locked?: boolean };
 
 const inputClass = "rounded-lg border border-black/15 px-3 py-2 text-sm";
 const labelClass = "flex flex-col gap-1";
@@ -151,6 +153,7 @@ export default function ContractForm({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [locked, setLocked] = useState(false);
   const [hasSecondDriver, setHasSecondDriver] = useState(initial.has_second_driver);
   const [damages, setDamages] = useState<DamageEntry[]>(initial.damages);
   const [vehicleId, setVehicleId] = useState<number | null>(initial.vehicle_id);
@@ -181,14 +184,16 @@ export default function ContractForm({
     setDamages((d) => d.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)));
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function runSubmit(form: HTMLFormElement, force: boolean) {
     setError(null);
-    const formData = new FormData(e.currentTarget);
+    setLocked(false);
+    const formData = new FormData(form);
+    if (force) formData.set("force_unlock", "1");
     startTransition(async () => {
       const result = await submit(formData);
       if (!result.ok) {
         setError(result.error);
+        setLocked(Boolean(result.locked));
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
@@ -199,13 +204,43 @@ export default function ContractForm({
     });
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    runSubmit(e.currentTarget, false);
+  }
+
+  function handleForceSave(e: React.MouseEvent<HTMLButtonElement>) {
+    const form = e.currentTarget.form;
+    if (!form) return;
+    if (
+      !window.confirm(
+        "Ce contrat est deja signe. Les signatures existantes resteront sur le contrat modifie. Deverrouiller et enregistrer quand meme ?"
+      )
+    ) {
+      return;
+    }
+    runSubmit(form, true);
+  }
+
   return (
     <form onSubmit={handleSubmit} onChange={() => setSaved(false)} className="flex flex-col gap-6">
       <input type="hidden" name="damages_json" value={JSON.stringify(damages)} readOnly />
       <input type="hidden" name="vehicle_label" value={initial.vehicle_label} readOnly />
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+        <div className="flex flex-col gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+          <p>{error}</p>
+          {locked && (
+            <button
+              type="button"
+              onClick={handleForceSave}
+              disabled={pending}
+              className="w-fit rounded-lg border border-red-300 bg-white px-4 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"
+            >
+              {pending ? "Enregistrement..." : "Deverrouiller et enregistrer quand meme"}
+            </button>
+          )}
+        </div>
       )}
 
       <AvailabilityBanner

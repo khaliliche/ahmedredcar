@@ -385,7 +385,9 @@ export async function checkAvailabilityAction(
 /* SAVE CONTRACT (unified contract form, "Enregistrer")                       */
 /* -------------------------------------------------------------------------- */
 
-export type SaveContractResult = { ok: true } | { ok: false; error: string };
+export type SaveContractResult =
+  | { ok: true }
+  | { ok: false; error: string; locked?: boolean };
 
 export async function saveContractAction(
   id: number,
@@ -512,12 +514,13 @@ export async function saveContractAction(
     fuel_type: fuelType,
     damages,
     equipment: equipmentFromForm(formData),
-  });
+  }, formData.get("force_unlock") === "1");
 
   if (!saved.ok) {
     if (saved.reason === "signed") {
       return {
         ok: false,
+        locked: true,
         error: "Ce contrat a déjà été signé. La modification est verrouillée.",
       };
     }

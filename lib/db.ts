@@ -726,10 +726,11 @@ export type ContractUpdateResult =
 // edit is written to the contract_audit trail in the same transaction.
 export async function updateReservationContractChecked(
   id: number,
-  data: UpdateReservationContractInput
+  data: UpdateReservationContractInput,
+  allowSigned = false
 ): Promise<ContractUpdateResult> {
   try {
-    return await updateReservationContractCheckedTx(id, data);
+    return await updateReservationContractCheckedTx(id, data, allowSigned);
   } catch (err) {
     if (isUniqueViolation(err, "reservations_contract_number_key")) {
       return { ok: false, reason: "duplicateContractNumber" };
@@ -740,7 +741,8 @@ export async function updateReservationContractChecked(
 
 async function updateReservationContractCheckedTx(
   id: number,
-  data: UpdateReservationContractInput
+  data: UpdateReservationContractInput,
+  allowSigned: boolean
 ): Promise<ContractUpdateResult> {
   return sql.begin(async (tx): Promise<ContractUpdateResult> => {
     // 1) Lock the reservation row and read its CURRENT state,
@@ -760,11 +762,14 @@ async function updateReservationContractCheckedTx(
     if (current.length === 0) return { ok: false, reason: "notFound" };
 
     // 1b) A signature legally binds the contract content: refuse to edit.
-    if (
+    // The admin can bypass this explicitly (allowSigned); the bypass is
+    // recorded in the audit trail below.
+    const isSigned = Boolean(
       current[0].signed_at ||
-      current[0].signed_2_at ||
-      current[0].admin_signed_at
-    ) {
+        current[0].signed_2_at ||
+        current[0].admin_signed_at
+    );
+    if (isSigned && !allowSigned) {
       return { ok: false, reason: "signed" };
     }
 
@@ -803,6 +808,7 @@ async function updateReservationContractCheckedTx(
           full_name: data.full_name,
           advance: data.advance ?? null,
           override_total_ttc: data.override_total_ttc ?? null,
+          signed_lock_overridden: isSigned && allowSigned,
         })}
       )
     `;
