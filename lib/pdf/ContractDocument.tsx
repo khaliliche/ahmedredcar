@@ -124,12 +124,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    paddingVertical: 6,
+    paddingVertical: 3,
     paddingHorizontal: 2,
   },
   headerSerialBox: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
+    alignItems: "center",
     border: `1.4 solid ${BLUE}`,
     borderRadius: 6,
     paddingVertical: 4,
@@ -138,6 +139,7 @@ const styles = StyleSheet.create({
   },
   logo: { width: 110, height: 66, objectFit: "contain" },
   title: { fontSize: 22, fontWeight: 700, color: BLACK },
+  serialLabel: { fontSize: 15, fontWeight: 700, color: BLACK },
   serial: { fontSize: 15, fontWeight: 700, color: RED },
 
   // ---- Cards ----
@@ -175,7 +177,7 @@ const styles = StyleSheet.create({
     paddingBottom: 1,
   },
 
-  sigBox: { height: 62 },
+  sigBox: { height: 54 },
   sigImage: { width: "100%", height: 40, objectFit: "contain", marginTop: 2 },
 
   // ---- Bottom area ----
@@ -193,7 +195,7 @@ const styles = StyleSheet.create({
   legendRow: { flexDirection: "row", gap: 6, marginTop: 2 },
   legendText: { fontSize: 6 },
 
-  visaBox: { height: 78 },
+  visaBox: { height: 70 },
   visaImages: { position: "relative", flex: 1, marginTop: 2 },
   visaImg: {
     position: "absolute",
@@ -557,6 +559,7 @@ export function ContractDocument({
             <Text style={styles.title}>CONTRAT DE LOCATION</Text>
           </View>
           <View style={styles.headerSerialBox}>
+            <Text style={styles.serialLabel}>N°</Text>
             <Text style={styles.serial}>{CONTRACT_SERIAL}</Text>
           </View>
         </View>
@@ -674,7 +677,7 @@ export function ContractDocument({
           </View>
 
           <View style={styles.rightCol}>
-            <View style={[styles.box, { marginBottom: 8 }]}>
+            <View style={[styles.box, { marginBottom: 6 }]}>
               <Field label="Type de véhicule :" value={vehicle ? `${vehicle.brand} ${vehicle.model}` : r.vehicle_label} fill={fill} />
               <Field label="Matricule :" value={r.registration_plate} fill={fill} />
               <Field label="Nombre de jours :" value={`${billing.days}`} fill={fill} />
@@ -683,10 +686,10 @@ export function ContractDocument({
               <Field label="Avance :" value={money(billing.advance)} fill={fill} />
               <Field label="Reste à payer :" value={money(billing.remaining)} strong fill={fill} />
             </View>
-            <View style={[styles.box, { marginBottom: 8 }]}>
+            <View style={[styles.box, { marginBottom: 6 }]}>
               <Field label="Prolongation :" value={r.prolongation} fill={fill} />
             </View>
-            <View style={[styles.box, { marginBottom: 8 }]}>
+            <View style={[styles.box, { marginBottom: 6 }]}>
               <View style={[styles.fieldRow, { marginBottom: 0 }]}>
                 <Text style={styles.fieldLabel}>Retour Prévu le :</Text>
                 {fillable ? (
@@ -702,7 +705,7 @@ export function ContractDocument({
                 )}
               </View>
             </View>
-            <View style={[styles.box, { marginBottom: 8 }]}>
+            <View style={[styles.box, { marginBottom: 6 }]}>
               <View style={[styles.fieldRow, { marginBottom: 5 }]}>
                 <Text style={styles.fieldLabel}>Franchise incluse :</Text>
                 {[
