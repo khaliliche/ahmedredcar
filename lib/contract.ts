@@ -11,15 +11,13 @@ export const EQUIPMENT_ITEMS = [
   { key: "assurance", label: "Assurance" },
   { key: "visite_technique", label: "Visite technique" },
   { key: "autorisation_circulation", label: "Autorisation de circulation" },
-  { key: "manivelle", label: "Manivelle" },
   { key: "cric", label: "Cric" },
-  { key: "roue_secours", label: "Roue de secours" },
-  { key: "jantes_aluminium", label: "Jantes aluminium" },
-  { key: "enjoliveur", label: "Enjoliveur" },
-  { key: "housses_auto", label: "Housses auto" },
+  { key: "roue_secours", label: "Pneu de secours" },
   { key: "tapis", label: "Tapis" },
-  { key: "allume_cigare", label: "Allume cigare" },
-  { key: "extincteur", label: "Extincteur" },
+  {
+    key: "kit_securite",
+    label: "Kit de sécurité (Gilet haute visibilité + Triangle de présignalisation + Extincteur)",
+  },
 ] as const;
 
 // Reads the "Equipement du vehicule" checkboxes (inputs named equip_<key>)

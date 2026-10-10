@@ -639,9 +639,8 @@ export function ContractDocument({
               <Card title={"ÉQUIPEMENT DU VÉHICULE"}>
                 <View style={styles.equipGrid}>
                   {[
-                    EQUIPMENT_ITEMS.slice(0, 5),
-                    EQUIPMENT_ITEMS.slice(5, 9),
-                    EQUIPMENT_ITEMS.slice(9),
+                    EQUIPMENT_ITEMS.slice(0, 4),
+                    EQUIPMENT_ITEMS.slice(4, 8),
                   ].map((items, c) => (
                     <View key={c} style={styles.equipCol}>
                       {items.map((item) => (
@@ -658,6 +657,18 @@ export function ContractDocument({
                     </View>
                   ))}
                 </View>
+                {/* Long item (kit de securite) on its own full-width row */}
+                {EQUIPMENT_ITEMS.slice(8).map((item) => (
+                  <View key={item.key} style={[styles.checkboxRow, { marginTop: 0, marginBottom: 4 }]}>
+                    <View
+                      style={[
+                        styles.checkbox,
+                        ...(r.equipment?.[item.key] ? [styles.checkboxOn] : []),
+                      ]}
+                    />
+                    <Text style={[styles.equipLabel, { flex: 1 }]}>{item.label}</Text>
+                  </View>
+                ))}
               </Card>
             </View>
           </View>
@@ -690,6 +701,30 @@ export function ContractDocument({
                   <Text style={styles.fieldValue}>{formatTime(r.expected_return_time) || " "}</Text>
                 )}
               </View>
+            </View>
+            <View style={[styles.box, { marginBottom: 8 }]}>
+              <View style={[styles.fieldRow, { marginBottom: 5 }]}>
+                <Text style={styles.fieldLabel}>Franchise incluse :</Text>
+                {[
+                  { value: "yes", label: "Oui" },
+                  { value: "no", label: "Non" },
+                ].map((o) => (
+                  <View key={o.value} style={[styles.checkboxRow, { marginTop: 0, marginRight: 10 }]}>
+                    <View
+                      style={[
+                        styles.checkbox,
+                        ...(r.franchise_included === o.value ? [styles.checkboxOn] : []),
+                      ]}
+                    />
+                    <Text style={styles.checkboxLabel}>{o.label}</Text>
+                  </View>
+                ))}
+              </View>
+              <Field
+                label="Prix donné par client (franchise) :"
+                value={r.franchise_amount != null ? money(Number(r.franchise_amount)) : ""}
+                fill={fill}
+              />
             </View>
             <View style={[styles.box, styles.visaBox]}>
               <Text style={styles.boxTitle}>Visa Direction :</Text>

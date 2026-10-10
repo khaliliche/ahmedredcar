@@ -6,11 +6,22 @@ import { createReservationAction } from "@/app/vehicules/actions";
 import { buildWhatsAppLink, buildReservationWhatsAppMessage } from "@/lib/site-config";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
+function Star() {
+  return (
+    <span className="text-red-600" aria-hidden="true">
+      *
+    </span>
+  );
+}
+
 export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSecondDriver, setHasSecondDriver] = useState(false);
+  // CIN (Moroccans) or passport (foreigners): at least one of the two is required.
+  const [cinValue, setCinValue] = useState("");
+  const [passportValue, setPassportValue] = useState("");
   const [isPending, startTransition] = useTransition();
 
   // Arriving from a card's "Reserver en ligne" button: open the form right away.
@@ -19,6 +30,12 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
       queueMicrotask(() => setIsOpen(true));
     }
   }, []);
+
+  function closeForm() {
+    setIsOpen(false);
+    setCinValue("");
+    setPassportValue("");
+  }
 
   function handleSubmit(formData: FormData) {
     setError(null);
@@ -30,7 +47,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
       }
       const message = buildReservationWhatsAppMessage(result.whatsappData);
       const link = buildWhatsAppLink(message);
-      setIsOpen(false);
+      closeForm();
       window.open(link, "_blank", "noopener,noreferrer");
     });
   }
@@ -64,7 +81,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               </h2>
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={closeForm}
                 className="text-black/40 hover:text-black"
                 aria-label="Fermer"
               >
@@ -73,6 +90,9 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
             </div>
 
             <form action={handleSubmit} className="mt-4 flex flex-col gap-4">
+              <p className="text-xs text-black/60">
+                <Star /> champs obligatoires
+              </p>
               <input type="hidden" name="vehicle_id" value={vehicle.id} />
 
               <input
@@ -85,7 +105,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               />
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Prénom</span>
+                <span className="text-sm font-semibold">Prénom <Star /></span>
                 <input
                   type="text"
                   name="first_name"
@@ -95,7 +115,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Nom</span>
+                <span className="text-sm font-semibold">Nom <Star /></span>
                 <input
                   type="text"
                   name="last_name"
@@ -105,11 +125,12 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Date de naissance</span>
+                <span className="text-sm font-semibold">
+                  Date de naissance <span className="font-normal text-black/50">(optionnel)</span>
+                </span>
                 <input
                   type="date"
                   name="birth_date"
-                  required
                   className="rounded-lg border border-black/15 px-3 py-2"
                 />
               </label>
@@ -119,23 +140,27 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                 <input
                   type="text"
                   name="cin_number"
-                  required
-                  className="rounded-lg border border-black/15 px-3 py-2"
+                  value={cinValue}
+                  onChange={(e) => setCinValue(e.target.value)}
+                  required={!passportValue.trim()}
+                  placeholder="(pour les Marocains)"
+                  className="rounded-lg border border-black/15 px-3 py-2 placeholder:text-black/35"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">CIN délivrée le</span>
+                <span className="text-sm font-semibold">
+                  CIN délivrée le <span className="font-normal text-black/50">(optionnel)</span>
+                </span>
                 <input
                   type="date"
                   name="cin_issue_date"
-                  required
                   className="rounded-lg border border-black/15 px-3 py-2"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Numéro de permis de conduire</span>
+                <span className="text-sm font-semibold">Numéro de permis de conduire <Star /></span>
                 <input
                   type="text"
                   name="driver_license_number"
@@ -145,7 +170,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Date d&apos;obtention du permis</span>
+                <span className="text-sm font-semibold">Date d&apos;obtention du permis <Star /></span>
                 <input
                   type="date"
                   name="license_issue_date"
@@ -159,8 +184,11 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                 <input
                   type="text"
                   name="driver_passport_number"
-                  required
-                  className="rounded-lg border border-black/15 px-3 py-2"
+                  value={passportValue}
+                  onChange={(e) => setPassportValue(e.target.value)}
+                  required={!cinValue.trim()}
+                  placeholder="Optionnel (pour les étrangers)"
+                  className="rounded-lg border border-black/15 px-3 py-2 placeholder:text-black/35"
                 />
               </label>
 
@@ -178,13 +206,13 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                 <input
                   type="text"
                   name="driver_address"
-                  required
-                  className="rounded-lg border border-black/15 px-3 py-2"
+                  placeholder="(optionnel)"
+                  className="rounded-lg border border-black/15 px-3 py-2 placeholder:text-black/35"
                 />
               </label>
 
               <label className="flex flex-col gap-1">
-                <span className="text-sm font-semibold">Téléphone</span>
+                <span className="text-sm font-semibold">Téléphone <Star /></span>
                 <input
                   type="tel"
                   name="driver_phone"
@@ -207,7 +235,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               {hasSecondDriver && (
                 <div className="flex flex-col gap-4 rounded-lg border border-black/10 bg-black/[0.02] p-3">
                   <label className="flex flex-col gap-1">
-                    <span className="text-sm font-semibold">Prénom (2e conducteur)</span>
+                    <span className="text-sm font-semibold">Prénom (2e conducteur) <Star /></span>
                     <input
                       type="text"
                       name="second_driver_first_name"
@@ -217,7 +245,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                   </label>
 
                   <label className="flex flex-col gap-1">
-                    <span className="text-sm font-semibold">Nom (2e conducteur)</span>
+                    <span className="text-sm font-semibold">Nom (2e conducteur) <Star /></span>
                     <input
                       type="text"
                       name="second_driver_last_name"
@@ -236,7 +264,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                   </label>
 
                   <label className="flex flex-col gap-1">
-                    <span className="text-sm font-semibold">CIN (2e conducteur)</span>
+                    <span className="text-sm font-semibold">CIN (2e conducteur) <Star /></span>
                     <input
                       type="text"
                       name="second_driver_cin_number"
@@ -312,7 +340,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold">Du</span>
+                  <span className="text-sm font-semibold">Du <Star /></span>
                   <input
                     type="date"
                     name="start_date"
@@ -322,7 +350,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold">Au</span>
+                  <span className="text-sm font-semibold">Au <Star /></span>
                   <input
                     type="date"
                     name="end_date"
@@ -334,7 +362,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold">Heure de prise en charge</span>
+                  <span className="text-sm font-semibold">Heure de prise en charge <Star /></span>
                   <input
                     type="time"
                     name="start_time"
@@ -345,7 +373,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                 </label>
 
                 <label className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold">Heure de retour</span>
+                  <span className="text-sm font-semibold">Heure de retour <Star /></span>
                   <input
                     type="time"
                     name="end_time"

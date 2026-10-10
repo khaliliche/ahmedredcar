@@ -114,13 +114,10 @@ export async function createReservationAction(
     vehicleId > 0 &&
     firstName &&
     lastName &&
-    birthDate &&
-    cinNumber &&
-    cinIssueDate &&
+    // CIN (Moroccans) or passport (foreigners): at least one is required.
+    (cinNumber || passportNumber) &&
     licenseNumber &&
     licenseIssueDate &&
-    passportNumber &&
-    address &&
     phone &&
     startDate &&
     endDate &&
@@ -138,8 +135,8 @@ export async function createReservationAction(
 
   // Dates must be real calendar dates.
   if (
-    !isRealDate(birthDate) ||
-    !isRealDate(cinIssueDate) ||
+    (birthDate && !isRealDate(birthDate)) ||
+    (cinIssueDate && !isRealDate(cinIssueDate)) ||
     !isRealDate(licenseIssueDate) ||
     !isRealDate(startDate) ||
     !isRealDate(endDate)
@@ -147,8 +144,13 @@ export async function createReservationAction(
     return fail("missingFields");
   }
 
-  const age = ageFromBirthDate(birthDate);
-  if (!Number.isFinite(age) || age < 18 || age > 99) return fail("invalidAge");
+  // Birth date is optional. Without it the age cannot be verified: store 0
+  // ("unknown") and let the agency check the ID at handover.
+  let age = 0;
+  if (birthDate) {
+    age = ageFromBirthDate(birthDate);
+    if (!Number.isFinite(age) || age < 18 || age > 99) return fail("invalidAge");
+  }
 
   if (endDate <= startDate) return fail("invalidDateRange");
 
@@ -173,10 +175,10 @@ export async function createReservationAction(
     full_name: fullName,
     first_name: firstName,
     last_name: lastName,
-    birth_date: birthDate,
+    birth_date: birthDate || null,
     age,
     cin_number: cinNumber,
-    cin_issue_date: cinIssueDate,
+    cin_issue_date: cinIssueDate || null,
     license_issue_date: licenseIssueDate,
     driver_address: address,
     driver_phone: phone,

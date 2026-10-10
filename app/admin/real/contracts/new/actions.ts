@@ -103,6 +103,15 @@ export async function createManualContractAction(
   const advance = Number(text("advance")) || 0;
   if (advance < 0) return { ok: false, error: "Avance invalide." };
 
+  const franchiseIncluded = text("franchise_included");
+  if (!["", "yes", "no"].includes(franchiseIncluded)) {
+    return { ok: false, error: "Franchise invalide." };
+  }
+  const franchiseAmount = numberOrNull("franchise_amount");
+  if (franchiseAmount !== null && franchiseAmount < 0) {
+    return { ok: false, error: "Montant de franchise invalide." };
+  }
+
   const result = await createManualContract({
     contract_number: text("contract_number") || null,
 
@@ -157,6 +166,8 @@ export async function createManualContractAction(
 
     fuel_level: fuelLevel,
     fuel_type: fuelType,
+    franchise_included: franchiseIncluded,
+    franchise_amount: franchiseAmount,
     damages,
     equipment: equipmentFromForm(formData),
   });

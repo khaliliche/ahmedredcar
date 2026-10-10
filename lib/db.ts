@@ -112,6 +112,8 @@ export type Reservation = {
   return_place: string;
   fuel_level: string;
   fuel_type: string;
+  franchise_included: string; // '' | 'yes' | 'no'
+  franchise_amount: number | null; // DH given by the client
 
   // Driver extra fields
   first_name: string;
@@ -309,7 +311,7 @@ export type CreateReservationInput = {
   full_name: string;
   first_name: string;
   last_name: string;
-  birth_date: string;
+  birth_date: string | null;
   age: number;
   cin_number: string;
   cin_issue_date: string | null;
@@ -609,6 +611,8 @@ export type UpdateReservationContractInput = {
 
   fuel_level?: string;
   fuel_type?: string;
+  franchise_included?: string;
+  franchise_amount?: number | null;
 
   damages: DamageEntry[];
   equipment: EquipmentChecklist;
@@ -673,6 +677,8 @@ export async function updateReservationContract(
         expected_return_time = ${keepOr(data.expected_return_time, "expected_return_time")},
         fuel_level = COALESCE(${data.fuel_level ?? null}, fuel_level),
         fuel_type = COALESCE(${data.fuel_type ?? null}, fuel_type),
+        franchise_included = COALESCE(${data.franchise_included ?? null}, franchise_included),
+        franchise_amount = ${keepOr(data.franchise_amount, "franchise_amount")},
 
         damages = ${db.json(data.damages)},
         equipment = ${db.json(data.equipment)},

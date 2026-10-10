@@ -76,6 +76,8 @@ CREATE TABLE IF NOT EXISTS reservations (
   expected_return_time TIME,
   fuel_level TEXT NOT NULL DEFAULT '',
   fuel_type TEXT NOT NULL DEFAULT '',
+  franchise_included TEXT NOT NULL DEFAULT '' CHECK (franchise_included IN ('', 'yes', 'no')),
+  franchise_amount NUMERIC(10,2) CHECK (franchise_amount IS NULL OR franchise_amount >= 0),
 
   -- Admin contract editing
   fait_a TEXT NOT NULL DEFAULT '',
@@ -161,4 +163,3 @@ CREATE TABLE IF NOT EXISTS contract_audit (
 
 CREATE INDEX IF NOT EXISTS contract_audit_reservation_idx
   ON contract_audit (reservation_id, created_at);
-  

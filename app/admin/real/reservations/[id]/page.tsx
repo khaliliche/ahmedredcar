@@ -167,6 +167,11 @@ export default async function ContractPage({
 
                 fuel_level: reservation.fuel_level,
                 fuel_type: reservation.fuel_type,
+                franchise_included: reservation.franchise_included,
+                franchise_amount:
+                  reservation.franchise_amount != null
+                    ? Number(reservation.franchise_amount)
+                    : null,
                 damages: reservation.damages,
                 equipment: reservation.equipment ?? {},
               }}

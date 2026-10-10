@@ -57,6 +57,8 @@ export type ManualContractInput = {
   // Carburant & dommages
   fuel_level: string;
   fuel_type: string;
+  franchise_included: string;
+  franchise_amount: number | null;
   damages: DamageEntry[];
   equipment: EquipmentChecklist;
 };
@@ -101,7 +103,8 @@ export async function createManualContract(
          departure_place, return_place,
          advance, override_total_ttc, prolongation,
          expected_return_date, expected_return_time,
-         fuel_level, fuel_type, damages, equipment,
+         fuel_level, fuel_type, franchise_included, franchise_amount,
+         damages, equipment,
          status, source)
       VALUES
         (${data.vehicle_id}, ${data.vehicle_label}, ${data.registration_plate},
@@ -119,7 +122,9 @@ export async function createManualContract(
          ${data.departure_place}, ${data.return_place},
          ${data.advance}, ${data.override_total_ttc}, ${data.prolongation},
          ${data.expected_return_date}, ${data.expected_return_time},
-         ${data.fuel_level}, ${data.fuel_type}, ${tx.json(data.damages)}, ${tx.json(data.equipment)},
+         ${data.fuel_level}, ${data.fuel_type},
+         ${data.franchise_included}, ${data.franchise_amount},
+         ${tx.json(data.damages)}, ${tx.json(data.equipment)},
          'confirmed', 'walk_in')
       RETURNING id
     `;

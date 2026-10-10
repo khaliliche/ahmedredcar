@@ -63,6 +63,8 @@ export function blankReservation(serial: string): Reservation {
     return_place: "",
     fuel_level: "",
     fuel_type: "",
+    franchise_included: "",
+    franchise_amount: null,
     first_name: "",
     last_name: "",
     birth_date: null,

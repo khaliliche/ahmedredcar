@@ -52,6 +52,8 @@ const EMPTY: ContractInitial = {
 
   fuel_level: "",
   fuel_type: "",
+  franchise_included: "",
+  franchise_amount: null,
   damages: [],
   equipment: {},
 };

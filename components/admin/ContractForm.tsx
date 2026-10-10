@@ -75,6 +75,9 @@ export type ContractInitial = {
   // Carburant & dommages
   fuel_level: string;
   fuel_type: string;
+  // Franchise: '' (not filled) | 'yes' | 'no', and the amount given by the client (DH)
+  franchise_included: string;
+  franchise_amount: number | null;
   damages: DamageEntry[];
   // { [EQUIPMENT_ITEMS key]: checked }
   equipment: Record<string, boolean>;
@@ -422,6 +425,31 @@ export default function ContractForm({
             <Field label="a (heure)" name="expected_return_time" type="time" defaultValue={toTimeInputValue(initial.expected_return_time)} />
           </div>
         </div>
+        <div className={gridClass}>
+          <label className={labelClass}>
+            <span className={spanClass}>Franchise incluse</span>
+            <select
+              name="franchise_included"
+              defaultValue={initial.franchise_included ?? ""}
+              className={inputClass}
+            >
+              <option value="">Non renseigne</option>
+              <option value="yes">Oui</option>
+              <option value="no">Non</option>
+            </select>
+          </label>
+          <label className={labelClass}>
+            <span className={spanClass}>Prix donne par client (franchise) (DH)</span>
+            <input
+              type="number"
+              name="franchise_amount"
+              step="0.01"
+              min={0}
+              defaultValue={initial.franchise_amount ?? ""}
+              className={inputClass}
+            />
+          </label>
+        </div>
       </section>
 
       {/* ---- Carburant ---- */}
@@ -458,7 +486,12 @@ export default function ContractForm({
         <h2 className={h2Class}>{"\u00c9quipement du v\u00e9hicule"}</h2>
         <div className="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
           {EQUIPMENT_ITEMS.map((item) => (
-            <label key={item.key} className="flex items-center gap-2 text-sm font-semibold">
+            <label
+              key={item.key}
+              className={`flex items-center gap-2 text-sm font-semibold ${
+                item.key === "kit_securite" ? "col-span-full" : ""
+              }`}
+            >
               <input
                 type="checkbox"
                 name={`equip_${item.key}`}

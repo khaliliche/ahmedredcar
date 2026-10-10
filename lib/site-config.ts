@@ -47,12 +47,12 @@ export function buildReservationWhatsAppMessage(data: {
     `Nouvelle demande de reservation - Ahmed Red Car`,
     ``,
     `Vehicule : ${data.vehicleLabel}`,
-    `Client : ${data.fullName} (${data.age} ans)`,
-    `CIN N° : ${data.cinNumber}`,
+    `Client : ${data.fullName}${data.age > 0 ? ` (${data.age} ans)` : ""}`,
+    ...(data.cinNumber ? [`CIN N° : ${data.cinNumber}`] : []),
     `N° permis : ${data.driverLicenseNumber}`,
     `Permis obtenu le : ${data.licenseIssueDate}`,
-    `Passeport N° : ${data.driverPassportNumber}`,
-    `Adresse : ${data.driverAddress}`,
+    ...(data.driverPassportNumber ? [`Passeport N° : ${data.driverPassportNumber}`] : []),
+    ...(data.driverAddress ? [`Adresse : ${data.driverAddress}`] : []),
     `Telephone : ${data.driverPhone}`,
   ];
 
