@@ -1,4 +1,5 @@
-﻿import { loginAction } from "@/app/admin/real/actions";
+import { loginAction } from "@/app/admin/real/actions";
+import PasswordInput from "@/components/admin/PasswordInput";
 
 export default async function AdminLoginPage({
   searchParams,
@@ -25,13 +26,7 @@ export default async function AdminLoginPage({
 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-semibold">Mot de passe</span>
-          <input
-            type="password"
-            name="password"
-            required
-            autoFocus
-            className="rounded-lg border border-black/15 px-3 py-2"
-          />
+          <PasswordInput name="password" />
         </label>
 
         <button
@@ -44,4 +39,3 @@ export default async function AdminLoginPage({
     </main>
   );
 }
-
