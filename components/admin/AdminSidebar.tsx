@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { Car, CalendarClock, FilePlus, FolderOpen, LogOut, MessageCircle } from "lucide-react";
 import { logoutAction } from "@/app/admin/real/actions";
 import { buildWhatsAppLink } from "@/lib/site-config";
@@ -31,13 +31,13 @@ export default function AdminSidebar({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/ahmed-redcar-logo.png"
-            alt="Ahmed Red Car"
+            alt="Ahmed Red Cars"
             className="h-9 w-9 rounded-lg object-cover"
           />
 
           <div className="leading-tight">
             <p className="font-display text-sm font-extrabold text-white">
-              Ahmed Red Car
+              Ahmed Red Cars
             </p>
             <p className="text-[11px] text-white/40">Espace admin</p>
           </div>

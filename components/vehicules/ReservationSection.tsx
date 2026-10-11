@@ -74,7 +74,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4">
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white p-6 sm:rounded-2xl">
+          <div className="max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-2xl bg-white p-4 pb-8 sm:p-6 sm:rounded-2xl">
             <div className="flex items-center justify-between">
               <h2 className="font-display text-xl font-bold text-[var(--color-ink)]">
                 Réserver {vehicle.brand} {vehicle.model}
@@ -89,7 +89,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
               </button>
             </div>
 
-            <form action={handleSubmit} className="mt-4 flex flex-col gap-4">
+            <form action={handleSubmit} className="reservation-form mt-4 flex flex-col gap-4">
               <p className="text-xs text-black/60">
                 <Star /> champs obligatoires
               </p>
@@ -338,7 +338,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
                 <label className="flex flex-col gap-1">
                   <span className="text-sm font-semibold">Du <Star /></span>
                   <input
@@ -360,7 +360,7 @@ export default function ReservationSection({ vehicle }: { vehicle: Vehicle }) {
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2">
                 <label className="flex flex-col gap-1">
                   <span className="text-sm font-semibold">Heure de prise en charge <Star /></span>
                   <input

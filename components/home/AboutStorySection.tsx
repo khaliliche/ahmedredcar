@@ -49,7 +49,7 @@ export default function AboutStorySection() {
 
           <Image
             src="/hero-logo.jpg"
-            alt="Ahmed Red Car"
+            alt="Ahmed Red Cars"
             fill
             sizes="(min-width: 1024px) 384px, 90vw"
             className="object-cover"

@@ -35,7 +35,7 @@ export default function Footer() {
         aria-hidden="true"
         className="pointer-events-none absolute bottom-0 left-1/2 hidden sm:block -translate-x-1/2 translate-y-[28%] select-none whitespace-nowrap font-display text-[24vw] font-extrabold leading-none text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,0.07)] sm:text-[13rem]"
       >
-        RED CAR
+        RED CARS
       </span>
 
       <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-6 lg:px-10">
@@ -74,7 +74,7 @@ export default function Footer() {
             <div className="pointer-events-none absolute left-1/2 top-1/2 h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-red-primary)]/25 blur-[40px]" />
             <Image
               src="/ahmed-redcar-logo.png"
-              alt="Ahmed Red Car"
+              alt="Ahmed Red Cars"
               width={150}
               height={50}
               className="relative h-20 w-auto object-contain"
@@ -98,7 +98,7 @@ export default function Footer() {
         {/* Barre du bas */}
         <div className="mt-8 flex flex-col gap-2 border-t border-white/10 pt-5">
           <span className="text-center font-body text-xs text-white/35 sm:text-start">
-            © {new Date().getFullYear()} Ahmed Red Car. {t("footer.rights")}
+            © {new Date().getFullYear()} Ahmed Red Cars. {t("footer.rights")}
           </span>
 
           {/* Crédit développeur, seul sur sa ligne, à droite */}

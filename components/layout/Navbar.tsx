@@ -192,7 +192,7 @@ export default function Navbar() {
                 <Link
                   href="/"
                   onClick={() => setMenuOpen(false)}
-                  aria-label="Ahmed Red Car - Accueil"
+                  aria-label="Ahmed Red Cars - Accueil"
                 >
                   <Logo iconSize={40} textClassName="text-sm" />
                 </Link>

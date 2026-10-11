@@ -37,15 +37,15 @@ export const translations = {
     },
     bookingBar: { city: "Ville", departure: "Départ", return: "Retour", time: "Heure", search: "Rechercher", dates: "Dates", confirm: "Confirmer", selectDates: "Sélectionnez vos dates", departureDate: "Date de départ", returnDate: "Date de retour" },
     about: {
-      title: "À propos d'Ahmed Red Car",
-      text: "Ahmed Red Car est une agence de location de voitures marocaine, basée à Rabat et Salé, pensée pour offrir une expérience simple, transparente et sans mauvaise surprise. Que ce soit pour un trajet en ville, un week-end à la plage ou vos déplacements à l'aéroport, nous mettons à votre disposition une flotte entretenue et un service réactif.",
+      title: "À propos d'Ahmed Red Cars",
+      text: "Ahmed Red Cars est une agence de location de voitures marocaine, basée à Rabat et Salé, pensée pour offrir une expérience simple, transparente et sans mauvaise surprise. Que ce soit pour un trajet en ville, un week-end à la plage ou vos déplacements à l'aéroport, nous mettons à votre disposition une flotte entretenue et un service réactif.",
       points: { verified: "Véhicules vérifiés et assurés", presence: "Présence à Rabat et Salé", response: "Réponse rapide, 7j/7" },
     },
     aboutStory: {
       eyebrow: "À propos",
       title: "À propos de nous",
       paragraphs: [
-        "Ahmed Red Car, c'est bien plus qu'une simple agence de location de voitures basée à Rabat et Salé.",
+        "Ahmed Red Cars, c'est bien plus qu'une simple agence de location de voitures basée à Rabat et Salé.",
         "Notre mission est simple : offrir à chaque client une expérience fluide et transparente, du premier message WhatsApp jusqu'à la restitution du véhicule.",
         "Nous mettons à votre disposition une flotte récente et soigneusement entretenue, vérifiée avant chaque départ pour garantir sécurité et confort sur la route.",
         "Que ce soit pour un déplacement professionnel, un voyage en famille ou un besoin ponctuel, notre équipe reste disponible 7j/7 pour vous accompagner à chaque étape de votre location.",
@@ -53,7 +53,7 @@ export const translations = {
     },
     howItWorks: {
       title: "Comment ça marche",
-      subtitle: "Louer une voiture avec Ahmed Red Car en quatre étapes simples.",
+      subtitle: "Louer une voiture avec Ahmed Red Cars en quatre étapes simples.",
       steps: [
         { title: "Choisissez votre véhicule", text: "Parcourez notre flotte et trouvez le véhicule adapté à votre voyage." },
         { title: "Réservez en quelques clics", text: "Sélectionnez vos dates et confirmez votre réservation via WhatsApp." },
@@ -67,7 +67,7 @@ export const translations = {
       items: [
         { name: "Youssef B.", text: "Service impeccable, voiture propre et récupérée à l'heure. Je recommande vivement !" },
         { name: "Sara M.", text: "Réservation ultra simple via WhatsApp, réponse rapide et prix clair dès le départ." },
-        { name: "Karim T.", text: "Deuxième location avec Ahmed Red Car, toujours au top pour les road trips au Maroc." },
+        { name: "Karim T.", text: "Deuxième location avec Ahmed Red Cars, toujours au top pour les road trips au Maroc." },
       ],
     },
     reviews: {
@@ -85,7 +85,7 @@ export const translations = {
     },
     contact: { title: "Contact", subtitle: "Une question, une réservation particulière ? Contactez-nous directement.", phone: "Téléphone", whatsapp: "WhatsApp", whatsappResponse: "Réponse rapide, 7j/7", serviceZone: "Zone de service", serviceZoneText: "Rabat et Salé" },
     footer: { rights: "Tous droits réservés. Conçu avec passion au Maroc." },
-    whatsapp: { defaultMessage: "Bonjour Ahmed Red Car, je souhaite avoir des informations.", ariaLabel: "Contacter Ahmed Red Car sur WhatsApp" },
+    whatsapp: { defaultMessage: "Bonjour Ahmed Red Cars, je souhaite avoir des informations.", ariaLabel: "Contacter Ahmed Red Cars sur WhatsApp" },
     vehiclesPage: { title: "Nos véhicules", availability: "Disponibilité à {ville} du {depart} au {retour}.", allFleet: "Toute notre flotte.", noVehicles: "Aucun véhicule pour le moment." },
     vehicleDetail: {
       back: "Retour aux véhicules",
@@ -151,15 +151,15 @@ export const translations = {
     },
     bookingBar: { city: "City", departure: "Pick-up", return: "Return", time: "Time", search: "Search", dates: "Dates", confirm: "Confirm", selectDates: "Select your dates", departureDate: "Pick-up date", returnDate: "Return date" },
     about: {
-      title: "About Ahmed Red Car",
-      text: "Ahmed Red Car is a Moroccan car rental agency, based in Rabat and Salé, built to offer a simple, transparent experience with no bad surprises. Whether it's a trip around town, a weekend at the beach or an airport transfer, we provide a well-maintained fleet and responsive service.",
+      title: "About Ahmed Red Cars",
+      text: "Ahmed Red Cars is a Moroccan car rental agency, based in Rabat and Salé, built to offer a simple, transparent experience with no bad surprises. Whether it's a trip around town, a weekend at the beach or an airport transfer, we provide a well-maintained fleet and responsive service.",
       points: { verified: "Verified and insured vehicles", presence: "Present in Rabat and Salé", response: "Fast response, 7 days a week" },
     },
     aboutStory: {
       eyebrow: "About",
       title: "About us",
       paragraphs: [
-        "Ahmed Red Car is much more than a simple car rental agency based in Rabat and Salé.",
+        "Ahmed Red Cars is much more than a simple car rental agency based in Rabat and Salé.",
         "Our mission is simple: to give every client a smooth, transparent experience, from the first WhatsApp message to the return of the vehicle.",
         "We provide a recent, carefully maintained fleet, checked before every departure to guarantee safety and comfort on the road.",
         "Whether it's a business trip, a family getaway or a one-off need, our team is available 7 days a week to support you at every step of your rental.",
@@ -167,7 +167,7 @@ export const translations = {
     },
     howItWorks: {
       title: "How it works",
-      subtitle: "Rent a car with Ahmed Red Car in four simple steps.",
+      subtitle: "Rent a car with Ahmed Red Cars in four simple steps.",
       steps: [
         { title: "Choose your vehicle", text: "Browse our fleet and find the vehicle that suits your trip." },
         { title: "Book in a few clicks", text: "Select your dates and confirm your booking via WhatsApp." },
@@ -181,7 +181,7 @@ export const translations = {
       items: [
         { name: "Youssef B.", text: "Flawless service, clean car picked up right on time. Highly recommend!" },
         { name: "Sara M.", text: "Super simple booking via WhatsApp, quick reply and clear pricing from the start." },
-        { name: "Karim T.", text: "Second rental with Ahmed Red Car, always top-notch for road trips in Morocco." },
+        { name: "Karim T.", text: "Second rental with Ahmed Red Cars, always top-notch for road trips in Morocco." },
       ],
     },
     reviews: {
@@ -199,7 +199,7 @@ export const translations = {
     },
     contact: { title: "Contact", subtitle: "A question, a special booking request? Get in touch directly.", phone: "Phone", whatsapp: "WhatsApp", whatsappResponse: "Fast reply, 7 days a week", serviceZone: "Service area", serviceZoneText: "Rabat and Salé" },
     footer: { rights: "All rights reserved. Made with passion in Morocco." },
-    whatsapp: { defaultMessage: "Hello Ahmed Red Car, I'd like some information.", ariaLabel: "Contact Ahmed Red Car on WhatsApp" },
+    whatsapp: { defaultMessage: "Hello Ahmed Red Cars, I'd like some information.", ariaLabel: "Contact Ahmed Red Cars on WhatsApp" },
     vehiclesPage: { title: "Our vehicles", availability: "Availability in {ville} from {depart} to {retour}.", allFleet: "Our entire fleet.", noVehicles: "No vehicles available yet." },
     vehicleDetail: {
       back: "Back to vehicles",
@@ -265,15 +265,15 @@ export const translations = {
     },
     bookingBar: { city: "المدينة", departure: "الانطلاق", return: "العودة", time: "الوقت", search: "بحث", dates: "التواريخ", confirm: "تأكيد", selectDates: "اختر تواريخك", departureDate: "تاريخ الانطلاق", returnDate: "تاريخ العودة" },
     about: {
-      title: "من نحن - Ahmed Red Car",
-      text: "Ahmed Red Car وكالة مغربية لكراء السيارات، تعمل في الرباط وسلا، صُممت لتقديم تجربة بسيطة وشفافة وبدون مفاجآت غير سارة. سواء كانت رحلة داخل المدينة أو عطلة نهاية أسبوع على الشاطئ أو نقل من وإلى المطار، نوفر لك أسطولًا مصانًا وخدمة سريعة الاستجابة.",
+      title: "من نحن - Ahmed Red Cars",
+      text: "Ahmed Red Cars وكالة مغربية لكراء السيارات، تعمل في الرباط وسلا، صُممت لتقديم تجربة بسيطة وشفافة وبدون مفاجآت غير سارة. سواء كانت رحلة داخل المدينة أو عطلة نهاية أسبوع على الشاطئ أو نقل من وإلى المطار، نوفر لك أسطولًا مصانًا وخدمة سريعة الاستجابة.",
       points: { verified: "سيارات مفحوصة ومؤمّنة", presence: "تواجد في الرباط وسلا", response: "استجابة سريعة، طوال أيام الأسبوع" },
     },
     aboutStory: {
       eyebrow: "من نحن",
       title: "من نحن",
       paragraphs: [
-        "Ahmed Red Car هي أكثر بكثير من مجرد وكالة لكراء السيارات مقرها الرباط وسلا.",
+        "Ahmed Red Cars هي أكثر بكثير من مجرد وكالة لكراء السيارات مقرها الرباط وسلا.",
         "مهمتنا بسيطة: منح كل عميل تجربة سلسة وشفافة، من أول رسالة عبر واتساب إلى غاية إرجاع السيارة.",
         "نضع بين يديك أسطولًا حديثًا يُصان بعناية، ويُفحص قبل كل انطلاق لضمان السلامة والراحة على الطريق.",
         "سواء تعلق الأمر بتنقل مهني أو رحلة عائلية أو حاجة عابرة، يبقى فريقنا متاحًا طوال أيام الأسبوع لمرافقتك في كل مرحلة من مراحل الكراء.",
@@ -281,7 +281,7 @@ export const translations = {
     },
     howItWorks: {
       title: "كيف يعمل",
-      subtitle: "استأجر سيارة مع Ahmed Red Car في أربع خطوات بسيطة.",
+      subtitle: "استأجر سيارة مع Ahmed Red Cars في أربع خطوات بسيطة.",
       steps: [
         { title: "اختر سيارتك", text: "تصفح أسطولنا واعثر على السيارة المناسبة لرحلتك." },
         { title: "احجز في خطوات قليلة", text: "اختر تواريخك وأكّد حجزك عبر واتساب." },
@@ -295,7 +295,7 @@ export const translations = {
       items: [
         { name: "يوسف ب.", text: "خدمة ممتازة، سيارة نظيفة وتم استلامها في الوقت المحدد. أنصح بشدة!" },
         { name: "سارة م.", text: "حجز بسيط جدًا عبر واتساب، رد سريع وسعر واضح منذ البداية." },
-        { name: "كريم ت.", text: "ثاني تجربة كراء مع Ahmed Red Car، دائمًا في المستوى للرحلات الطويلة في المغرب." },
+        { name: "كريم ت.", text: "ثاني تجربة كراء مع Ahmed Red Cars، دائمًا في المستوى للرحلات الطويلة في المغرب." },
       ],
     },
     reviews: {
@@ -313,7 +313,7 @@ export const translations = {
     },
     contact: { title: "اتصل بنا", subtitle: "لديك سؤال أو طلب حجز خاص؟ تواصل معنا مباشرة.", phone: "الهاتف", whatsapp: "واتساب", whatsappResponse: "رد سريع، طوال أيام الأسبوع", serviceZone: "منطقة الخدمة", serviceZoneText: "الرباط وسلا" },
     footer: { rights: "جميع الحقوق محفوظة. صُنع بشغف في المغرب." },
-    whatsapp: { defaultMessage: "مرحبًا Ahmed Red Car، أرغب في الحصول على معلومات.", ariaLabel: "تواصل مع Ahmed Red Car عبر واتساب" },
+    whatsapp: { defaultMessage: "مرحبًا Ahmed Red Cars، أرغب في الحصول على معلومات.", ariaLabel: "تواصل مع Ahmed Red Cars عبر واتساب" },
     vehiclesPage: { title: "سياراتنا", availability: "التوفر في {ville} من {depart} إلى {retour}.", allFleet: "كامل أسطولنا.", noVehicles: "لا توجد سيارات متاحة حاليًا." },
     vehicleDetail: {
       back: "العودة إلى السيارات",

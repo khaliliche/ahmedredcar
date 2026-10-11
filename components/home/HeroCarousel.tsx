@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -70,7 +70,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
         >
           <Image
             src={currentImage}
-            alt="Ahmed Red Car"
+            alt="Ahmed Red Cars"
             fill
             sizes="(min-width: 1024px) 44vw, 90vw"
             className="object-cover"

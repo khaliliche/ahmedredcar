@@ -1,4 +1,4 @@
-﻿import { readFileSync } from "fs";
+import { readFileSync } from "fs";
 import { join } from "path";
 import {
   Document,
@@ -460,7 +460,7 @@ function ConditionsPage() {
     <Page size="A4" style={styles.condPage} wrap={false}>
       <View style={styles.condHeader}>
         <Text style={styles.condTitleFr}>Conditions G{"\u00e9"}n{"\u00e9"}rales</Text>
-        <Text style={styles.condTitleCenter}>ST{"\u00c9"} AHMED RED CAR S.A.R.L</Text>
+        <Text style={styles.condTitleCenter}>ST{"\u00c9"} AHMED RED CARS S.A.R.L</Text>
         <Text style={styles.condTitleAr}>الشروط العامة</Text>
       </View>
 

@@ -20,12 +20,12 @@ export async function generateMetadata({
   const vehicle = await getVehicleBySlug(slug);
 
   if (!vehicle) {
-    return { title: "Véhicule introuvable | Ahmed Red Car" };
+    return { title: "Véhicule introuvable | Ahmed Red Cars" };
   }
 
   return {
-    title: `Location ${vehicle.brand} ${vehicle.model} | Ahmed Red Car`,
-    description: `Louez une ${vehicle.brand} ${vehicle.model} à partir de ${vehicle.price_per_day} DH/jour avec Ahmed Red Car.`,
+    title: `Location ${vehicle.brand} ${vehicle.model} | Ahmed Red Cars`,
+    description: `Louez une ${vehicle.brand} ${vehicle.model} à partir de ${vehicle.price_per_day} DH/jour avec Ahmed Red Cars.`,
   };
 }
 
@@ -42,18 +42,18 @@ export default async function VehiclePage({
   }
 
   return (
-    <main className="pb-28 pt-32 sm:pb-20">
-      <div className="mx-auto max-w-5xl px-6 lg:px-10">
+    <main className="pb-32 pt-24 sm:pb-20 sm:pt-32">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-10">
         <Link
           href="/vehicules"
-          className="inline-flex items-center gap-2 text-sm text-black/60 transition-colors hover:text-black"
+          className="inline-flex items-center gap-2 py-2 text-sm text-black/60 transition-colors hover:text-black"
         >
           <ArrowLeft size={16} />
           Retour aux vehicules
         </Link>
 
-        <div className="mt-6 grid grid-cols-1 gap-10 lg:grid-cols-2">
-          <div className="relative aspect-[4/3] overflow-hidden bg-[var(--color-charcoal)]">
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:mt-6 lg:grid-cols-2 lg:gap-10">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-[var(--color-charcoal)] sm:rounded-none">
             {vehicle.image_url ? (
               <Image
                 src={vehicle.image_url}
@@ -69,24 +69,24 @@ export default async function VehiclePage({
               </div>
             )}
 
-            <div className="absolute bottom-4 right-4 rotate-[-3deg] border border-[var(--color-ink)]/15 bg-[var(--color-mist)] px-4 py-3 text-right shadow-md">
-              <p className="font-display text-2xl font-extrabold leading-none text-[var(--color-ink)]">
+            <div className="absolute bottom-3 right-3 rotate-[-3deg] border border-[var(--color-ink)]/15 bg-[var(--color-mist)] px-3 py-2 text-right shadow-md sm:bottom-4 sm:right-4 sm:px-4 sm:py-3">
+              <p className="font-display text-lg font-extrabold leading-none text-[var(--color-ink)] sm:text-2xl">
                 {vehicle.price_per_day} DH
               </p>
-              <p className="mt-1 text-xs text-black/50">par jour</p>
+              <p className="mt-1 text-[11px] text-black/50 sm:text-xs">par jour</p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex min-w-0 flex-col gap-5 sm:gap-6">
             <div>
-              <h1 className="font-display text-4xl font-extrabold text-[var(--color-ink)]">
+              <h1 className="break-words font-display text-2xl font-extrabold leading-tight text-[var(--color-ink)] sm:text-4xl">
                 {vehicle.brand} {vehicle.model}
               </h1>
             </div>
 
             {vehicle.description && (
-              <div className="border-y border-black/10 py-5">
-                <p className="whitespace-pre-line font-body text-black/70">
+              <div className="border-y border-black/10 py-4 sm:py-5">
+                <p className="whitespace-pre-line break-words font-body text-sm leading-relaxed text-black/70 sm:text-base">
                   {vehicle.description}
                 </p>
               </div>

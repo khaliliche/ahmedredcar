@@ -1,6 +1,6 @@
 {
-  "name": "Ahmed Red Car",
-  "short_name": "Ahmed Red Car",
+  "name": "Ahmed Red Cars",
+  "short_name": "Ahmed Red Cars",
   "description": "Location de voitures au Maroc. Flotte premium, prix transparents.",
   "start_url": "/",
   "display": "standalone",

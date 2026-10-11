@@ -1,4 +1,4 @@
-# Ahmed Red Car — Code Review Report
+# Ahmed Red Cars — Code Review Report
 
 Date: 2026-09-12
 Scope: full-codebase review (security, error handling, data leaks, deployment traps)

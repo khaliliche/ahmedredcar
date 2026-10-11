@@ -25,7 +25,7 @@ export default async function AgencySignPage({
     <main className="flex min-h-screen items-center justify-center bg-neutral-100 px-4 py-10">
       <div className="w-full max-w-md">
         <h1 className="mb-1 text-center font-display text-2xl font-extrabold text-[var(--color-ink)]">
-          Ahmed Red Car
+          Ahmed Red Cars
         </h1>
         <p className="mb-6 text-center text-sm text-black/50">
           Contrat de location - signature de l&apos;agence

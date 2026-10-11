@@ -42,7 +42,7 @@ export default function ContactSection() {
         {/* WhatsApp */}
         <a
           href={buildWhatsAppLink(
-            "Bonjour Ahmed Red Car, je souhaite avoir des informations."
+            "Bonjour Ahmed Red Cars, je souhaite avoir des informations."
           )}
           target="_blank"
           rel="noopener noreferrer"

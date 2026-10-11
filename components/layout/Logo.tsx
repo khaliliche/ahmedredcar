@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 
 interface LogoProps {
   iconSize?: number;
@@ -17,7 +17,7 @@ export default function Logo({
     <div className={`flex items-center gap-2.5 ${className}`}>
       <Image
         src="/ahmed-redcar-logo.png"
-        alt="Ahmed Red Car"
+        alt="Ahmed Red Cars"
         width={512}
         height={512}
         className="shrink-0 rounded-lg object-contain"
@@ -32,7 +32,7 @@ export default function Logo({
       >
         <span>AHMED</span>
         {stacked ? null : " "}
-        <span className="text-[var(--color-red-primary)]">RED CAR</span>
+        <span className="text-[var(--color-red-primary)]">RED CARS</span>
       </span>
     </div>
   );

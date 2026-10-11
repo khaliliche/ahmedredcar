@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Ahmed Red Car",
+  name: "Ahmed Red Cars",
   tagline: "Location de voitures au Maroc",
   phone: "+212 6 61 41 27 59",
   whatsappNumber: "212661412759",
@@ -44,7 +44,7 @@ export function buildReservationWhatsAppMessage(data: {
   endTime: string;
 }) {
   const lines = [
-    `Nouvelle demande de reservation - Ahmed Red Car`,
+    `Nouvelle demande de reservation - Ahmed Red Cars`,
     ``,
     `Vehicule : ${data.vehicleLabel}`,
     `Client : ${data.fullName}${data.age > 0 ? ` (${data.age} ans)` : ""}`,
