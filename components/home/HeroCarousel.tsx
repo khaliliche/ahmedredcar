@@ -54,12 +54,12 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
+      initial={false}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="relative mx-auto aspect-[4/3] w-full max-w-md sm:aspect-[4/5] overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl shadow-black/40 sm:max-w-lg lg:mx-0 lg:ms-auto lg:max-w-[400px]"
     >
-      <AnimatePresence mode="sync">
+      <AnimatePresence mode="sync" initial={false}>
         <motion.div
           key={`${currentImage}-${currentIndex}`}
           initial={{ opacity: 0 }}

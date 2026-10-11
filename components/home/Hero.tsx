@@ -39,7 +39,7 @@ export default function Hero({ images }: HeroProps) {
         <div className="grid grid-cols-1 items-center gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-10">
           {/* Texte */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="order-1 max-w-xl text-center sm:text-left lg:order-none"
