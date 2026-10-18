@@ -51,9 +51,9 @@ export interface VehiclePricing {
 }
 
 export function getDailyRate(vehicle: VehiclePricing, days: number): number {
-  if (days >= 30) return vehicle.price_monthly_30;
-  if (days >= 15) return vehicle.price_extended_15;
-  return vehicle.price_per_day;
+  if (days >= 30) return Number(vehicle.price_monthly_30);
+  if (days >= 15) return Number(vehicle.price_extended_15);
+  return Number(vehicle.price_per_day);
 }
 
 export function daysBetween(startDate: string, endDate: string): number {
