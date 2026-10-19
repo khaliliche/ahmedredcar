@@ -2,7 +2,18 @@
 import postgres from "postgres";
 import { getTieredPricing } from "./pricing";
 
-export const sql = postgres(process.env.DATABASE_URL!, { ssl: "require" });
+export const sql = postgres(process.env.DATABASE_URL!, {
+  ssl: "require",
+  // NUMERIC columns arrive as strings by default; parse them as numbers.
+  types: {
+    numeric: {
+      to: 1700,
+      from: [1700],
+      serialize: (x: unknown) => String(x),
+      parse: (x: string) => Number(x),
+    },
+  },
+});
 
 export type Vehicle = {
   id: number;
